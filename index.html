@@ -479,7 +479,9 @@
     font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase;
     letter-spacing:.05em; color:var(--ink-soft); margin-bottom:5px;
   }
-  .gauge-track{position:relative; height:10px; border-radius:5px; overflow:hidden; background:#EAE8DC;}
+  .gauge-track{position:relative; height:10px; border-radius:5px; background:#EAE8DC; overflow:visible;}
+  .gauge-zone-sens, .gauge-zone-mista, .gauge-zone-over{position:absolute; top:0; height:100%;}
+  .gauge-zone-sens{border-radius:5px 0 0 5px;}
   .gauge-zone-sens{position:absolute; top:0; left:0; height:100%; background:#4A7A55; opacity:.35;}
   .gauge-zone-mista{position:absolute; top:0; height:100%; background:#D9A441; opacity:.4;}
   .gauge-zone-over{position:absolute; top:0; height:100%; background:#C4432A; opacity:.4;}
@@ -494,6 +496,34 @@
     font-family:'IBM Plex Mono',monospace; color:var(--ink-soft); white-space:nowrap;
   }
   .gauge-status{font-size:11.5px; font-weight:600; margin-top:8px; font-family:'IBM Plex Mono',monospace;}
+
+  .gauge-who-line{
+    position:absolute; top:-4px; width:2px; height:18px; background:#1E5C8A;
+    transform:translateX(-50%); z-index:2;
+  }
+  .gauge-who-line::after{
+    content:"OMS"; position:absolute; top:-14px; left:50%; transform:translateX(-50%);
+    font-family:'IBM Plex Mono',monospace; font-size:8px; font-weight:600; color:#1E5C8A; white-space:nowrap;
+  }
+  .who-callout{
+    display:flex; gap:10px; align-items:flex-start;
+    margin-top:14px; padding:12px 14px; border-radius:3px;
+    border:1.5px solid #1E5C8A;
+  }
+  .who-callout.who-exceeded{background:#EAF1F6;}
+  .who-callout.who-ok{background:#EBF3EC; border-color:#4A7A55;}
+  .who-callout-icon{
+    font-size:16px; flex-shrink:0; width:22px; height:22px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-weight:700;
+    background:#1E5C8A; color:#fff;
+  }
+  .who-ok .who-callout-icon{background:#4A7A55;}
+  .who-callout-title{
+    font-family:'IBM Plex Sans',sans-serif; font-weight:600; font-size:12.5px; color:#123A54; margin-bottom:4px;
+  }
+  .who-ok .who-callout-title{color:#2A4A2E;}
+  .who-callout-text{font-size:12px; line-height:1.55; color:#2A4A5A;}
+  .who-ok .who-callout-text{color:#3A5A3E;}
 
   @media (max-width: 860px){
     #sidebar{
@@ -1284,6 +1314,7 @@ function testPoint(latlng, isRefresh){
       <b>Ponto selecionado</b>
       <div class="mp-turbines">${rows}</div>
       ${compareBarsHtml(backgroundApprox, combinedTotal, increase)}
+      ${ldenGaugeWithWhoHtml(combinedTotal, 55, 65, 45)}
       <div class="mp-night">
         <div class="mp-night-label">À noite (Ln)</div>
         <div class="mp-night-row">
@@ -1298,7 +1329,7 @@ function testPoint(latlng, isRefresh){
     if(isRefresh){
       measureMarker.setPopupContent(popupHtml);
     } else {
-      measureMarker.bindPopup(popupHtml, {maxWidth: 280, minWidth: 240}).openPopup();
+      measureMarker.bindPopup(popupHtml, {maxWidth: 280, minWidth: 240, maxHeight: 420}).openPopup();
     }
   }
 
@@ -1333,6 +1364,7 @@ function testPoint(latlng, isRefresh){
       <div class="panel-block-body">
         ${compareBarsHtml(backgroundApprox, combinedTotal, increase)}
         <div class="noise-context">"Sem parque" é o ruído de referência real medido pelo EIA no ponto oficial mais próximo (${nearestOfficial.id}, a ${Math.round(bestD)} m). "Com parque" soma esse fundo com o ruído do parque estimado neste ponto exato. Aproximação: o fundo real pode variar de casa para casa.</div>
+        ${ldenGaugeWithWhoHtml(combinedTotal, 55, 65, 45)}
       </div>
     </div>
 
@@ -1529,10 +1561,17 @@ officialReceptors.forEach(r => {
   marker.bindPopup(`
     <b>${r.id}</b> <span style="font-size:10px; color:#2F5233;">(dado oficial do EIA)</span><br>
     ${compareBarsHtml(r.refLden, r.Lden, increase)}
-    <div class="pop-fact" style="margin-top:8px; padding-top:6px; border-top:1px dashed #E5E2D4;"><span class="k">À noite (Ln): ${r.refLn} → ${r.Ln} dB(A)</span><span class="v" style="color:${nightColor}; font-weight:600;">+${nightIncrease.toFixed(1)} dB(A)</span></div>
+    ${ldenGaugeWithWhoHtml(r.Lden, 55, 65, 45)}
+    <div class="mp-night">
+      <div class="mp-night-label">À noite (Ln)</div>
+      <div class="mp-night-row">
+        <span class="mp-night-vals">${r.refLn} &rarr; ${r.Ln} dB(A)</span>
+        <span class="mp-night-inc" style="color:${nightColor};">+${nightIncrease.toFixed(1)} dB(A)</span>
+      </div>
+    </div>
     <div class="pop-flag">Valores reais do Quadro 8.68 do EIA (com medidas de minimização). Recetor mais próximo do ${r.near}, a ${r.nearDist} m.</div>
     ${groupNoteText}
-  `);
+  `, {maxWidth: 280, minWidth: 240, maxHeight: 420});
   marker.on('click', () => {
     updateDbScale(r.Lden, "oficial no recetor " + r.id + " (EIA, Quadro 8.68)");
     setInfo(`
@@ -1540,7 +1579,10 @@ officialReceptors.forEach(r => {
       <h3>${r.id}</h3>
       <div class="panel-block">
         <div class="panel-block-title">Sem parque → com parque (Lden)</div>
-        <div class="panel-block-body">${compareBarsHtml(r.refLden, r.Lden, increase)}</div>
+        <div class="panel-block-body">
+          ${compareBarsHtml(r.refLden, r.Lden, increase)}
+          ${ldenGaugeWithWhoHtml(r.Lden, 55, 65, 45)}
+        </div>
       </div>
       <div class="panel-block">
         <div class="panel-block-title">À noite (Ln): o período com o limite mais apertado</div>
@@ -1650,6 +1692,52 @@ function legalGaugeHtml(value, limiteSensivel, limiteMista, label){
       <div class="gauge-status" style="color:${statusColor};">${value.toFixed(1)} dB(A), ${status}</div>
     </div>`;
 }
+
+/* Escala para o Lden (indicador diário completo), com destaque especial para
+   a recomendação da Organização Mundial da Saúde: no seu relatório
+   "Environmental Noise Guidelines for the European Region" (2018), a OMS
+   recomenda, especificamente para ruído de parques eólicos, manter o Lden
+   abaixo de 45 dB(A), por associação a efeitos adversos na saúde acima
+   desse valor. Esta é uma recomendação de saúde pública, não um limite
+   legal: em Portugal, o limite legal aplicável (zona mista) é 65 dB(A). */
+function ldenGaugeWithWhoHtml(value, limiteSensivel, limiteMista, whoLimit){
+  const max = limiteMista + 10;
+  const pctSensivel = Math.min(100, (limiteSensivel/max)*100);
+  const pctMista = Math.min(100, (limiteMista/max)*100);
+  const pctValue = Math.max(2, Math.min(100, (value/max)*100));
+  const pctWho = Math.min(100, (whoLimit/max)*100);
+  let status, statusColor;
+  if(value <= limiteSensivel){ status = "dentro do limite legal de zona sensível"; statusColor = "#4A7A55"; }
+  else if(value <= limiteMista){ status = "excede zona sensível, dentro do limite legal de zona mista"; statusColor = "#D9A441"; }
+  else { status = "excede mesmo o limite legal de zona mista"; statusColor = "#C4432A"; }
+  const whoExceeded = value > whoLimit;
+  return `
+    <div class="gauge-wrap">
+      <div class="gauge-label">Face aos limites legais (Lden)</div>
+      <div class="gauge-track">
+        <div class="gauge-zone-sens" style="width:${pctSensivel}%"></div>
+        <div class="gauge-zone-mista" style="left:${pctSensivel}%; width:${pctMista-pctSensivel}%"></div>
+        <div class="gauge-zone-over" style="left:${pctMista}%; width:${100-pctMista}%"></div>
+        <div class="gauge-who-line" style="left:${pctWho}%;"></div>
+        <div class="gauge-marker" style="left:${pctValue}%;" title="${value.toFixed(1)} dB(A)"></div>
+      </div>
+      <div class="gauge-ticks">
+        <span style="left:${pctSensivel}%;">${limiteSensivel} (sensível)</span>
+        <span style="left:${pctMista}%;">${limiteMista} (mista)</span>
+      </div>
+      <div class="gauge-status" style="color:${statusColor};">${value.toFixed(1)} dB(A), ${status}</div>
+      <div class="who-callout ${whoExceeded ? 'who-exceeded' : 'who-ok'}">
+        <div class="who-callout-icon">${whoExceeded ? '⚠' : '✓'}</div>
+        <div>
+          <div class="who-callout-title">Organização Mundial da Saúde: recomenda-se Lden ≤ 45 dB(A) para ruído eólico</div>
+          <div class="who-callout-text">${whoExceeded
+            ? `Este valor está ${(value-whoLimit).toFixed(1)} dB(A) acima da recomendação da OMS para proteger a saúde das populações expostas a ruído de parques eólicos (não é um limite legal em Portugal, mas sim uma orientação de saúde pública, mais protetora do que a lei em vigor).`
+            : `Este valor está dentro da recomendação da OMS para ruído de parques eólicos.`}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
 
 function popupTurbine(name, isExcluded){
   return `<b>${name}</b><br>
