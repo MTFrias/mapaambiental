@@ -1,8 +1,8 @@
 # Mapa Ambiental
 
-Uma plataforma cívica e independente para tornar acessíveis os processos de consulta pública ambiental em Portugal, começando pelo Parque Eólico do Paiva (AIA n.º 3853).
+Esta plataforma surge de um movimento cívico e independente que pretende tornar os processos de consulta pública ambiental em Portugal acessíveis a todos. Iremos começar pelo Parque Eólico do Paiva (AIA n.º 3853).
 
-Documentos técnicos de centenas de páginas, dados e mapas interativos, para qualquer pessoa perceber o que está em causa antes de participar.
+O principal objetivo é transformar documentos técnicos, com centenas de páginas e linguagem complexa e técnica, em dados compreensíveis e mapas interativos. Assim, qualquer cidadão poderá compreender melhor o impacto e as consequências, antes de participar.
 
 ## O que este projeto faz
 
@@ -30,7 +30,7 @@ Basta abrir o ficheiro `index.html` num browser. Não precisa de instalação ne
 
 ## Limitações
 
-Este é um protótipo cívico e independente. As estimativas de ruído para pontos sem dado oficial são calculadas por um modelo simplificado, calibrado mas não equivalente ao modelo oficial CNOSSOS-EU usado no EIA — a metodologia completa, incluindo margens de erro, está documentada na própria página do projeto. Não substitui os documentos oficiais nem o processo formal de participação pública.
+Este é um protótipo desenvolvido por um grupo cívico e independente. Relativamente às estimativas de ruído para pontos sem dados oficial são calculadas por um modelo simplificado, calibrado mas não equivalente ao modelo oficial CNOSSOS-EU usado no EIA — a metodologia completa, incluindo margens de erro, está documentada na própria página do projeto. Não substitui os documentos oficiais nem o processo formal de participação pública.
 
 ## Licença
 
