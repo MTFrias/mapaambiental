@@ -610,6 +610,28 @@
   .stat-card-warn .stat-num{color:var(--stamp);}
   .stat-label{font-size:11.5px; color:var(--ink-soft); margin-top:8px; line-height:1.4;}
 
+  .law-box{
+    background:var(--card); border:1px solid var(--paper-deep); border-left:4px solid var(--forest);
+    border-radius:3px; padding:18px 20px; margin-bottom:18px;
+  }
+  .law-box-title{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase;
+    letter-spacing:.06em; color:var(--forest); margin-bottom:10px; font-weight:600;
+  }
+  .law-box-text{font-size:13px; line-height:1.6; color:var(--ink-soft); margin:0 0 12px;}
+  .law-box-limits{display:flex; flex-wrap:wrap; gap:14px; margin-bottom:12px;}
+  .law-limit{
+    background:#fff; border:1px solid var(--paper-deep); border-radius:3px;
+    padding:10px 16px; text-align:center; flex:1; min-width:110px;
+  }
+  .law-limit-num{
+    display:block; font-family:'Fraunces',serif; font-size:20px; font-weight:600; color:var(--ink);
+  }
+  .law-limit-label{
+    display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase;
+    letter-spacing:.04em; color:var(--ink-soft); margin-top:3px;
+  }
+
   .landing-footer{
     margin-top:56px; padding-top:20px; border-top:1px solid var(--paper-deep);
     font-size:12px; color:var(--ink-soft); line-height:1.6;
@@ -685,6 +707,16 @@
 
     <div class="landing-section">
       <h3>O que os números do próprio EIA mostram</h3>
+      <div class="law-box">
+        <div class="law-box-title">Artigo 13.º do RGR (Decreto-Lei n.º 9/2007), Critério de Incomodidade</div>
+        <p class="law-box-text">A diferença entre o ruído previsto com o parque em funcionamento e o ruído medido antes do projeto não pode exceder:</p>
+        <div class="law-box-limits">
+          <div class="law-limit"><span class="law-limit-num">5 dB(A)</span><span class="law-limit-label">período diurno</span></div>
+          <div class="law-limit"><span class="law-limit-num">4 dB(A)</span><span class="law-limit-label">entardecer</span></div>
+          <div class="law-limit"><span class="law-limit-num">3 dB(A)</span><span class="law-limit-label">período noturno</span></div>
+        </div>
+        <p class="law-box-text">Exceto se o ruído ambiente total, em qualquer período, for igual ou inferior a 45 dB(A), caso em que o critério deixa de se aplicar (art. 13.º, n.º 5).</p>
+      </div>
       <div class="stat-grid">
         <div class="stat-card">
           <div class="stat-num">45</div>
@@ -890,7 +922,8 @@
       <div class="fact"><span class="k">Rotação do rotor</span><span class="v">4,3 – 12,1 rpm</span></div>
       <div class="fact"><span class="k">Vento: arranque / nominal / paragem</span><span class="v">3 / 13 / 25 m/s</span></div>
       <div class="fact"><span class="k">Emissão sonora (2 modos)</span><span class="v">105,0 / 106,9 dB(A)</span></div>
-      <div class="fact"><span class="k">Limite legal noturno (RGR)</span><span class="v">+3 dB(A)</span></div>
+      <div class="fact"><span class="k">Limite RGR, art. 13.º (dia/entardecer/noite)</span><span class="v">5 / 4 / 3 dB(A)</span></div>
+      <div class="fact"><span class="k">Isenção do limite (art. 13.º, n.º 5)</span><span class="v">ambiente ≤ 45 dB(A)</span></div>
       <div class="lg-note" style="margin-top:8px;">Fonte: EIA do Parque Eólico do Paiva, Volume II, Relatório Síntese, Quadro 5.1 (p. 82) e Decreto-Lei n.º 9/2007 (RGR, art. 13.º).</div>
     </div>
 
