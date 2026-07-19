@@ -474,6 +474,27 @@
   .compare-val{font-family:'IBM Plex Mono',monospace; font-size:11px; width:32px; text-align:right; flex-shrink:0;}
   .compare-increase{font-size:11.5px; font-weight:600; margin-top:2px; font-family:'IBM Plex Mono',monospace;}
 
+  .gauge-wrap{margin-top:10px;}
+  .gauge-label{
+    font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase;
+    letter-spacing:.05em; color:var(--ink-soft); margin-bottom:5px;
+  }
+  .gauge-track{position:relative; height:10px; border-radius:5px; overflow:hidden; background:#EAE8DC;}
+  .gauge-zone-sens{position:absolute; top:0; left:0; height:100%; background:#4A7A55; opacity:.35;}
+  .gauge-zone-mista{position:absolute; top:0; height:100%; background:#D9A441; opacity:.4;}
+  .gauge-zone-over{position:absolute; top:0; height:100%; background:#C4432A; opacity:.4;}
+  .gauge-marker{
+    position:absolute; top:-3px; width:3px; height:16px; background:#1C2B22;
+    border-radius:2px; transform:translateX(-50%);
+    box-shadow:0 0 0 1.5px #fff;
+  }
+  .gauge-ticks{position:relative; height:14px; margin-top:2px;}
+  .gauge-ticks span{
+    position:absolute; transform:translateX(-50%); font-size:9px;
+    font-family:'IBM Plex Mono',monospace; color:var(--ink-soft); white-space:nowrap;
+  }
+  .gauge-status{font-size:11.5px; font-weight:600; margin-top:8px; font-family:'IBM Plex Mono',monospace;}
+
   @media (max-width: 860px){
     #sidebar{
       position:absolute; z-index:1000; height:70%;
@@ -1320,6 +1341,7 @@ function testPoint(latlng, isRefresh){
       <div class="panel-block-body">
         ${compareBarsHtml(nightBackground, nightTotal, nightIncrease)}
         <div class="noise-context" style="color:${nightColor}; font-weight:600;">${nightIncrease.toFixed(1)} dB(A) de aumento à noite, ${nightVerdict}.</div>
+        ${legalGaugeHtml(nightTotal, 45, 55, "Face aos limites absolutos de ruído noturno (Ln)")}
         <div class="noise-context">Estimativa derivada: como os aerogeradores emitem de forma praticamente constante 24h/dia, o valor por período (Ld≈Le≈Ln) fica cerca de 6,4 dB abaixo do Lden do parque, validado com dados reais do EIA. O fundo noturno vem do recetor oficial mais próximo.</div>
       </div>
     </div>
@@ -1525,6 +1547,7 @@ officialReceptors.forEach(r => {
         <div class="panel-block-body">
           ${compareBarsHtml(r.refLn, r.Ln, nightIncrease)}
           <div class="noise-context" style="color:${nightColor}; font-weight:600;">${nightIncrease.toFixed(1)} dB(A) de aumento à noite, ${nightVerdict}.</div>
+          ${legalGaugeHtml(r.Ln, 45, 55, "Face aos limites absolutos de ruído noturno (Ln), valor real do EIA")}
         </div>
       </div>
       <div class="fact"><span class="k">Aerogerador de referência</span><span class="v">${r.near} (${r.nearDist} m)</span></div>
@@ -1593,6 +1616,38 @@ function compareBarsHtml(before, after, increase){
         <span class="compare-val">${after.toFixed(1)}</span>
       </div>
       <div class="compare-increase" style="color:${incColor};">+${increase.toFixed(1)} dB(A) por causa do parque</div>
+    </div>`;
+}
+
+/* Escala visual que mostra onde um valor de ruído (Ln ou Lden) se situa face
+   aos limites absolutos do RGR: zona sensível (mais apertado, habitações
+   puramente residenciais) e zona mista (mais permissivo, é o que está
+   oficialmente aplicado a esta zona, por aviso municipal). Ver secção
+   "Pontos identificados na análise do EIA" para o porquê desta distinção
+   ser relevante aqui. */
+function legalGaugeHtml(value, limiteSensivel, limiteMista, label){
+  const max = limiteMista + 10;
+  const pctSensivel = Math.min(100, (limiteSensivel/max)*100);
+  const pctMista = Math.min(100, (limiteMista/max)*100);
+  const pctValue = Math.max(2, Math.min(100, (value/max)*100));
+  let status, statusColor;
+  if(value <= limiteSensivel){ status = "dentro do limite de zona sensível"; statusColor = "#4A7A55"; }
+  else if(value <= limiteMista){ status = "excede zona sensível, dentro de zona mista"; statusColor = "#D9A441"; }
+  else { status = "excede mesmo o limite de zona mista"; statusColor = "#C4432A"; }
+  return `
+    <div class="gauge-wrap">
+      <div class="gauge-label">${label}</div>
+      <div class="gauge-track">
+        <div class="gauge-zone-sens" style="width:${pctSensivel}%"></div>
+        <div class="gauge-zone-mista" style="left:${pctSensivel}%; width:${pctMista-pctSensivel}%"></div>
+        <div class="gauge-zone-over" style="left:${pctMista}%; width:${100-pctMista}%"></div>
+        <div class="gauge-marker" style="left:${pctValue}%;" title="${value.toFixed(1)} dB(A)"></div>
+      </div>
+      <div class="gauge-ticks">
+        <span style="left:${pctSensivel}%;">${limiteSensivel} (sensível)</span>
+        <span style="left:${pctMista}%;">${limiteMista} (mista)</span>
+      </div>
+      <div class="gauge-status" style="color:${statusColor};">${value.toFixed(1)} dB(A), ${status}</div>
     </div>`;
 }
 
