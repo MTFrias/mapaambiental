@@ -1223,7 +1223,10 @@ function testPoint(latlng, isRefresh){
   const nightTotal = turbinePeriodEstimate < 0 ? nightBackground : 10*Math.log10(Math.pow(10,nightBackground/10) + Math.pow(10,turbinePeriodEstimate/10));
   const nightIncrease = Math.round((nightTotal - nightBackground)*10)/10;
   const nightColor = nightIncrease >= 3 ? "#C4432A" : nightIncrease >= 1 ? "#D9A441" : "#4A7A55";
-  const nightVerdict = nightIncrease >= 3 ? "acima do limite legal de 3 dB(A)" : "dentro do limite legal de 3 dB(A)";
+  const nightExempt = nightTotal <= 45;
+  const nightVerdict = nightExempt
+    ? "tecnicamente isento do limite, por o ruído total ser ≤ 45 dB(A) (art. 13.º, n.º 5 do RGR)"
+    : (nightIncrease >= 3 ? "acima do limite legal de 3 dB(A) (art. 13.º do RGR)" : "dentro do limite legal de 3 dB(A) (art. 13.º do RGR)");
 
   if(!isRefresh){
     lastClickedLatLng = latlng;
@@ -1316,7 +1319,7 @@ function testPoint(latlng, isRefresh){
       <div class="panel-block-title">À noite (Ln): o período com o limite mais apertado</div>
       <div class="panel-block-body">
         ${compareBarsHtml(nightBackground, nightTotal, nightIncrease)}
-        <div class="noise-context" style="color:${nightColor}; font-weight:600;">${nightIncrease.toFixed(1)} dB(A) de aumento à noite, ${nightVerdict} (art. 13.º do RGR).</div>
+        <div class="noise-context" style="color:${nightColor}; font-weight:600;">${nightIncrease.toFixed(1)} dB(A) de aumento à noite, ${nightVerdict}.</div>
         <div class="noise-context">Estimativa derivada: como os aerogeradores emitem de forma praticamente constante 24h/dia, o valor por período (Ld≈Le≈Ln) fica cerca de 6,4 dB abaixo do Lden do parque, validado com dados reais do EIA. O fundo noturno vem do recetor oficial mais próximo.</div>
       </div>
     </div>
@@ -1495,7 +1498,10 @@ officialReceptors.forEach(r => {
   const increase = Math.round((r.Lden - r.refLden)*10)/10;
   const nightIncrease = Math.round((r.Ln - r.refLn)*10)/10;
   const nightColor = nightIncrease >= 3 ? "#C4432A" : nightIncrease >= 1 ? "#D9A441" : "#4A7A55";
-  const nightVerdict = nightIncrease >= 3 ? "acima do limite legal de 3 dB(A)" : "dentro do limite legal de 3 dB(A)";
+  const nightExempt = r.Ln <= 45;
+  const nightVerdict = nightExempt
+    ? "tecnicamente isento do limite, por o ruído total ser ≤ 45 dB(A) (art. 13.º, n.º 5 do RGR)"
+    : (nightIncrease >= 3 ? "acima do limite legal de 3 dB(A) (art. 13.º do RGR)" : "dentro do limite legal de 3 dB(A) (art. 13.º do RGR)");
   marker.bindTooltip(r.id, {permanent:true, direction:'right', offset:[6,0], className:'ra-label'});
   const groupNoteText = r.groupNote ? `<div class="pop-flag" style="margin-top:6px;">Partilha o mesmo ponto de referência do EIA com ${r.groupNote.join(", ")}: os valores de ruído são idênticos para todo o grupo. A posição de cada ponto neste mapa foi espalhada visualmente para ficar legível; o EIA não indica coordenadas GPS individuais para cada casa deste grupo.</div>` : "";
   marker.bindPopup(`
@@ -1518,7 +1524,7 @@ officialReceptors.forEach(r => {
         <div class="panel-block-title">À noite (Ln): o período com o limite mais apertado</div>
         <div class="panel-block-body">
           ${compareBarsHtml(r.refLn, r.Ln, nightIncrease)}
-          <div class="noise-context" style="color:${nightColor}; font-weight:600;">${nightIncrease.toFixed(1)} dB(A) de aumento à noite, ${nightVerdict} (art. 13.º do RGR).</div>
+          <div class="noise-context" style="color:${nightColor}; font-weight:600;">${nightIncrease.toFixed(1)} dB(A) de aumento à noite, ${nightVerdict}.</div>
         </div>
       </div>
       <div class="fact"><span class="k">Aerogerador de referência</span><span class="v">${r.near} (${r.nearDist} m)</span></div>
