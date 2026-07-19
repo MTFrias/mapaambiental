@@ -479,7 +479,7 @@
     font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase;
     letter-spacing:.05em; color:var(--ink-soft); margin-bottom:5px;
   }
-  .gauge-track{position:relative; height:10px; border-radius:5px; background:#EAE8DC; overflow:visible;}
+  .gauge-track{position:relative; height:10px; border-radius:5px; background:#EAE8DC; overflow:visible; margin-top:10px;}
   .gauge-zone-sens, .gauge-zone-mista, .gauge-zone-over{position:absolute; top:0; height:100%;}
   .gauge-zone-sens{border-radius:5px 0 0 5px;}
   .gauge-zone-sens{position:absolute; top:0; left:0; height:100%; background:#4A7A55; opacity:.35;}
@@ -488,23 +488,44 @@
   .gauge-marker{
     position:absolute; top:-3px; width:3px; height:16px; background:#1C2B22;
     border-radius:2px; transform:translateX(-50%);
-    box-shadow:0 0 0 1.5px #fff;
+    box-shadow:0 0 0 1.5px #fff; z-index:3;
   }
-  .gauge-ticks{position:relative; height:14px; margin-top:2px;}
+  .gauge-ticks{position:relative; height:28px; margin-top:4px;}
   .gauge-ticks span{
-    position:absolute; transform:translateX(-50%); font-size:9px;
+    position:absolute; top:0; transform:translateX(-50%); font-size:8.5px;
     font-family:'IBM Plex Mono',monospace; color:var(--ink-soft); white-space:nowrap;
+    text-align:center; line-height:1.3;
   }
+  .gauge-ticks span.tick-who{color:#1E5C8A; font-weight:600;}
+  .gauge-ticks span.tick-mista{color:#8A5A1E; font-weight:600;}
   .gauge-status{font-size:11.5px; font-weight:600; margin-top:8px; font-family:'IBM Plex Mono',monospace;}
 
   .gauge-who-line{
-    position:absolute; top:-4px; width:2px; height:18px; background:#1E5C8A;
+    position:absolute; top:0; width:2px; height:100%; background:#1E5C8A;
     transform:translateX(-50%); z-index:2;
   }
-  .gauge-who-line::after{
-    content:"OMS"; position:absolute; top:-14px; left:50%; transform:translateX(-50%);
-    font-family:'IBM Plex Mono',monospace; font-size:8px; font-weight:600; color:#1E5C8A; white-space:nowrap;
+  .ref-note{font-size:11px; line-height:1.5; color:var(--ink-soft); margin-top:6px; font-style:italic;}
+
+  .zone-verdict{
+    display:flex; gap:10px; align-items:flex-start;
+    padding:12px 14px; border-radius:3px; border:1.5px solid;
   }
+  .zone-verdict.zone-ok{background:#EBF3EC; border-color:#4A7A55;}
+  .zone-verdict.zone-bad{background:#FBEAE3; border-color:#C4432A;}
+  .zone-verdict-icon{
+    font-size:16px; flex-shrink:0; width:22px; height:22px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff;
+  }
+  .zone-ok .zone-verdict-icon{background:#4A7A55;}
+  .zone-bad .zone-verdict-icon{background:#C4432A;}
+  .zone-verdict-title{
+    font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase;
+    letter-spacing:.04em; color:var(--ink-soft); margin-bottom:3px;
+  }
+  .zone-verdict-text{font-family:'IBM Plex Sans',sans-serif; font-weight:600; font-size:13px; color:var(--ink);}
+  .zone-ok .zone-verdict-text{color:#2A4A2E;}
+  .zone-bad .zone-verdict-text{color:#6B2415;}
+
   .who-callout{
     display:flex; gap:10px; align-items:flex-start;
     margin-top:14px; padding:12px 14px; border-radius:3px;
@@ -712,6 +733,38 @@
   #accuracyChartHolder{margin-top:10px;}
   #accuracyChartHolder svg{width:100%; display:block; background:#fff; border:1px solid var(--paper-deep); border-radius:3px;}
 
+  .truth-section{
+    background:var(--forest-deep); color:var(--paper);
+    margin-left:-28px; margin-right:-28px; padding:36px 28px;
+    border-top:3px solid var(--stamp); border-bottom:3px solid var(--stamp);
+  }
+  .truth-section h3{color:var(--paper);}
+  .truth-section h3::after{background:rgba(255,255,255,.25);}
+  .truth-grid{display:grid; grid-template-columns:1fr 1fr; gap:36px; margin-top:20px;}
+  .truth-col h4{
+    font-family:'Fraunces',serif; font-weight:500; font-size:16px; color:var(--paper);
+    margin:20px 0 8px;
+  }
+  .truth-col h4:first-child{margin-top:0;}
+  .truth-col p{font-size:13.5px; line-height:1.65; color:#D7DED2; margin:0 0 12px;}
+  .truth-col p b{color:#fff;}
+  .truth-list{margin:0 0 14px; padding-left:18px;}
+  .truth-list li{font-size:13.5px; line-height:1.6; color:#D7DED2; margin-bottom:10px;}
+  .truth-callout{
+    background:rgba(255,255,255,.08); border:1.5px solid var(--stamp);
+    border-radius:3px; padding:16px 18px; margin-bottom:20px;
+  }
+  .truth-callout-title{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase;
+    letter-spacing:.06em; color:var(--stamp); margin-bottom:8px; font-weight:600;
+  }
+  .truth-callout p{color:#fff; margin:0; font-size:14px; line-height:1.6;}
+
+  @media (max-width:760px){
+    .truth-section{margin-left:-18px; margin-right:-18px; padding:28px 18px;}
+    .truth-grid{grid-template-columns:1fr; gap:8px;}
+  }
+
   @media (max-width:760px){
     .stat-grid{grid-template-columns:repeat(2,1fr);}
     .landing-hero h2{font-size:25px;}
@@ -730,6 +783,34 @@
   </header>
 
   <div class="landing-body">
+    <div class="landing-section truth-section">
+      <h3>O que este mapa não consegue responder, e porquê</h3>
+      <div class="truth-grid">
+        <div class="truth-col">
+          <h4>A calibração aproxima-se do CNOSSOS, não da realidade</h4>
+          <p>Os 29 valores usados para calibrar e validar o modelo deste site não são medições de ruído feitas no terreno. São a saída do modelo CNOSSOS-EU, calculada pelo próprio EIA, para um parque que ainda não existe. Não há, nem podia haver, uma medição real do ruído deste parque em funcionamento.</p>
+          <p>Isto significa que a calibração feita aqui aproxima o nosso modelo simplificado do <b>resultado do CNOSSOS-EU</b>, não da <b>realidade acústica futura</b>. Se o CNOSSOS, como método, tiver um erro sistemático nesta zona (por exemplo, subestimar o ruído por não ter em conta terreno complexo ou vegetação), o modelo deste site herda esse mesmo erro, porque foi ajustado para se parecer com ele. Calibrar um modelo contra outro modelo aproxima os dois entre si; não garante que algum dos dois está certo.</p>
+          <h4>O que o CNOSSOS-EU é, e o que não foi pensado para fazer</h4>
+          <p>O CNOSSOS-EU foi desenvolvido para ruído de tráfego rodoviário, ferroviário, aéreo e indústria, e tornado obrigatório em Portugal por transposição de uma diretiva europeia (Decreto-Lei n.º 136-A/2019). Não existe, em Portugal, uma metodologia oficial específica para ruído de parques eólicos. O próprio estudo citado na bibliografia do EIA (Rosão, Leonardo, Santos, 2021) conclui que o CNOSSOS deve ser evitado em parques eólicos, recomendando o método ISO 9613-2 com ajustamentos específicos, precisamente por não existir um documento oficial que regule essa adaptação.</p>
+        </div>
+        <div class="truth-col">
+          <div class="truth-callout">
+            <div class="truth-callout-title">Consequência direta</div>
+            <p>Não é possível, com os dados atualmente disponíveis, dizer com confiança qual será o ruído real deste parque depois de construído. O EIA apresenta uma previsão, calculada com um método que os próprios especialistas citados consideram inadequado para parques eólicos, sem os ajustamentos que esses mesmos especialistas recomendam.</p>
+          </div>
+          <h4>Sinais de que o risco pende para subestimar, não sobrestimar</h4>
+          <ul class="truth-list">
+            <li>O estudo citado na bibliografia do EIA usa o termo "modelação insegura" para descrever o risco de o CNOSSOS e o ISO 9613-2, sem ajustes, subestimarem o ruído real em parques eólicos.</li>
+            <li>Estudos de validação publicados, comparando previsões com medições reais em parques eólicos, mostram casos de terreno côncavo (em vale) onde o ruído medido foi superior ao previsto, por um efeito de foco do relevo. Parte da zona deste projeto (Serra da Nave) tem esse tipo de perfil.</li>
+            <li>O próprio EIA não documenta ter aplicado nenhum dos ajustamentos recomendados pelo seu especialista responsável (altura do recetor, absorção do solo, correção de terreno em vale).</li>
+          </ul>
+          <h4>Como isto deveria ter sido feito</h4>
+          <p>Uma avaliação mais fiável identificaria parques eólicos já em funcionamento, com o mesmo modelo de turbina (Vestas V172) ou semelhante, e com relevo comparável ao desta zona (terreno montanhoso, com vales e encostas). Nesses parques, mede-se o ruído real junto de habitações a distâncias e orientações conhecidas, e compara-se essa medição com o que o modelo de propagação (CNOSSOS-EU ou ISO 9613-2) tinha previsto antes da construção. A diferença entre o previsto e o medido dá um fator de correção real, específico para turbinas e terrenos deste tipo, em vez de se assumir que o modelo genérico, pensado para tráfego e indústria, está certo sem verificação.</p>
+          <p>É exatamente esse tipo de trabalho que o estudo citado na própria bibliografia do EIA (Rosão, Leonardo, Santos, 2021) realiza, propondo ajustamentos concretos ao método ISO 9613-2 a partir da comparação com dados reais de outros parques eólicos. O EIA cita este estudo como referência, mas não documenta ter aplicado nenhum dos ajustamentos que ele recomenda.</p>
+        </div>
+      </div>
+    </div>
+
     <div class="landing-hero">
       <h2>Dados e mapas de processos em consulta pública</h2>
       <p>Documentos técnicos de centenas de páginas traduzidos em mapas, números e factos verificáveis, para qualquer pessoa perceber o que está mesmo em causa antes de participar.</p>
@@ -1693,27 +1774,35 @@ function legalGaugeHtml(value, limiteSensivel, limiteMista, label){
     </div>`;
 }
 
-/* Escala para o Lden (indicador diário completo), com destaque especial para
-   a recomendação da Organização Mundial da Saúde: no seu relatório
-   "Environmental Noise Guidelines for the European Region" (2018), a OMS
-   recomenda, especificamente para ruído de parques eólicos, manter o Lden
-   abaixo de 45 dB(A), por associação a efeitos adversos na saúde acima
-   desse valor. Esta é uma recomendação de saúde pública, não um limite
-   legal: em Portugal, o limite legal aplicável (zona mista) é 65 dB(A). */
+/* Escala para o Lden (indicador diário completo). Mostra, em primeiro lugar
+   e de forma inequívoca, o veredito face à zona OFICIALMENTE aplicada nesta
+   área (zona mista, por aviso municipal, limite 65 dB(A)). A zona sensível
+   (55 dB(A)) é mostrada só como referência de comparação, claramente
+   identificada como hipotética, não como o que está em vigor. Inclui também
+   a recomendação da Organização Mundial da Saúde (2018): para ruído de
+   parques eólicos, Lden ≤ 45 dB(A), uma orientação de saúde pública, não
+   um limite legal. */
 function ldenGaugeWithWhoHtml(value, limiteSensivel, limiteMista, whoLimit){
   const max = limiteMista + 10;
   const pctSensivel = Math.min(100, (limiteSensivel/max)*100);
   const pctMista = Math.min(100, (limiteMista/max)*100);
   const pctValue = Math.max(2, Math.min(100, (value/max)*100));
   const pctWho = Math.min(100, (whoLimit/max)*100);
-  let status, statusColor;
-  if(value <= limiteSensivel){ status = "dentro do limite legal de zona sensível"; statusColor = "#4A7A55"; }
-  else if(value <= limiteMista){ status = "excede zona sensível, dentro do limite legal de zona mista"; statusColor = "#D9A441"; }
-  else { status = "excede mesmo o limite legal de zona mista"; statusColor = "#C4432A"; }
+
+  const cumpreMista = value <= limiteMista;
+  const cumpreSensivel = value <= limiteSensivel;
   const whoExceeded = value > whoLimit;
+
   return `
     <div class="gauge-wrap">
-      <div class="gauge-label">Face aos limites legais (Lden)</div>
+      <div class="zone-verdict ${cumpreMista ? 'zone-ok' : 'zone-bad'}">
+        <div class="zone-verdict-icon">${cumpreMista ? '✓' : '✗'}</div>
+        <div>
+          <div class="zone-verdict-title">Zona oficialmente aplicada aqui: MISTA (limite ${limiteMista} dB(A) Lden)</div>
+          <div class="zone-verdict-text">${value.toFixed(1)} dB(A), ${cumpreMista ? "dentro do limite legal" : "acima do limite legal"} de zona mista.</div>
+        </div>
+      </div>
+
       <div class="gauge-track">
         <div class="gauge-zone-sens" style="width:${pctSensivel}%"></div>
         <div class="gauge-zone-mista" style="left:${pctSensivel}%; width:${pctMista-pctSensivel}%"></div>
@@ -1722,10 +1811,13 @@ function ldenGaugeWithWhoHtml(value, limiteSensivel, limiteMista, whoLimit){
         <div class="gauge-marker" style="left:${pctValue}%;" title="${value.toFixed(1)} dB(A)"></div>
       </div>
       <div class="gauge-ticks">
-        <span style="left:${pctSensivel}%;">${limiteSensivel} (sensível)</span>
-        <span style="left:${pctMista}%;">${limiteMista} (mista)</span>
+        <span style="left:${pctWho}%;" class="tick-who">OMS<br>45</span>
+        <span style="left:${pctSensivel}%;">sensível*<br>55</span>
+        <span style="left:${pctMista}%;" class="tick-mista">mista<br>65</span>
       </div>
-      <div class="gauge-status" style="color:${statusColor};">${value.toFixed(1)} dB(A), ${status}</div>
+
+      <div class="ref-note">*Zona sensível: limite mais apertado (habitações puramente residenciais). Não é a classificação aplicada aqui, mas serve de comparação: com este valor, ${cumpreSensivel ? "cumpriria também esse limite mais apertado" : "não cumpriria esse limite mais apertado, só o de zona mista"}.</div>
+
       <div class="who-callout ${whoExceeded ? 'who-exceeded' : 'who-ok'}">
         <div class="who-callout-icon">${whoExceeded ? '⚠' : '✓'}</div>
         <div>
