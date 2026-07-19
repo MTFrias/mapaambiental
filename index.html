@@ -516,9 +516,26 @@
   .landing-header{
     background:var(--forest-deep); color:var(--paper); padding:22px 32px;
     border-bottom:3px solid var(--stamp);
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
   }
   .landing-header .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:#B9C9AE;}
   .landing-header h1{font-family:'Fraunces',serif; font-weight:500; font-size:28px; margin:2px 0 0;}
+  #aboutBtn{
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.25);
+    color:var(--paper); font-family:'IBM Plex Mono',monospace; font-size:12.5px;
+    padding:8px 16px; border-radius:3px; cursor:pointer; white-space:nowrap;
+    transition:background .15s ease;
+  }
+  #aboutBtn:hover{background:rgba(255,255,255,.18);}
+  #aboutView{display:none; height:100%; overflow-y:auto; background:var(--paper);}
+  .about-text{font-size:15px; line-height:1.75; color:var(--ink); max-width:620px; margin:0 0 20px;}
+  #aboutBackBtn{
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.25);
+    color:var(--paper); font-family:'IBM Plex Mono',monospace; font-size:12.5px;
+    padding:8px 16px; border-radius:3px; cursor:pointer; white-space:nowrap;
+    transition:background .15s ease;
+  }
+  #aboutBackBtn:hover{background:rgba(255,255,255,.18);}
 
   .landing-body{max-width:880px; margin:0 auto; padding:48px 28px 80px;}
   .landing-hero{margin-bottom:44px;}
@@ -619,6 +636,7 @@
       <span class="eyebrow">Consulta Pública · Ambiente · Portugal</span>
       <h1>Mapa Ambiental</h1>
     </div>
+    <button id="aboutBtn" onclick="showAbout()">Sobre nós</button>
   </header>
 
   <div class="landing-body">
@@ -785,6 +803,26 @@
 
     <div class="landing-footer">
       <p>Protótipo cívico e independente. Dados extraídos e verificados do Volume II do EIA. Não substitui os documentos oficiais nem o processo formal de participação pública em <a href="https://participa.pt" target="_blank" rel="noopener">participa.pt</a>.</p>
+    </div>
+  </div>
+</div>
+
+<div id="aboutView">
+  <header class="landing-header">
+    <div class="brand">
+      <span class="eyebrow">Consulta Pública · Ambiente · Portugal</span>
+      <h1>Mapa Ambiental</h1>
+    </div>
+    <button id="aboutBackBtn" onclick="backToLandingFromAbout()">&larr; Voltar</button>
+  </header>
+
+  <div class="landing-body" style="max-width:680px;">
+    <div class="landing-section" style="margin-bottom:0;">
+      <h3>Sobre nós</h3>
+      <p class="about-text">Acreditamos que a transição energética é um objetivo essencial para construir um futuro mais sustentável e reduzir as emissões de gases com efeito de estufa. No entanto, defendemos que essa transição deve ser realizada de forma justa, transparente e baseada em informação rigorosa.</p>
+      <p class="about-text">Promovemos um modelo de desenvolvimento que concilie a produção de energia renovável com a proteção das comunidades, da biodiversidade e da paisagem. Consideramos que as decisões devem assentar em estudos científicos independentes, processos de participação pública efetivos e numa avaliação equilibrada dos impactos ambientais, sociais e económicos.</p>
+      <p class="about-text">Defendemos que a transição energética só será verdadeiramente sustentável quando respeitar o bem-estar das pessoas, proteger os animais e preservar a natureza para as gerações futuras.</p>
+      <p class="about-text">O nosso compromisso é contribuir para um debate informado, disponibilizando informação acessível, promovendo a transparência e incentivando a participação de todos os cidadãos nas decisões que afetam o seu território.</p>
     </div>
   </div>
 </div>
@@ -1859,6 +1897,16 @@ function enterProject(){
 
 function backToLanding(){
   document.getElementById('appView').style.display = 'none';
+  document.getElementById('landingView').style.display = 'block';
+}
+
+function showAbout(){
+  document.getElementById('landingView').style.display = 'none';
+  document.getElementById('aboutView').style.display = 'block';
+}
+
+function backToLandingFromAbout(){
+  document.getElementById('aboutView').style.display = 'none';
   document.getElementById('landingView').style.display = 'block';
 }
 
