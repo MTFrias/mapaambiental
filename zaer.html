@@ -227,6 +227,8 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
   _initImage: function () {
     const img = L.DomUtil.create('img');
     img.style.position = 'absolute';
+    img.style.left = '0';
+    img.style.top = '0';
     img.style.transformOrigin = '0 0';
     img.src = this._url;
     this._image = img;
@@ -241,10 +243,14 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
     const h = this._image.naturalHeight || 3508;
     const a = (tr.x - tl.x) / w, b = (tr.y - tl.y) / w;
     const c = (bl.x - tl.x) / h, d = (bl.y - tl.y) / h;
-    L.DomUtil.setPosition(this._image, tl);
     this._image.style.width = w + 'px';
     this._image.style.height = h + 'px';
-    this._image.style.transform = `matrix(${a},${b},${c},${d},0,0)`;
+    /* Position (tl.x, tl.y) is baked directly into the matrix's e,f
+       terms — do NOT also call L.DomUtil.setPosition, since that sets
+       its own CSS transform (translate3d) which would silently
+       overwrite this matrix on every pan/zoom, making the overlay
+       drift away from its correct geographic position. */
+    this._image.style.transform = `matrix(${a},${b},${c},${d},${tl.x},${tl.y})`;
   }
 });
 L.imageOverlay.rotated = (url, tl, tr, bl, opts) => new L.ImageOverlay.Rotated(url, tl, tr, bl, opts);
