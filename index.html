@@ -21,7 +21,7 @@
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "xoy15nb6dj");
 </script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -136,6 +136,19 @@
   body.resizing{cursor:col-resize; user-select:none;}
   body.resizing #map{pointer-events:none;}
   .sb-section{padding:18px 20px; border-bottom:1px solid var(--paper-deep);}
+  .mode-section{background:var(--forest-deep);}
+  .mode-section h2{color:#D7DED2 !important;}
+  .mode-section h2::before{background:var(--stamp) !important;}
+  .mode-buttons{display:flex; flex-direction:column; gap:6px;}
+  .mode-btn{
+    width:100%; text-align:left; padding:9px 12px; border-radius:3px;
+    font-family:'IBM Plex Sans',sans-serif; font-size:12.5px; font-weight:600;
+    background:rgba(255,255,255,.06); color:#D7DED2; border:1.5px solid rgba(255,255,255,.15);
+    cursor:pointer; transition:background .15s ease;
+  }
+  .mode-btn:hover{background:rgba(255,255,255,.12);}
+  .mode-btn.active{background:var(--stamp); color:#fff; border-color:var(--stamp);}
+  .mode-note{font-size:10.5px; line-height:1.5; color:#B9C9AE; margin-top:10px;}
   .sb-section h2{
     font-family:'IBM Plex Mono',monospace;
     font-size:11px;
@@ -376,6 +389,27 @@
   #basemapToggle:hover{background:#fff;}
   #basemapToggle .sw{width:9px; height:9px; border-radius:50%; background:var(--forest);}
 
+  #modeBadge{
+    position:absolute; left:16px; top:60px; z-index:15;
+    background:var(--forest-deep);
+    border:1px solid var(--stamp);
+    border-radius:3px;
+    padding:8px 12px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.03em;
+    cursor:pointer;
+    box-shadow:0 2px 10px rgba(28,43,34,.25);
+    color:var(--paper);
+    display:flex; align-items:center; gap:7px;
+    max-width:220px;
+  }
+  #modeBadge:hover{background:#2A4A28;}
+  #modeBadge .sw{width:9px; height:9px; border-radius:50%; background:var(--stamp); flex-shrink:0;}
+  @media (max-width:860px){
+    #modeBadge{top:auto; bottom:calc(70px + env(safe-area-inset-bottom, 0px) + 10px); left:10px; font-size:10.5px; padding:7px 10px; max-width:75vw;}
+  }
+
   /* Click-to-measure popup styling */
   .measure-popup{min-width:220px;}
   .measure-popup > b{font-family:'Fraunces',serif; font-size:15px; display:block; margin-bottom:8px;}
@@ -398,6 +432,11 @@
   .mp-noise-unit{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-soft); font-weight:400;}
   .mp-noise-label{font-size:10.5px; color:var(--ink-soft); text-align:right; max-width:110px; line-height:1.3;}
   .mp-night{margin-top:8px; padding-top:6px; border-top:1px dashed #E5E2D4;}
+  .mp-period{margin-top:8px; padding-top:8px; border-top:1px solid #E5E2D4;}
+  .mp-period-label{
+    font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase;
+    letter-spacing:.05em; color:var(--forest); font-weight:600; margin-bottom:3px;
+  }
   .mp-night-label{
     font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase;
     letter-spacing:.05em; color:var(--ink-soft); margin-bottom:3px;
@@ -504,6 +543,10 @@
     position:absolute; top:0; width:2px; height:100%; background:#1E5C8A;
     transform:translateX(-50%); z-index:2;
   }
+
+  .gauge-compact{margin-top:6px;}
+  .gauge-compact .gauge-track{margin-top:6px; height:8px;}
+  .gauge-compact .gauge-ticks{height:24px;}
   .ref-note{font-size:11px; line-height:1.5; color:var(--ink-soft); margin-top:6px; font-style:italic;}
 
   .zone-verdict{
@@ -713,6 +756,19 @@
   #dbScaleHolderBig svg{width:100%; display:block;}
 
   .method-block{display:flex; gap:16px; margin-bottom:26px;}
+  .method-details{margin-top:4px;}
+  .method-details summary{
+    cursor:pointer; list-style:none;
+    font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600;
+    color:var(--forest); background:var(--card); border:1px solid var(--paper-deep);
+    border-left:3px solid var(--forest); border-radius:3px; padding:12px 16px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .method-details summary::-webkit-details-marker{display:none;}
+  .method-details summary::after{content:"Mostrar ▾"; color:var(--ink-soft); font-weight:400; font-size:11px;}
+  .method-details[open] summary::after{content:"Esconder ▴";}
+  .method-details[open] summary{margin-bottom:22px; border-radius:3px 3px 0 0;}
+  .method-details .method-block:first-of-type{margin-top:6px;}
   .method-num{
     flex-shrink:0; width:30px; height:30px; border-radius:50%;
     background:var(--forest); color:var(--paper);
@@ -732,6 +788,24 @@
   .method-caption{font-size:11.5px; color:var(--ink-soft); text-align:center; margin-top:8px !important;}
   #accuracyChartHolder{margin-top:10px;}
   #accuracyChartHolder svg{width:100%; display:block; background:#fff; border:1px solid var(--paper-deep); border-radius:3px;}
+
+  .method-group{margin-bottom:8px;}
+  .method-group + .method-group{margin-top:34px; padding-top:30px; border-top:2px dashed var(--paper-deep);}
+  .method-group-title{
+    display:flex; align-items:center; gap:10px; margin-bottom:20px;
+  }
+  .method-group-tag{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; text-transform:uppercase;
+    letter-spacing:.05em; padding:4px 9px; border-radius:2px; white-space:nowrap;
+  }
+  .method-group-cnossos .method-group-tag{background:var(--forest); color:var(--paper);}
+  .method-group-cnossos .method-num{background:var(--forest);}
+  .method-group-real .method-group-tag{background:#8A5A1E; color:var(--paper);}
+  .method-group-real .method-num{background:#8A5A1E;}
+  .method-group-title h4{
+    font-family:'Fraunces',serif; font-size:15.5px; font-weight:500; color:var(--ink); margin:0;
+  }
+  .method-group-intro{font-size:13px; color:var(--ink-soft); margin:0 0 20px; line-height:1.6;}
 
   .truth-section{
     background:var(--forest-deep); color:var(--paper);
@@ -882,6 +956,16 @@
         Este mapa combina dois tipos de informação: dados reais do EIA, onde estão disponíveis, e uma estimativa própria e simplificada, para os restantes pontos. Esta secção descreve o funcionamento de cada uma.
       </p>
 
+      <details class="method-details">
+        <summary>Ver a metodologia completa, incluindo as fórmulas usadas</summary>
+
+      <div class="method-group method-group-cnossos">
+        <div class="method-group-title">
+          <span class="method-group-tag">Modelo base do mapa</span>
+          <h4>Estudo CNOSSOS (projeto) — dados e cálculo do EIA</h4>
+        </div>
+        <p class="method-group-intro">Este bloco descreve os dados reais do EIA e o modelo simplificado calibrado contra eles. É a metodologia usada por omissão em todo o mapa, no modo "Estudo CNOSSOS (projeto)".</p>
+
       <div class="method-block">
         <div class="method-num">1</div>
         <div>
@@ -958,6 +1042,31 @@
           <p>Este modelo não corresponde ao modelo CNOSSOS-EU oficial. Trata-se de uma aproximação simplificada, calibrada com dados reais desta zona específica, com um erro típico inferior a 1 dB, podendo atingir 2 a 3 dB num caso pontual. Nos pontos que coincidem com um recetor oficial (marcado a verde no mapa), é apresentado o valor real e exato do EIA, sem margem de erro. A estimativa do modelo simplificado aplica-se apenas onde não existe dado oficial.</p>
         </div>
       </div>
+
+      </div>
+
+      <div class="method-group method-group-real">
+        <div class="method-group-title">
+          <span class="method-group-tag">Modo opcional</span>
+          <h4>Simulação com amostras reais — correção de terreno em vale</h4>
+        </div>
+        <p class="method-group-intro">Este bloco é independente do anterior: descreve a correção adicional de +3 dB(A) aplicada apenas quando se ativa o modo "Simulação com amostras reais" no simulador. Não faz parte do modelo calibrado contra o EIA — vem de estudos publicados sobre outros parques eólicos.</p>
+
+      <div class="method-block">
+        <div class="method-num">1</div>
+        <div>
+          <h4>O estudo por trás do modo "simulação com amostras reais"</h4>
+          <p>A correção de +3 dB(A) usada neste modo não foi inventada para este site. Vem de dois estudos técnicos publicados, sobre parques eólicos reais noutros países, com terreno em declive semelhante ao de parte desta zona (o som "cai" do aerogerador para a casa em vez de se afastar em terreno plano):</p>
+          <p><b>Bass, Bullmore &amp; Sloth (1998)</b>, <i>Development of a Wind Farm Noise Propagation Prediction Model</i>, Comissão Europeia, programa Joule III, contrato JOR3-CT95-0051. Recomenda adicionar 3 dB(A) à previsão do método ISO 9613-2 sempre que o terreno desce significativamente entre o aerogerador e a casa.</p>
+          <p><b>Cooper &amp; Evans (2013)</b>, <i>Accuracy of noise predictions for wind farms</i>, 5.ª Conferência Internacional sobre Ruído de Turbinas Eólicas, Denver. Compara previsões com medições reais em <b>13 pontos de medição, em 6 parques eólicos diferentes</b>. Nos pontos com declive côncavo entre o aerogerador e a casa, a subestimação chegou a 4 dB(A), a uma distância de cerca de 1500 m, confirmando a recomendação de Bass, Bullmore &amp; Sloth.</p>
+          <p>Fonte consultável do estudo de Cooper &amp; Evans: <a href="https://puc.sd.gov/commission/dockets/electric/2017/el17-028/dr2-20.pdf" target="_blank" rel="noopener">puc.sd.gov/commission/dockets/electric/2017/el17-028/dr2-20.pdf</a>.</p>
+          <p>Nenhum destes 13 pontos é do Paiva: são medições de outros parques, com condições de terreno comparáveis, não deste projeto específico. É essa a natureza do paralelismo proposto pelo modo "amostras reais" &mdash; uma correção com base empírica de terreno semelhante, e não uma medição do parque do Paiva, que ainda não existe.</p>
+        </div>
+      </div>
+
+      </div>
+
+      </details>
     </div>
 
     <div class="landing-section">
@@ -1027,6 +1136,15 @@
 <div class="layout">
   <aside id="sidebar">
     <div id="dragHandle">Ver processos e camadas do mapa</div>
+
+    <div class="sb-section mode-section">
+      <h2>Modelo de ruído usado no mapa</h2>
+      <div class="mode-buttons">
+        <button id="modeBtnCnossos" class="mode-btn active" onclick="setSimulationMode('cnossos')">Estudo CNOSSOS (projeto)</button>
+        <button id="modeBtnReal" class="mode-btn" onclick="setSimulationMode('real')">Simulação com amostras reais</button>
+      </div>
+      <div class="mode-note" id="modeNote">Valores tal como constam do EIA (Quadro 8.68) ou do modelo deste site calibrado contra eles, sem qualquer correção adicional.</div>
+    </div>
 
     <div class="sb-section">
       <h2>Processos em consulta pública</h2>
@@ -1117,6 +1235,10 @@
 
   <div id="mapWrap">
     <div id="map"></div>
+    <div id="modeBadge" onclick="openSidebarAtMode()" title="Toca para mudar o modelo de ruído">
+      <span class="sw" id="modeBadgeDot"></span>
+      <span id="modeBadgeLabel">Modelo: Estudo CNOSSOS (projeto)</span>
+    </div>
     <div id="basemapToggle" onclick="toggleBasemap()">
       <span class="sw" id="basemapDot"></span>
       <span id="basemapLabel">Ver mapa base</span>
@@ -1130,7 +1252,7 @@
 </div>
 </div> <!-- /appView -->
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
 <script>
 /* ---------- DATA ---------- */
 /* Turbine coordinates: EIA do Parque Eólico do Paiva, Vol. II, Quadro 4.3
@@ -1206,6 +1328,15 @@ layers.turbines.addTo(map);
 layers.excluded.addTo(map);
 
 function setInfo(html){ document.getElementById('infopanel').innerHTML = html; }
+
+/* Escapa texto antes de o inserir em innerHTML. Usado sobretudo para
+   mensagens de erro (ex. err.message de chamadas à API Open-Meteo), que
+   nunca deviam ser tratadas como HTML de confiança. */
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = String(str);
+  return d.innerHTML;
+}
 
 /* ---------- ESCALA DE REFERÊNCIA (dB) ---------- */
 /* Valores de referência de conhecimento acústico geral e amplamente publicado
@@ -1312,6 +1443,57 @@ function updateDbScale(db, context){
 let measureMarker = null;
 let measureLine = null;
 let lastClickedLatLng = null;
+let lastOfficialReceptorMarker = null;
+
+/* Dois modos de apresentação dos valores de ruído:
+
+   "cnossos": os valores tal como saem do EIA (para os 29 recetores oficiais)
+   ou do nosso modelo calibrado contra eles (para qualquer outro ponto).
+   Nenhuma correção adicional.
+
+   "real": simula o efeito de uma correção documentada em estudos publicados
+   de medições reais em parques eólicos (não deste projeto, de outros, ver
+   secção "Pontos identificados" na página inicial). Especificamente, usa a
+   correção de +3 dB(A) recomendada pela literatura técnica (Bass, Bullmore
+   e Sloth, 1998, e confirmada por Cooper & Evans, 2013) para situações em
+   que o terreno desce significativamente entre o aerogerador e a casa, como
+   acontece em parte desta zona. Esta correção NÃO foi medida neste projeto
+   específico: é uma simulação baseada em padrões observados noutros parques,
+   com terreno semelhante, não uma medição real do Paiva. */
+let simulationMode = "cnossos";
+const REAL_SAMPLE_CORRECTION = 3.0;
+
+function currentCorrection(){
+  return simulationMode === "real" ? REAL_SAMPLE_CORRECTION : 0;
+}
+
+function setSimulationMode(mode){
+  simulationMode = mode;
+  document.getElementById('modeBtnCnossos').classList.toggle('active', mode === 'cnossos');
+  document.getElementById('modeBtnReal').classList.toggle('active', mode === 'real');
+  const note = document.getElementById('modeNote');
+  const badgeLabel = document.getElementById('modeBadgeLabel');
+  if(mode === 'real'){
+    note.innerHTML = `Simula uma correção de +${REAL_SAMPLE_CORRECTION.toFixed(1)} dB(A), recomendada pela literatura técnica para terreno em vale (Bass, Bullmore &amp; Sloth, 1998; confirmada em medições reais de outros parques por Cooper &amp; Evans, 2013). Não é uma medição deste projeto.`;
+    badgeLabel.textContent = "Modelo: Simulação com amostras reais";
+  } else {
+    note.innerHTML = `Valores tal como constam do EIA (Quadro 8.68) ou do modelo deste site calibrado contra eles, sem qualquer correção adicional.`;
+    badgeLabel.textContent = "Modelo: Estudo CNOSSOS (projeto)";
+  }
+  if(currentTurbine) drawPropagation(currentTurbine, excludedFromMinimisation.has(currentTurbine));
+  if(lastClickedLatLng) testPoint(lastClickedLatLng, true);
+  if(lastOfficialReceptorMarker) lastOfficialReceptorMarker.fire('click');
+}
+
+/* Toca no badge do mapa para abrir a sidebar já na secção do modelo de
+   ruído (útil sobretudo em telemóvel, onde a sidebar começa fechada). */
+function openSidebarAtMode(){
+  const sidebar = document.getElementById('sidebar');
+  sidebar.classList.add('open');
+  const modeSection = document.querySelector('.mode-section');
+  if(modeSection) modeSection.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
 function clearMeasure(){
   if(measureMarker){ map.removeLayer(measureMarker); measureMarker = null; }
   if(measureLine){ map.removeLayer(measureLine); measureLine = null; }
@@ -1340,7 +1522,7 @@ function testPoint(latlng, isRefresh){
     if(d < bestD){ bestD = d; nearestOfficial = r; }
   });
   const backgroundApprox = nearestOfficial.refLden;
-  const combinedTotal = estimatedSpl < 20 ? backgroundApprox : 10*Math.log10(Math.pow(10,backgroundApprox/10) + Math.pow(10,estimatedSpl/10));
+  const combinedTotal = (estimatedSpl < 20 ? backgroundApprox : 10*Math.log10(Math.pow(10,backgroundApprox/10) + Math.pow(10,estimatedSpl/10))) + currentCorrection();
   const increase = Math.round((combinedTotal - backgroundApprox)*10)/10;
 
   /* Estimativa específica da noite (Ln): os aerogeradores emitem de forma
@@ -1352,7 +1534,7 @@ function testPoint(latlng, isRefresh){
      noite (refLn) é o valor medido no terreno, do recetor oficial mais próximo. */
   const turbinePeriodEstimate = estimatedSpl < 20 ? -100 : estimatedSpl - 6.4;
   const nightBackground = nearestOfficial.refLn;
-  const nightTotal = turbinePeriodEstimate < 0 ? nightBackground : 10*Math.log10(Math.pow(10,nightBackground/10) + Math.pow(10,turbinePeriodEstimate/10));
+  const nightTotal = (turbinePeriodEstimate < 0 ? nightBackground : 10*Math.log10(Math.pow(10,nightBackground/10) + Math.pow(10,turbinePeriodEstimate/10))) + currentCorrection();
   const nightIncrease = Math.round((nightTotal - nightBackground)*10)/10;
   const nightColor = nightIncrease >= 3 ? "#C4432A" : nightIncrease >= 1 ? "#D9A441" : "#4A7A55";
   const nightExempt = nightTotal <= 45;
@@ -1394,16 +1576,23 @@ function testPoint(latlng, isRefresh){
     <div class="measure-popup">
       <b>Ponto selecionado</b>
       <div class="mp-turbines">${rows}</div>
-      ${compareBarsHtml(backgroundApprox, combinedTotal, increase)}
-      ${ldenGaugeWithWhoHtml(combinedTotal, 55, 65, 45)}
+      <div class="mp-period">
+        <div class="mp-period-label">De dia (Lden)</div>
+        <div class="mp-night-row">
+          <span class="mp-night-vals">${backgroundApprox.toFixed(1)} &rarr; ${combinedTotal.toFixed(1)} dB(A)</span>
+          <span class="mp-night-inc" style="color:${increase >= 3 ? '#C4432A' : increase >= 1 ? '#D9A441' : '#4A7A55'};">+${increase.toFixed(1)} dB(A)</span>
+        </div>
+        ${compactGaugeHtml(combinedTotal, 55, 65, 45)}
+      </div>
       <div class="mp-night">
         <div class="mp-night-label">À noite (Ln)</div>
         <div class="mp-night-row">
           <span class="mp-night-vals">${nightBackground.toFixed(1)} &rarr; ${nightTotal.toFixed(1)} dB(A)</span>
           <span class="mp-night-inc" style="color:${nightColor};">+${nightIncrease.toFixed(1)} dB(A)</span>
         </div>
+        ${compactGaugeHtml(nightTotal, 45, 55, 45)}
       </div>
-      <div class="pop-flag">Valor "sem parque" aproximado pelo ponto de referência oficial mais próximo (${nearestOfficial.id}). Calibrado com 29 recetores reais do EIA. Não corresponde ao modelo CNOSSOS-EU oficial. Atualiza-se automaticamente com as condições de vento selecionadas.</div>
+      <div class="pop-flag" style="font-size:10.5px;">Estimativa calibrada com 29 recetores reais do EIA. Marca OMS (45 dB) igual nas duas barras, para comparar; só é recomendação oficial da OMS para o valor de dia (Lden). Ver painel lateral para mais detalhe.</div>
     </div>`;
 
   if(measureMarker){
@@ -1630,56 +1819,86 @@ officialReceptors.forEach(r => {
   const marker = L.circleMarker(r.coords, {
     radius: receptorRadiusForZoom(map.getZoom()), color:"#2F5233", weight:2.5, fillColor:"#FFFFFF", fillOpacity:.95
   });
-  const increase = Math.round((r.Lden - r.refLden)*10)/10;
-  const nightIncrease = Math.round((r.Ln - r.refLn)*10)/10;
-  const nightColor = nightIncrease >= 3 ? "#C4432A" : nightIncrease >= 1 ? "#D9A441" : "#4A7A55";
-  const nightExempt = r.Ln <= 45;
-  const nightVerdict = nightExempt
-    ? "tecnicamente isento do limite, por o ruído total ser ≤ 45 dB(A) (art. 13.º, n.º 5 do RGR)"
-    : (nightIncrease >= 3 ? "acima do limite legal de 3 dB(A) (art. 13.º do RGR)" : "dentro do limite legal de 3 dB(A) (art. 13.º do RGR)");
   marker.bindTooltip(r.id, {permanent:true, direction:'right', offset:[6,0], className:'ra-label'});
-  const groupNoteText = r.groupNote ? `<div class="pop-flag" style="margin-top:6px;">Partilha o mesmo ponto de referência do EIA com ${r.groupNote.join(", ")}: os valores de ruído são idênticos para todo o grupo. A posição de cada ponto neste mapa foi espalhada visualmente para ficar legível; o EIA não indica coordenadas GPS individuais para cada casa deste grupo.</div>` : "";
-  marker.bindPopup(`
-    <b>${r.id}</b> <span style="font-size:10px; color:#2F5233;">(dado oficial do EIA)</span><br>
-    ${compareBarsHtml(r.refLden, r.Lden, increase)}
-    ${ldenGaugeWithWhoHtml(r.Lden, 55, 65, 45)}
-    <div class="mp-night">
-      <div class="mp-night-label">À noite (Ln)</div>
-      <div class="mp-night-row">
-        <span class="mp-night-vals">${r.refLn} &rarr; ${r.Ln} dB(A)</span>
-        <span class="mp-night-inc" style="color:${nightColor};">+${nightIncrease.toFixed(1)} dB(A)</span>
+
+  function renderReceptor(){
+    const corr = currentCorrection();
+    const effLden = r.Lden + corr;
+    const effLn = r.Ln + corr;
+    const increase = Math.round((effLden - r.refLden)*10)/10;
+    const nightIncrease = Math.round((effLn - r.refLn)*10)/10;
+    const nightColor = nightIncrease >= 3 ? "#C4432A" : nightIncrease >= 1 ? "#D9A441" : "#4A7A55";
+    const nightExempt = effLn <= 45;
+    const nightVerdict = nightExempt
+      ? "tecnicamente isento do limite, por o ruído total ser ≤ 45 dB(A) (art. 13.º, n.º 5 do RGR)"
+      : (nightIncrease >= 3 ? "acima do limite legal de 3 dB(A) (art. 13.º do RGR)" : "dentro do limite legal de 3 dB(A) (art. 13.º do RGR)");
+    const groupNoteText = r.groupNote ? `<div class="pop-flag" style="margin-top:6px;">Partilha o mesmo ponto de referência do EIA com ${r.groupNote.join(", ")}: os valores de ruído são idênticos para todo o grupo. A posição de cada ponto neste mapa foi espalhada visualmente para ficar legível; o EIA não indica coordenadas GPS individuais para cada casa deste grupo.</div>` : "";
+    const modeFlag = simulationMode === "real"
+      ? `<div class="pop-flag" style="border-color:#8A5A1E;">Modo "simulação com amostras reais" ativo: valores com +${REAL_SAMPLE_CORRECTION.toFixed(1)} dB(A) simulados (correção de terreno em vale, baseada em estudos publicados de outros parques). Não é uma medição real deste projeto.</div>`
+      : "";
+    const nightVerdictShort = nightExempt ? "isento do limite (&le;45 dB(A))" : (nightIncrease >= 3 ? "acima do limite legal" : "dentro do limite legal");
+
+    /* Popup do mapa: resumo curto, com o veredito noturno (o que mais importa
+       para a decisão) logo a seguir ao título. Todo o detalhe (fonte, modo de
+       simulação, partilha de ponto) fica só no painel lateral (panelHtml). */
+    const popupHtml = `
+      <b>${r.id}</b> <span style="font-size:10px; color:#2F5233;">(dado oficial do EIA${simulationMode === "real" ? " + simulação" : ""})</span><br>
+      <div class="mp-period">
+        <div class="mp-period-label">De dia (Lden)</div>
+        <div class="mp-night-row">
+          <span class="mp-night-vals">${r.refLden.toFixed(1)} &rarr; ${effLden.toFixed(1)} dB(A)</span>
+          <span class="mp-night-inc" style="color:${increase >= 3 ? '#C4432A' : increase >= 1 ? '#D9A441' : '#4A7A55'};">+${increase.toFixed(1)} dB(A)</span>
+        </div>
+        ${compactGaugeHtml(effLden, 55, 65, 45)}
       </div>
-    </div>
-    <div class="pop-flag">Valores reais do Quadro 8.68 do EIA (com medidas de minimização). Recetor mais próximo do ${r.near}, a ${r.nearDist} m.</div>
-    ${groupNoteText}
-  `, {maxWidth: 280, minWidth: 240, maxHeight: 420});
-  marker.on('click', () => {
-    updateDbScale(r.Lden, "oficial no recetor " + r.id + " (EIA, Quadro 8.68)");
-    setInfo(`
+      <div class="mp-night">
+        <div class="mp-night-label">À noite (Ln) &mdash; ${nightVerdictShort}</div>
+        <div class="mp-night-row">
+          <span class="mp-night-vals">${r.refLn} &rarr; ${effLn.toFixed(1)} dB(A)</span>
+          <span class="mp-night-inc" style="color:${nightColor};">+${nightIncrease.toFixed(1)} dB(A)</span>
+        </div>
+        ${compactGaugeHtml(effLn, 45, 55, 45)}
+      </div>
+      <div class="pop-flag" style="margin-top:6px; font-size:10.5px;">Marca OMS (45 dB) igual nas duas barras, para comparar; só é recomendação oficial da OMS para o valor de dia (Lden). Ver painel lateral para mais detalhe.</div>
+    `;
+
+    const panelHtml = `
       <span class="kicker">Recetor oficial do EIA</span>
       <h3>${r.id}</h3>
       <div class="panel-block">
         <div class="panel-block-title">Sem parque → com parque (Lden)</div>
         <div class="panel-block-body">
-          ${compareBarsHtml(r.refLden, r.Lden, increase)}
-          ${ldenGaugeWithWhoHtml(r.Lden, 55, 65, 45)}
+          ${compareBarsHtml(r.refLden, effLden, increase)}
+          ${ldenGaugeWithWhoHtml(effLden, 55, 65, 45)}
         </div>
       </div>
       <div class="panel-block">
         <div class="panel-block-title">À noite (Ln): o período com o limite mais apertado</div>
         <div class="panel-block-body">
-          ${compareBarsHtml(r.refLn, r.Ln, nightIncrease)}
+          ${compareBarsHtml(r.refLn, effLn, nightIncrease)}
           <div class="noise-context" style="color:${nightColor}; font-weight:600;">${nightIncrease.toFixed(1)} dB(A) de aumento à noite, ${nightVerdict}.</div>
-          ${legalGaugeHtml(r.Ln, 45, 55, "Face aos limites absolutos de ruído noturno (Ln), valor real do EIA")}
+          ${legalGaugeHtml(effLn, 45, 55, "Face aos limites absolutos de ruído noturno (Ln)")}
         </div>
       </div>
       <div class="fact"><span class="k">Aerogerador de referência</span><span class="v">${r.near} (${r.nearDist} m)</span></div>
-      <div class="fact"><span class="k">Ld (dia, com parque)</span><span class="v">${r.Ld} dB(A)</span></div>
-      <div class="fact"><span class="k">Le (entardecer, com parque)</span><span class="v">${r.Le} dB(A)</span></div>
-      <div class="fact"><span class="k">Ln (noite, com parque)</span><span class="v">${r.Ln} dB(A)</span></div>
+      <div class="fact"><span class="k">Ld (dia, com parque)</span><span class="v">${(r.Ld+currentCorrection()).toFixed(1)} dB(A)</span></div>
+      <div class="fact"><span class="k">Le (entardecer, com parque)</span><span class="v">${(r.Le+currentCorrection()).toFixed(1)} dB(A)</span></div>
+      <div class="fact"><span class="k">Ln (noite, com parque)</span><span class="v">${effLn.toFixed(1)} dB(A)</span></div>
       ${r.groupNote ? `<div class="flag">Este recetor partilha o mesmo ponto de referência do EIA com ${r.groupNote.join(", ")} (mesmos valores de ruído). A posição exata de cada casa deste grupo não é dada individualmente pelo EIA; a posição aqui é espalhada apenas para visibilidade no mapa.</div>` : ""}
-      <div class="flag">Estes são valores REAIS do EIA (Quadro 8.68), não uma estimativa deste site: "sem parque" é o ruído de referência medido no terreno antes do projeto; "com parque" é o ruído ambiente decorrente previsto pelo CNOSSOS-EU. Fonte: EIA, Volume II, Relatório Síntese, pp. 701-702.</div>
-    `);
+      ${simulationMode === "real" ? `<div class="flag" style="border-color:#8A5A1E;">Modo "simulação com amostras reais" ativo: estes valores incluem uma correção de +${REAL_SAMPLE_CORRECTION.toFixed(1)} dB(A), simulando o efeito documentado em estudos reais de outros parques eólicos em terreno de vale. Não são os valores oficiais do EIA nem uma medição deste projeto; para o valor oficial exato, muda para "Estudo CNOSSOS (projeto)".</div>` : `<div class="flag">Estes são valores REAIS do EIA (Quadro 8.68), não uma estimativa deste site: "sem parque" é o ruído de referência medido no terreno antes do projeto; "com parque" é o ruído ambiente decorrente previsto pelo CNOSSOS-EU. Fonte: EIA, Volume II, Relatório Síntese, pp. 701-702.</div>`}
+    `;
+    return {popupHtml, panelHtml};
+  }
+
+  const initial = renderReceptor();
+  marker.bindPopup(initial.popupHtml, {maxWidth: 280, minWidth: 240, maxHeight: 420});
+
+  marker.on('click', () => {
+    lastOfficialReceptorMarker = marker;
+    const content = renderReceptor();
+    marker.setPopupContent(content.popupHtml);
+    updateDbScale(r.Lden + currentCorrection(), "oficial no recetor " + r.id + (simulationMode === "real" ? " (simulação)" : " (EIA, Quadro 8.68)"));
+    setInfo(content.panelHtml);
   });
   marker.addTo(layers.official);
   officialMarkers.push(marker);
@@ -1748,18 +1967,61 @@ function compareBarsHtml(before, after, increase){
    oficialmente aplicado a esta zona, por aviso municipal). Ver secção
    "Pontos identificados na análise do EIA" para o porquê desta distinção
    ser relevante aqui. */
+/* Escala para o Ln (ruído noturno). Desenhada para ficar visualmente
+   equivalente à escala do Lden (mesmo estilo de veredito, barra e
+   marcações), para que dia e noite se leiam como um par comparável.
+   Não inclui uma marca da OMS: ao contrário do Lden, a OMS não emite
+   recomendação específica de Lnight para ruído de parques eólicos
+   (falta de evidência suficiente, Diretrizes de Ruído Ambiental 2018),
+   pelo que colocar aqui um valor seria inventado. */
+/* Barra compacta para os popups do mapa (não o painel lateral): mesmas
+   zonas e marca da OMS que a barra grande, mas sem o veredito nem os
+   parágrafos de explicação, só para dar uma referência visual rápida.
+   Usada tanto para o valor de dia como para o de noite, com a MESMA marca
+   da OMS (45 dB) em ambas, para que fiquem lado a lado e comparáveis.
+   Ver nota junto às barras no popup: a OMS só recomenda oficialmente este
+   valor para o Lden; na barra da noite está incluído apenas como
+   referência de comparação, não como limite oficial de Ln. */
+function compactGaugeHtml(value, limiteSensivel, limiteMista, whoLimit){
+  const max = limiteMista + 10;
+  const pctSensivel = Math.min(100, (limiteSensivel/max)*100);
+  const pctMista = Math.min(100, (limiteMista/max)*100);
+  const pctValue = Math.max(2, Math.min(100, (value/max)*100));
+  const pctWho = Math.min(100, (whoLimit/max)*100);
+  return `
+    <div class="gauge-wrap gauge-compact">
+      <div class="gauge-track">
+        <div class="gauge-zone-sens" style="width:${pctSensivel}%"></div>
+        <div class="gauge-zone-mista" style="left:${pctSensivel}%; width:${pctMista-pctSensivel}%"></div>
+        <div class="gauge-zone-over" style="left:${pctMista}%; width:${100-pctMista}%"></div>
+        <div class="gauge-who-line" style="left:${pctWho}%;"></div>
+        <div class="gauge-marker" style="left:${pctValue}%;" title="${value.toFixed(1)} dB(A)"></div>
+      </div>
+      <div class="gauge-ticks">
+        <span style="left:${pctWho}%;" class="tick-who">OMS<br>${whoLimit}</span>
+        <span style="left:${pctSensivel}%;">sensível<br>${limiteSensivel}</span>
+        <span style="left:${pctMista}%;" class="tick-mista">mista<br>${limiteMista}</span>
+      </div>
+    </div>`;
+}
+
 function legalGaugeHtml(value, limiteSensivel, limiteMista, label){
   const max = limiteMista + 10;
   const pctSensivel = Math.min(100, (limiteSensivel/max)*100);
   const pctMista = Math.min(100, (limiteMista/max)*100);
   const pctValue = Math.max(2, Math.min(100, (value/max)*100));
-  let status, statusColor;
-  if(value <= limiteSensivel){ status = "dentro do limite de zona sensível"; statusColor = "#4A7A55"; }
-  else if(value <= limiteMista){ status = "excede zona sensível, dentro de zona mista"; statusColor = "#D9A441"; }
-  else { status = "excede mesmo o limite de zona mista"; statusColor = "#C4432A"; }
+  const cumpreMista = value <= limiteMista;
+  const cumpreSensivel = value <= limiteSensivel;
   return `
     <div class="gauge-wrap">
-      <div class="gauge-label">${label}</div>
+      <div class="zone-verdict ${cumpreMista ? 'zone-ok' : 'zone-bad'}">
+        <div class="zone-verdict-icon">${cumpreMista ? '✓' : '✗'}</div>
+        <div>
+          <div class="zone-verdict-title">${label}</div>
+          <div class="zone-verdict-text">${value.toFixed(1)} dB(A), ${cumpreMista ? "dentro do limite legal" : "acima do limite legal"} de zona mista.</div>
+        </div>
+      </div>
+
       <div class="gauge-track">
         <div class="gauge-zone-sens" style="width:${pctSensivel}%"></div>
         <div class="gauge-zone-mista" style="left:${pctSensivel}%; width:${pctMista-pctSensivel}%"></div>
@@ -1767,10 +2029,12 @@ function legalGaugeHtml(value, limiteSensivel, limiteMista, label){
         <div class="gauge-marker" style="left:${pctValue}%;" title="${value.toFixed(1)} dB(A)"></div>
       </div>
       <div class="gauge-ticks">
-        <span style="left:${pctSensivel}%;">${limiteSensivel} (sensível)</span>
-        <span style="left:${pctMista}%;">${limiteMista} (mista)</span>
+        <span style="left:${pctSensivel}%;">sensível*<br>${limiteSensivel}</span>
+        <span style="left:${pctMista}%;" class="tick-mista">mista<br>${limiteMista}</span>
       </div>
-      <div class="gauge-status" style="color:${statusColor};">${value.toFixed(1)} dB(A), ${status}</div>
+
+      <div class="ref-note">*Zona sensível: limite mais apertado (habitações puramente residenciais). Não é a classificação aplicada aqui, mas serve de comparação: com este valor, ${cumpreSensivel ? "cumpriria também esse limite mais apertado" : "não cumpriria esse limite mais apertado, só o de zona mista"}.</div>
+      <div class="ref-note">A OMS não emite uma recomendação específica de ruído noturno (Ln) para parques eólicos, por falta de evidência suficiente (só recomenda um limite para o Lden, mostrado na barra de dia).</div>
     </div>`;
 }
 
@@ -2139,7 +2403,7 @@ async function runLineOfSight(coords, turbineName){
       <div class="flag" style="margin-top:10px;">Cálculo baseado apenas em relevo (modelo de elevação de ~90 m de resolução), sem vegetação nem construções. Serve para triagem, não substitui um estudo de visibilidade em campo.</div>
     `;
   }catch(err){
-    resultBox.innerHTML = `<div class="flag" style="background:#FBEAE3; border-left-color:#C4432A; color:#6B2415; margin-top:10px;">Não foi possível obter os dados de elevação (${err.message}). Verifica a ligação à internet e tenta novamente.</div>`;
+    resultBox.innerHTML = `<div class="flag" style="background:#FBEAE3; border-left-color:#C4432A; color:#6B2415; margin-top:10px;">Não foi possível obter os dados de elevação (${escapeHtml(err.message)}). Verifica a ligação à internet e tenta novamente.</div>`;
   }finally{
     btn.disabled = false;
     btn.textContent = "Calcular linha de vista até " + turbineName;
