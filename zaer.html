@@ -185,7 +185,7 @@
     </div>
 
     <div class="warn-box">
-      <b>Nota de fiabilidade:</b> este mapa é uma sobreposição georreferenciada das imagens oficiais publicadas em <a href="https://renovaveisparticipa.pt" target="_blank" rel="noopener">renovaveisparticipa.pt</a> (escala original 1:2 000 000). O alinhamento foi calibrado por ajuste geométrico (afim, com rotação) contra o contorno real de Portugal Continental, com erro residual médio estimado em ~4-5 km (máximo ~18 km em pontos isolados da fronteira). Não substitui os ficheiros SIG vetoriais oficiais, que à data não estão disponíveis publicamente para download, e não deve ser usado para fins cadastrais ou de licenciamento.
+      <b>Nota de fiabilidade:</b> este mapa é uma sobreposição georreferenciada das imagens oficiais publicadas em <a href="https://renovaveisparticipa.pt" target="_blank" rel="noopener">renovaveisparticipa.pt</a> (escala original 1:2 000 000). As imagens foram recalibradas e reprojetadas offline contra o contorno real de Portugal Continental (erro residual médio ~5 km, máximo ~14 km em pontos isolados da fronteira). Não substitui os ficheiros SIG vetoriais oficiais, que à data não estão disponíveis publicamente para download, e não deve ser usado para fins cadastrais ou de licenciamento.
     </div>
 
     <div class="src-note">
@@ -200,61 +200,6 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
 <script>
-/* ---- Minimal "rotated/distorted image overlay" for Leaflet ----
-   Places a raster image using 3 real-world corners (topleft, topright,
-   bottomleft), supporting the small rotation/shear that a simple
-   2-corner bounding box cannot represent. Based on the well-known
-   Leaflet.ImageOverlay.Rotated technique (IvanSanchez). */
-L.ImageOverlay.Rotated = L.ImageOverlay.extend({
-  initialize: function (url, topleft, topright, bottomleft, options) {
-    this._url = url;
-    this._topLeft = L.latLng(topleft);
-    this._topRight = L.latLng(topright);
-    this._bottomLeft = L.latLng(bottomleft);
-    L.setOptions(this, options);
-  },
-  onAdd: function (map) {
-    if (!this._image) this._initImage();
-    if (this.options.opacity !== undefined) this._image.style.opacity = this.options.opacity;
-    map._panes.overlayPane.appendChild(this._image);
-    map.on('zoom viewreset move', this._reset, this);
-    this._reset();
-  },
-  onRemove: function (map) {
-    L.DomUtil.remove(this._image);
-    map.off('zoom viewreset move', this._reset, this);
-  },
-  _initImage: function () {
-    const img = L.DomUtil.create('img');
-    img.style.position = 'absolute';
-    img.style.left = '0';
-    img.style.top = '0';
-    img.style.transformOrigin = '0 0';
-    img.src = this._url;
-    this._image = img;
-    img.onload = () => { this._reset(); this.fire('load'); };
-  },
-  _reset: function () {
-    const map = this._map;
-    const tl = map.latLngToLayerPoint(this._topLeft);
-    const tr = map.latLngToLayerPoint(this._topRight);
-    const bl = map.latLngToLayerPoint(this._bottomLeft);
-    const w = this._image.naturalWidth || 2480;
-    const h = this._image.naturalHeight || 3508;
-    const a = (tr.x - tl.x) / w, b = (tr.y - tl.y) / w;
-    const c = (bl.x - tl.x) / h, d = (bl.y - tl.y) / h;
-    this._image.style.width = w + 'px';
-    this._image.style.height = h + 'px';
-    /* Position (tl.x, tl.y) is baked directly into the matrix's e,f
-       terms — do NOT also call L.DomUtil.setPosition, since that sets
-       its own CSS transform (translate3d) which would silently
-       overwrite this matrix on every pan/zoom, making the overlay
-       drift away from its correct geographic position. */
-    this._image.style.transform = `matrix(${a},${b},${c},${d},${tl.x},${tl.y})`;
-  }
-});
-L.imageOverlay.rotated = (url, tl, tr, bl, opts) => new L.ImageOverlay.Rotated(url, tl, tr, bl, opts);
-
 const map = L.map('map', {zoomControl:true}).setView([39.55,-8.0], 7);
 
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -263,16 +208,16 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
   maxZoom: 19
 }).addTo(map);
 
-/* Corners fitted with an affine transform calibrated against the real
-   mainland-Portugal boundary (ETRS89/PT-TM06), not a naive lat/lon
-   stretch — corrects the shape distortion that a simple bounding box
-   introduces towards the map's corners (e.g. Trás-os-Montes/Bragança). */
-const topLeft    = [42.412424, -10.520067];
-const topRight   = [42.001209, -5.605013];
-const bottomLeft = [36.866229, -10.216591];
+/* These two PNGs were pre-warped in Python (bilinear resampling from
+   the original raster into a plain equirectangular WGS84 grid, using
+   an affine transform calibrated against the real ETRS89/PT-TM06
+   boundary of mainland Portugal). Because the correction is baked
+   into the image itself, a plain two-corner Leaflet imageOverlay is
+   enough — no custom rotation/transform code needed on the JS side. */
+const imgBounds = [[36.70, -9.65], [42.40, -6.05]];
 
-const solarLayer  = L.imageOverlay.rotated('assets/zaer_solar_overlay.png',  topLeft, topRight, bottomLeft, {opacity:0.85});
-const eolicaLayer = L.imageOverlay.rotated('assets/zaer_eolica_overlay.png', topLeft, topRight, bottomLeft, {opacity:0.85});
+const solarLayer  = L.imageOverlay('assets/zaer_solar_overlay.png',  imgBounds, {opacity:0.85});
+const eolicaLayer = L.imageOverlay('assets/zaer_eolica_overlay.png', imgBounds, {opacity:0.85});
 
 solarLayer.addTo(map);
 eolicaLayer.addTo(map);
