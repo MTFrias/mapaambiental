@@ -883,6 +883,12 @@
   .method-caption{font-size:11.5px; color:var(--ink-soft); text-align:center; margin-top:8px !important;}
   #accuracyChartHolder{margin-top:10px;}
   #accuracyChartHolder svg{width:100%; display:block; background:#fff; border:1px solid var(--paper-deep); border-radius:3px;}
+  .traceability-box{margin:10px 0 4px; overflow-x:auto; border:1px solid var(--paper-deep); border-radius:3px; background:#fff;}
+  .traceability-table{width:100%; min-width:590px; border-collapse:collapse; font-size:12px; color:var(--ink-soft);}
+  .traceability-table th,.traceability-table td{padding:9px 10px; border-bottom:1px solid var(--paper-deep); text-align:left; vertical-align:top;}
+  .traceability-table th{background:var(--card); color:var(--ink); font:600 11px 'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.02em;}
+  .traceability-table tr:last-child td{border-bottom:none;}
+  .evidence-note{margin:10px 0 0; padding:11px 13px; border-left:3px solid #8A5A1E; background:#FFF7EB; color:#654A2C; font-size:12.5px; line-height:1.55;}
 
   .method-group{margin-bottom:8px;}
   .method-group + .method-group{margin-top:34px; padding-top:30px; border-top:2px dashed var(--paper-deep);}
@@ -962,7 +968,7 @@
           <p>Os 29 valores usados para calibrar e validar o modelo deste site não são medições de ruído feitas no terreno. São a saída do modelo CNOSSOS-EU, calculada pelo próprio EIA, para um parque que ainda não existe. Não há, nem podia haver, uma medição real do ruído deste parque em funcionamento.</p>
           <p>Isto significa que a calibração feita aqui aproxima o nosso modelo simplificado do <b>resultado do CNOSSOS-EU</b>, não da <b>realidade acústica futura</b>. Se o CNOSSOS, como método, tiver um erro sistemático nesta zona (por exemplo, subestimar o ruído por não ter em conta terreno complexo ou vegetação), o modelo deste site herda esse mesmo erro, porque foi ajustado para se parecer com ele. Calibrar um modelo contra outro modelo aproxima os dois entre si; não garante que algum dos dois está certo.</p>
           <h4>O que o CNOSSOS-EU é, e o que não foi pensado para fazer</h4>
-          <p>O CNOSSOS-EU foi desenvolvido para ruído de tráfego rodoviário, ferroviário, aéreo e indústria, e tornado obrigatório em Portugal por transposição de uma diretiva europeia (Decreto-Lei n.º 136-A/2019). Não existe, em Portugal, uma metodologia oficial específica para ruído de parques eólicos. O próprio estudo citado na bibliografia do EIA (Rosão, Leonardo, Santos, 2021) conclui que o CNOSSOS deve ser evitado em parques eólicos, recomendando o método ISO 9613-2 com ajustamentos específicos, precisamente por não existir um documento oficial que regule essa adaptação.</p>
+          <p>O CNOSSOS-EU foi desenvolvido para ruído de tráfego rodoviário, ferroviário, aéreo e indústria, e tornado obrigatório em Portugal por transposição de uma diretiva europeia (Decreto-Lei n.º 136-A/2019). Não existe, em Portugal, uma metodologia oficial específica para ruído de parques eólicos. O estudo citado na bibliografia do EIA (Rosão, Leonardo, Santos, 2021) alerta para a necessidade de precauções e ajustamentos na previsão acústica de parques eólicos.</p>
         </div>
         <div class="truth-col">
           <div class="truth-callout">
@@ -1066,7 +1072,7 @@
     <div class="landing-section method-section">
       <h3>Como calculamos os decibéis (metodologia)</h3>
       <p style="margin-bottom:16px; color:var(--ink-soft); font-size:13.5px; line-height:1.6;">
-        Este mapa combina dois tipos de informação: dados reais do EIA, onde estão disponíveis, e uma estimativa própria e simplificada, para os restantes pontos. Esta secção descreve o funcionamento de cada uma.
+        Este mapa separa três coisas: <b>medições de referência feitas no terreno</b>, <b>previsões oficiais CNOSSOS do EIA</b> e <b>estimativas simplificadas deste site</b>. Esta secção explica claramente o que representa cada uma.
       </p>
 
       <details class="method-details">
@@ -1077,13 +1083,42 @@
           <span class="method-group-tag">Modelo base do mapa</span>
           <h4>Estudo CNOSSOS (projeto) — dados e cálculo do EIA</h4>
         </div>
-        <p class="method-group-intro">Este bloco descreve os dados reais do EIA e o modelo simplificado calibrado contra eles. É a metodologia usada por omissão em todo o mapa, no modo "Estudo CNOSSOS (projeto)".</p>
+        <p class="method-group-intro">Este bloco descreve as medições de referência do EIA, as previsões CNOSSOS e o modelo simplificado calibrado contra essas previsões. É a metodologia usada por omissão no modo "Estudo CNOSSOS (projeto)".</p>
 
       <div class="method-block">
         <div class="method-num">1</div>
         <div>
-          <h4>Origem dos dados reais</h4>
-          <p>As posições dos 45 aerogeradores provêm do Quadro 4.3 do EIA, com coordenadas convertidas de PT-TM06/ETRS89 para GPS a partir dos valores indicados no documento. As especificações técnicas (altura, rotação, velocidades de vento, emissão sonora) provêm do Quadro 5.1. Os 29 valores reais de ruído (os pontos "RA" no mapa) provêm dos Quadros 8.66, 8.68 e 8.69, a saída direta do modelo oficial CNOSSOS-EU usado no EIA, incluindo o ruído de fundo medido no terreno antes da construção do parque.</p>
+          <h4>Três origens de dados, três significados</h4>
+          <p>As posições dos 45 aerogeradores provêm do Quadro 4.3 do EIA e as especificações técnicas do Quadro 5.1. O relatório acreditado de ruído ambiente mede, antes da construção, o ruído de referência junto de 20 pontos PRC, PRF e PRA. Os 29 recetores RA são outra coisa: valores <b>previstos</b> pelo CNOSSOS-EU para habitações ou grupos de habitações, usando esses níveis de referência.</p>
+          <div class="evidence-note"><b>Leitura correta do mapa:</b> “sem parque” corresponde a uma medição de referência no terreno; “com parque” é uma previsão do EIA. Não existem medições do Parque Eólico do Paiva em funcionamento, porque o parque ainda não existe.</div>
+        </div>
+      </div>
+
+      <div class="method-block">
+        <div class="method-num">1a</div>
+        <div>
+          <h4>Rastreabilidade: dos pontos medidos aos 29 recetores</h4>
+          <p>Vários recetores RA partilham o mesmo ponto de medição PRA. A tabela mostra a ligação usada neste mapa; o Lden é o ruído de referência medido no relatório acústico de 2025.</p>
+          <div class="traceability-box"><table class="traceability-table">
+            <thead><tr><th>Ponto medido</th><th>Recetores RA associados</th><th>Lden de referência</th><th>Origem</th></tr></thead>
+            <tbody>
+              <tr><td>PRA1</td><td>RA01–RA03</td><td>44,8 dB(A)</td><td>Medição no terreno</td></tr>
+              <tr><td>PRA2 / PRA3</td><td>RA04–RA05 / RA06–RA08</td><td>46,5 / 46,4 dB(A)</td><td>Medição no terreno</td></tr>
+              <tr><td>PRA10 / PRA9</td><td>RA09–RA12 / RA13–RA17</td><td>47,7 / 45,5 dB(A)</td><td>Medição no terreno</td></tr>
+              <tr><td>PRA8 / PRA6</td><td>RA18 / RA19–RA22</td><td>54,2 / 45,4 dB(A)</td><td>Medição no terreno</td></tr>
+              <tr><td>PRA7 / PRA5 / PRA4</td><td>RA23–RA24 / RA25–RA26 / RA27–RA29</td><td>55,9 / 47,9 / 47,6 dB(A)</td><td>Medição no terreno</td></tr>
+            </tbody>
+          </table></div>
+          <p class="method-caption">O mapa conserva os valores do EIA; no PRA1, o relatório acústico apresenta 44,8 dB(A), enquanto o Quadro 8.68 do EIA usa 44,7 dB(A).</p>
+        </div>
+      </div>
+
+      <div class="method-block">
+        <div class="method-num">!</div>
+        <div>
+          <h4>O que falta para confirmar o impacto</h4>
+          <p>A confirmação do ruído do parque exige uma campanha de monitorização depois da entrada em funcionamento: medições independentes junto dos recetores mais expostos, com registo da operação das turbinas e das condições meteorológicas. Até existir essa evidência, os valores “com parque” nesta página e no EIA permanecem previsões, não resultados observados.</p>
+          <div class="evidence-note"><b>Pedido verificável para a consulta pública:</b> publicar o plano de monitorização pós‑obra, os pontos a medir, a periodicidade, as condições de ensaio e os resultados, incluindo as medidas adicionais a aplicar se houver desconformidades.</div>
         </div>
       </div>
 
@@ -1116,7 +1151,7 @@
           <div class="formula">Lden = 10 × log₁₀( (12·10^(Ld/10) + 4·10^((Le+5)/10) + 8·10^((Ln+10)/10)) / 24 )</div>
           <p>Os aerogeradores operam de forma praticamente constante ao longo do dia, pelo que a sua contribuição em cada período (Ld, Le, Ln) é semelhante, ao contrário do ruído de fundo natural, geralmente mais baixo à noite. Quando Ld, Le e Ln são iguais entre si (designado aqui por X), a fórmula do Lden simplifica-se para X mais uma constante fixa:</p>
           <div class="formula">Lden = X + 10 × log₁₀( (12 + 4·10^0,5 + 8·10) / 24 ) = X + 6,4 dB</div>
-          <p>O valor de 6,4 dB usado para estimar o nível noturno a partir do Lden do parque resulta diretamente desta fórmula, aplicada ao caso de uma fonte com emissão constante. O cálculo foi confirmado com um dos 29 pontos reais do EIA (valor previsto: 42,4 dB; valor real: 42,5 dB) antes de ser incorporado no mapa.</p>
+          <p>O valor de 6,4 dB usado para estimar o nível noturno a partir do Lden do parque resulta diretamente desta fórmula, aplicada ao caso de uma fonte com emissão constante. O cálculo foi confirmado contra um dos 29 valores <b>previstos</b> pelo EIA (42,4 dB estimados por período; 42,5 dB no quadro do EIA) antes de ser incorporado no mapa.</p>
         </div>
       </div>
 
@@ -1124,7 +1159,7 @@
         <div class="method-num">5</div>
         <div>
           <h4>Validação do modelo</h4>
-          <p>A fórmula simplificada não considera terreno, vegetação, solo nem meteorologia, fatores que o modelo oficial CNOSSOS-EU do EIA calcula com maior detalhe. A comparação entre a fórmula sem ajuste e os 29 valores reais mostrou que as estimativas ficavam sistematicamente abaixo do valor real, com um erro crescente à medida que a distância aumentava.</p>
+          <p>A fórmula simplificada não considera terreno, vegetação, solo nem meteorologia, fatores que o modelo oficial CNOSSOS-EU do EIA calcula com maior detalhe. A comparação entre a fórmula sem ajuste e os 29 valores <b>previstos pelo CNOSSOS</b> mostrou que as estimativas ficavam sistematicamente abaixo desses valores, com um erro crescente à medida que a distância aumentava.</p>
         </div>
       </div>
 
@@ -1132,9 +1167,9 @@
         <div class="method-num">6</div>
         <div>
           <h4>Calibração do modelo</h4>
-          <p>A diferença entre o modelo simplificado e os valores reais foi corrigida por comparação direta, ponto a ponto, com os 29 recetores do EIA. A partir dessa comparação, foi calculada por regressão linear a correção que, aplicada a todos os pontos, mais aproxima o modelo dos valores reais. A correção obtida depende da distância ao aerogerador mais próximo:</p>
+          <p>A diferença entre o modelo simplificado e os valores <b>previstos pelo CNOSSOS</b> foi corrigida por comparação direta, ponto a ponto, com os 29 recetores do EIA. A regressão resultante aproxima este modelo simplificado do modelo CNOSSOS; não é uma validação contra medições do parque em funcionamento. A correção depende da distância ao aerogerador mais próximo:</p>
           <div class="formula">correção(d) = 9,22 + 0,00499 × d &nbsp;&nbsp;(d em metros, resultado em dB)</div>
-          <p>Esta correção está incorporada em todas as estimativas do mapa. Corresponde a uma calibração de um modelo simplificado, com 29 pontos de validação específicos desta zona, obtida por comparação direta com os dados oficiais.</p>
+          <p>Esta correção está incorporada nas estimativas do mapa. Corresponde a uma calibração contra 29 saídas oficiais do modelo do EIA, não contra 29 medições acústicas futuras.</p>
         </div>
       </div>
 
@@ -1142,7 +1177,7 @@
         <div class="method-num">7</div>
         <div>
           <h4>Precisão do modelo calibrado</h4>
-          <p>O gráfico seguinte compara, para cada um dos 29 recetores reais, o valor estimado pelo modelo calibrado (eixo horizontal) com o valor real do EIA (eixo vertical). Num modelo perfeito, todos os pontos coincidiriam com a linha diagonal.</p>
+          <p>O gráfico seguinte compara, para cada um dos 29 recetores, o valor estimado pelo modelo simplificado (eixo horizontal) com o valor previsto pelo CNOSSOS no EIA (eixo vertical). Num modelo perfeito, todos os pontos coincidiriam com a linha diagonal.</p>
           <div id="accuracyChartHolder"></div>
           <p class="method-caption">Erro médio: 0,0 dB &nbsp;·&nbsp; Desvio típico: ±0,96 dB &nbsp;·&nbsp; Erro máximo observado: 2,25 dB, num único recetor.</p>
         </div>
@@ -1152,7 +1187,7 @@
         <div class="method-num">8</div>
         <div>
           <h4>Limitações do modelo</h4>
-          <p>Este modelo não corresponde ao modelo CNOSSOS-EU oficial. Trata-se de uma aproximação simplificada, calibrada com dados reais desta zona específica, com um erro típico inferior a 1 dB, podendo atingir 2 a 3 dB num caso pontual. Nos pontos que coincidem com um recetor oficial (marcado a verde no mapa), é apresentado o valor real e exato do EIA, sem margem de erro. A estimativa do modelo simplificado aplica-se apenas onde não existe dado oficial.</p>
+          <p>Este modelo não corresponde ao modelo CNOSSOS-EU oficial. É uma aproximação simplificada, calibrada contra as previsões CNOSSOS desta zona, com um desvio típico inferior a 1 dB face a essas previsões. Nos recetores oficiais (marcados a verde), é apresentado o valor exato do EIA: a referência “sem parque” foi medida no terreno e o valor “com parque” é previsto pelo CNOSSOS. A estimativa simplificada aplica-se apenas onde não existe dado oficial.</p>
         </div>
       </div>
 
@@ -1161,19 +1196,19 @@
       <div class="method-group method-group-real">
         <div class="method-group-title">
           <span class="method-group-tag">Modo opcional</span>
-          <h4>Simulação com amostras reais — correção de terreno em vale</h4>
+          <h4>Cenário exploratório (+3 dB) — sensibilidade a terreno em vale</h4>
         </div>
-        <p class="method-group-intro">Este bloco é independente do anterior: descreve a correção adicional de +3 dB(A) aplicada apenas quando se ativa o modo "Simulação com amostras reais" no simulador. Não faz parte do modelo calibrado contra o EIA — vem de estudos publicados sobre outros parques eólicos.</p>
+        <p class="method-group-intro">Este bloco é independente do anterior: descreve uma correção adicional de +3 dB(A), aplicada apenas no cenário exploratório. Não faz parte do EIA, não é uma previsão oficial e vem de estudos publicados sobre outros parques eólicos.</p>
 
       <div class="method-block">
         <div class="method-num">1</div>
         <div>
-          <h4>O estudo por trás do modo "simulação com amostras reais"</h4>
+          <h4>Porque existe este cenário exploratório</h4>
           <p>A correção de +3 dB(A) usada neste modo não foi inventada para este site. Vem de dois estudos técnicos publicados, sobre parques eólicos reais noutros países, com terreno em declive semelhante ao de parte desta zona (o som "cai" do aerogerador para a casa em vez de se afastar em terreno plano):</p>
           <p><b>Bass, Bullmore &amp; Sloth (1998)</b>, <i>Development of a Wind Farm Noise Propagation Prediction Model</i>, Comissão Europeia, programa Joule III, contrato JOR3-CT95-0051. Recomenda adicionar 3 dB(A) à previsão do método ISO 9613-2 sempre que o terreno desce significativamente entre o aerogerador e a casa.</p>
           <p><b>Cooper &amp; Evans (2013)</b>, <i>Accuracy of noise predictions for wind farms</i>, 5.ª Conferência Internacional sobre Ruído de Turbinas Eólicas, Denver. Compara previsões com medições reais em <b>13 pontos de medição, em 6 parques eólicos diferentes</b>. Nos pontos com declive côncavo entre o aerogerador e a casa, a subestimação chegou a 4 dB(A), a uma distância de cerca de 1500 m, confirmando a recomendação de Bass, Bullmore &amp; Sloth.</p>
           <p>Fonte consultável do estudo de Cooper &amp; Evans: <a href="https://puc.sd.gov/commission/dockets/electric/2017/el17-028/dr2-20.pdf" target="_blank" rel="noopener">puc.sd.gov/commission/dockets/electric/2017/el17-028/dr2-20.pdf</a>.</p>
-          <p>Nenhum destes 13 pontos é do Paiva: são medições de outros parques, com condições de terreno comparáveis, não deste projeto específico. É essa a natureza do paralelismo proposto pelo modo "amostras reais" &mdash; uma correção com base empírica de terreno semelhante, e não uma medição do parque do Paiva, que ainda não existe.</p>
+          <p>Nenhum destes 13 pontos é do Paiva: são medições de outros parques, com condições de terreno comparáveis, não deste projeto específico. Por isso este modo é apenas um teste de sensibilidade baseado em evidência externa; não é uma medição nem uma previsão validada para o Paiva.</p>
         </div>
       </div>
 
@@ -1305,7 +1340,7 @@
       <div class="layer-row">
         <input type="checkbox" id="ly-official" checked onchange="toggleLayer('official', this.checked)">
         <span class="swatch" style="background:#2F5233"></span>
-        <label for="ly-official">Recetores oficiais do EIA (valores reais, Quadro 8.68)</label>
+        <label for="ly-official">Recetores oficiais do EIA (previsões CNOSSOS, Quadro 8.68)</label>
       </div>
       <div class="layer-row">
         <input type="checkbox" id="ly-sweep" onchange="toggleLayer('sweep', this.checked)">
@@ -1323,7 +1358,7 @@
         <label for="ly-propagation">Propagação sonora (aerogerador selecionado)</label>
       </div>
       <div id="windSelectWrap">
-        <label for="windSpeedSlider">Simulador · velocidade do vento (dados reais do EIA, Quadro 5.1)</label>
+        <label for="windSpeedSlider">Simulador · velocidade do vento (especificação do EIA, Quadro 5.1)</label>
         <input type="range" id="windSpeedSlider" min="0" max="25" step="0.5" value="8" oninput="setWindSpeed(parseFloat(this.value))">
         <div id="windSpeedReadout" class="wind-readout"></div>
         <label for="windSelect" style="margin-top:10px;">Simulador · direção do vento (propagação)</label>
@@ -1364,7 +1399,7 @@
     <div id="dbLegend">
       <div class="lg-title">Propagação sonora estimada</div>
       <div id="lgRows"></div>
-      <div class="lg-note">Modelo simplificado, calibrado por regressão com 29 recetores reais do EIA (erro típico ±0,9 dB, pior caso ±2,2 dB). Não é o modelo CNOSSOS-EU oficial. As curvas variam com a condição de vento escolhida no simulador.</div>
+      <div class="lg-note">Modelo simplificado, calibrado por regressão contra 29 previsões CNOSSOS do EIA (desvio típico ±0,9 dB, pior caso ±2,2 dB). Não é o modelo CNOSSOS-EU oficial. As curvas variam com a condição de vento escolhida no simulador.</div>
     </div>
   </div>
 </div>
@@ -1600,7 +1635,7 @@ function setSimulationMode(mode){
   const note = document.getElementById('modeNote');
   const badgeLabel = document.getElementById('modeBadgeLabel');
   if(mode === 'real'){
-    note.innerHTML = `Simula uma correção de +${REAL_SAMPLE_CORRECTION.toFixed(1)} dB(A), recomendada pela literatura técnica para terreno em vale (Bass, Bullmore &amp; Sloth, 1998; confirmada em medições reais de outros parques por Cooper &amp; Evans, 2013). Não é uma medição deste projeto.`;
+    note.innerHTML = `Teste de sensibilidade: acrescenta +${REAL_SAMPLE_CORRECTION.toFixed(1)} dB(A) com base em estudos de outros parques eólicos e terreno em vale. Não é uma medição nem uma previsão validada para este projeto.`;
     badgeLabel.textContent = "Cenário exploratório (+3 dB; não é medição local)";
   } else {
     note.innerHTML = `Valores tal como constam do EIA (Quadro 8.68) ou do modelo deste site calibrado contra eles, sem qualquer correção adicional.`;
@@ -1718,7 +1753,7 @@ function testPoint(latlng, isRefresh){
         </div>
         ${compactGaugeHtml(nightTotal, 45, 55, 45)}
       </div>
-      <div class="pop-flag" style="font-size:10.5px;">Estimativa calibrada com 29 recetores reais do EIA. Marca OMS (45 dB) igual nas duas barras, para comparar; só é recomendação oficial da OMS para o valor de dia (Lden). Ver painel lateral para mais detalhe.</div>
+      <div class="pop-flag" style="font-size:10.5px;">Estimativa calibrada contra 29 previsões CNOSSOS do EIA. Marca OMS (45 dB) igual nas duas barras, para comparar; só é recomendação oficial da OMS para o valor de dia (Lden). Ver painel lateral para mais detalhe.</div>
     </div>`;
 
   if(measureMarker){
@@ -1770,7 +1805,7 @@ function testPoint(latlng, isRefresh){
         ${compareBarsHtml(nightBackground, nightTotal, nightIncrease)}
         <div class="noise-context" style="color:${nightColor}; font-weight:600;">${nightIncrease.toFixed(1)} dB(A) de aumento à noite, ${nightVerdict}.</div>
         ${legalGaugeHtml(nightTotal, 45, 55, "Face aos limites absolutos de ruído noturno (Ln)")}
-        <div class="noise-context">Estimativa derivada: como os aerogeradores emitem de forma praticamente constante 24h/dia, o valor por período (Ld≈Le≈Ln) fica cerca de 6,4 dB abaixo do Lden do parque, validado com dados reais do EIA. O fundo noturno vem do recetor oficial mais próximo.</div>
+        <div class="noise-context">Estimativa derivada: como os aerogeradores emitem de forma praticamente constante 24h/dia, o valor por período (Ld≈Le≈Ln) fica cerca de 6,4 dB abaixo do Lden do parque, confirmado contra previsões do EIA. O fundo noturno vem do recetor oficial mais próximo.</div>
       </div>
     </div>
 
@@ -1781,7 +1816,7 @@ function testPoint(latlng, isRefresh){
           <span class="nr-num">${splLabel.includes("&lt;") ? "&lt;20" : Math.round(estimatedSpl)}</span>
           <span class="nr-unit">dB(A)</span>
         </div>
-        <div class="noise-context">Soma de todos os aerogeradores, calibrada por regressão com 29 recetores reais do EIA (erro típico ±0,9 dB, pior caso ±2,2 dB). Não corresponde ao modelo CNOSSOS-EU oficial. Este painel atualiza-se automaticamente com as condições de vento selecionadas na barra lateral.</div>
+        <div class="noise-context">Soma de todos os aerogeradores, calibrada por regressão contra 29 previsões CNOSSOS do EIA (desvio típico ±0,9 dB, pior caso ±2,2 dB). Não corresponde ao modelo CNOSSOS-EU oficial. Este painel atualiza-se automaticamente com as condições de vento selecionadas na barra lateral.</div>
       </div>
     </div>
 
@@ -1841,7 +1876,7 @@ function receptorRadiusForZoom(z){
   return 15;
 }
 
-/* ---------- RECETORES OFICIAIS DO EIA (dados reais, não simplificados) ---------- */
+/* ---------- RECETORES OFICIAIS DO EIA (previsões CNOSSOS, não simplificadas) ---------- */
 /* Valores exatos de "ruído ambiente decorrente" (fundo + parque) previstos pelo
    modelo CNOSSOS-EU do EIA, Quadro 8.68 (cenário final, com medidas de minimização
    aplicadas aos aerogeradores AG28,30,31,32,39,43,44,45). Volume II, Relatório
@@ -1960,7 +1995,7 @@ officialReceptors.forEach(r => {
       : (nightIncrease >= 3 ? "acima do limite legal de 3 dB(A) (art. 13.º do RGR)" : "dentro do limite legal de 3 dB(A) (art. 13.º do RGR)");
     const groupNoteText = r.groupNote ? `<div class="pop-flag" style="margin-top:6px;">Partilha o mesmo ponto de referência do EIA com ${r.groupNote.join(", ")}: os valores de ruído são idênticos para todo o grupo. A posição de cada ponto neste mapa foi espalhada visualmente para ficar legível; o EIA não indica coordenadas GPS individuais para cada casa deste grupo.</div>` : "";
     const modeFlag = simulationMode === "real"
-      ? `<div class="pop-flag" style="border-color:#8A5A1E;">Modo "simulação com amostras reais" ativo: valores com +${REAL_SAMPLE_CORRECTION.toFixed(1)} dB(A) simulados (correção de terreno em vale, baseada em estudos publicados de outros parques). Não é uma medição real deste projeto.</div>`
+      ? `<div class="pop-flag" style="border-color:#8A5A1E;">Cenário exploratório ativo: valores com +${REAL_SAMPLE_CORRECTION.toFixed(1)} dB(A) simulados como teste de sensibilidade a terreno em vale. Baseia-se em estudos de outros parques; não é uma medição nem uma previsão oficial deste projeto.</div>`
       : "";
     const nightVerdictShort = nightExempt ? "isento do limite (&le;45 dB(A))" : (nightIncrease >= 3 ? "acima do limite legal" : "dentro do limite legal");
 
@@ -2011,7 +2046,7 @@ officialReceptors.forEach(r => {
       <div class="fact"><span class="k">Le (entardecer, com parque)</span><span class="v">${(r.Le+currentCorrection()).toFixed(1)} dB(A)</span></div>
       <div class="fact"><span class="k">Ln (noite, com parque)</span><span class="v">${effLn.toFixed(1)} dB(A)</span></div>
       ${r.groupNote ? `<div class="flag">Este recetor partilha o mesmo ponto de referência do EIA com ${r.groupNote.join(", ")} (mesmos valores de ruído). A posição exata de cada casa deste grupo não é dada individualmente pelo EIA; a posição aqui é espalhada apenas para visibilidade no mapa.</div>` : ""}
-      ${simulationMode === "real" ? `<div class="flag" style="border-color:#8A5A1E;">Modo "simulação com amostras reais" ativo: estes valores incluem uma correção de +${REAL_SAMPLE_CORRECTION.toFixed(1)} dB(A), simulando o efeito documentado em estudos reais de outros parques eólicos em terreno de vale. Não são os valores oficiais do EIA nem uma medição deste projeto; para o valor oficial exato, muda para "Estudo CNOSSOS (projeto)".</div>` : `<div class="flag">Estes são valores REAIS do EIA (Quadro 8.68), não uma estimativa deste site: "sem parque" é o ruído de referência medido no terreno antes do projeto; "com parque" é o ruído ambiente decorrente previsto pelo CNOSSOS-EU. Fonte: EIA, Volume II, Relatório Síntese, pp. 701-702.</div>`}
+      ${simulationMode === "real" ? `<div class="flag" style="border-color:#8A5A1E;">Cenário exploratório ativo: estes valores incluem +${REAL_SAMPLE_CORRECTION.toFixed(1)} dB(A) como teste de sensibilidade. Não são valores oficiais do EIA nem medições deste projeto; para voltar às previsões oficiais, escolhe "Estudo CNOSSOS (projeto)".</div>` : `<div class="flag"><b>Leitura dos valores do EIA (Quadro 8.68):</b> “sem parque” é o ruído de referência medido no terreno antes do projeto; “com parque” é o ruído ambiente decorrente previsto pelo CNOSSOS-EU. Fonte: EIA, Volume II, Relatório Síntese, pp. 701–702.</div>`}
     `;
     return {popupHtml, panelHtml};
   }
@@ -2245,7 +2280,7 @@ function popupTurbine(name, isExcluded){
    distantes, sinal de que a nossa curva de atenuação com a distância é demasiado
    acentuada face ao modelo real). A regressão deu:
       erro(d) ≈ 8,26 + 0,00699 × d   (d em metros, erro em dB)
-   Aplicada aos 29 recetores reais, esta calibração por distância reduz o desvio
+   Aplicada aos 29 recetores previstos pelo CNOSSOS, esta calibração por distância reduz o desvio
    padrão do erro para cerca de 0,96 dB, e o erro máximo para cerca de 2,25 dB.
    É uma melhoria real e testada, mas continua a ser um modelo simplificado
    calibrado com 29 pontos de uma área específica: pode não generalizar da mesma
@@ -2265,8 +2300,8 @@ const LW_RESTRICTED = 105.0; // dB(A), cenário "com medidas de minimização"
 const K_EXCESS = 0.006;      // atenuação excedente ligeira, ilustrativa
 const RING_TARGETS = [55, 50, 45, 40, 35]; // dB(A)
 const WIND_ATT = { favoravel: 0, cruzado: 5, contra: 10 }; // dB(A), indicativo
-const CALIBRATION_A = 9.22;      // dB(A), regressão com 29 pontos reais do EIA (refeita após corrigir a lista de aerogeradores restringidos)
-const CALIBRATION_B = 0.00499;   // dB(A) por metro, regressão com 29 pontos reais do EIA
+const CALIBRATION_A = 9.22;      // dB(A), regressão contra 29 previsões CNOSSOS do EIA
+const CALIBRATION_B = 0.00499;   // dB(A) por metro, regressão contra 29 previsões CNOSSOS do EIA
 let windCondition = "favoravel";
 
 /* ---------- ESPECIFICAÇÕES REAIS DO AEROGERADOR (EIA, Vol. II, Quadro 5.1, p. 82) ---------- */
@@ -2276,7 +2311,7 @@ let windCondition = "favoravel";
    (só os dois modos fixos, 105,0 e 106,9 dB(A)), por isso a emissão sonora usada
    é constante enquanto o aerogerador está a operar (entre 3 e 25 m/s) e é zero
    (parado) fora desse intervalo. A velocidade de rotação (rpm), essa sim, é
-   interpolada de forma linear e realista entre os dois pontos reais do quadro. */
+   interpolada de forma linear entre os dois pontos de especificação do quadro. */
 const V_CUTIN = 3, V_RATED = 13, V_CUTOUT = 25;
 const RPM_CUTIN = 4.3, RPM_RATED = 12.1;
 let currentWindSpeed = 8;
