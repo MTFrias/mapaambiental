@@ -87,6 +87,17 @@
     font-family:'Fraunces',serif; font-size:18px; font-weight:500; margin:0 0 6px;
   }
   #sidebar .lede{font-size:13px; color:var(--ink-soft); line-height:1.55; margin:0 0 18px;}
+  .purpose-note{
+    background:#EEF2EA; border:1px solid #D4DED0; border-left:3px solid var(--forest);
+    border-radius:3px; padding:10px 12px; margin:0 0 14px; font-size:12px; line-height:1.5;
+    color:var(--ink-soft);
+  }
+  .purpose-note b{color:var(--ink);}
+  .map-jump{
+    display:none; width:100%; margin:0 0 12px; padding:9px 12px; border:1px solid var(--forest);
+    border-radius:3px; background:var(--forest); color:#fff; font:500 12px 'IBM Plex Mono',monospace;
+    text-align:center; text-decoration:none;
+  }
 
   .layer-toggle{
     display:flex; align-items:center; gap:10px;
@@ -124,16 +135,31 @@
   .criteria-list{margin:0; padding-left:18px; font-size:12.5px; color:var(--ink-soft); line-height:1.7;}
   .criteria-list li{margin-bottom:4px;}
   .criteria-list b{color:var(--ink);}
+  .disclosure{margin:12px 0; border:1px solid var(--paper-deep); border-radius:3px; background:#fff;}
+  .disclosure summary{padding:11px 13px; cursor:pointer; font-size:12.5px; font-weight:600; color:var(--ink);}
+  .disclosure > div{padding:0 13px 12px;}
+  .disclosure .criteria-list{padding-left:17px;}
+  .disclosure .warn-box{margin:0;}
 
   .src-note{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--ink-soft); margin-top:22px; line-height:1.6; border-top:1px dashed var(--paper-deep); padding-top:12px;}
   .src-note a{color:var(--forest);}
 
   #map{flex:1; min-width:0;}
   .leaflet-container{background:#DCE3E5;}
+  .map-legend{
+    background:rgba(255,255,255,.94); border:1px solid rgba(28,43,34,.25); border-radius:3px;
+    box-shadow:0 1px 5px rgba(0,0,0,.14); color:var(--ink); font:500 12px 'IBM Plex Sans',sans-serif;
+    padding:9px 10px; line-height:1.45;
+  }
+  .map-legend__title{font-weight:600; margin-bottom:4px;}
+  .map-legend__item{display:flex; align-items:center; gap:6px;}
+  .map-legend__swatch{width:11px; height:11px; border-radius:2px;}
 
   @media (max-width:820px){
     #body{flex-direction:column;}
-    #sidebar{width:100%; min-width:0; max-height:44vh; border-right:none; border-bottom:1px solid var(--paper-deep);}
+    #sidebar{width:100%; min-width:0; max-height:36vh; border-right:none; border-bottom:1px solid var(--paper-deep); padding-bottom:22px;}
+    .map-jump{display:block;}
+    .map-legend{font-size:11px; padding:7px 8px;}
   }
 </style>
 </head>
@@ -147,60 +173,68 @@
   <button id="backBtn" onclick="location.href='index.html'">&larr; Processos</button>
 </header>
 
-<div id="body">
-  <div id="sidebar">
+<main id="body">
+  <aside id="sidebar" aria-label="Informação e controlos do mapa">
     <h2>Proposta de Programa Setorial das ZAER</h2>
-    <p class="lede">Mapa oficial das zonas identificadas pelo LNEG / IST (equipa coordenada por Maria do Rosário Partidário, a pedido da EMER 2030) como preferencialmente adequadas para acelerar o licenciamento de centrais solares fotovoltaicas e eólicas em terra, no âmbito da Diretiva Europeia RED III.</p>
+    <p class="lede">Visualização da proposta oficial das zonas identificadas pelo LNEG / IST (equipa coordenada por Maria do Rosário Partidário, a pedido da EMER 2030) como preferencialmente adequadas para acelerar o licenciamento de centrais solares fotovoltaicas e eólicas em terra, no âmbito da Diretiva Europeia RED III.</p>
 
-    <div class="layer-toggle on solar" id="toggleSolar">
-      <input type="checkbox" id="chkSolar" checked>
+    <div class="purpose-note"><b>Como ler o mapa:</b> ative ou desative as camadas e aproxime para explorar as zonas. É uma visualização orientadora; não define limites cadastrais nem decisões de licenciamento.</div>
+    <a class="map-jump" href="#map">Explorar o mapa ↓</a>
+
+    <label class="layer-toggle on solar" id="toggleSolar" for="chkSolar">
+      <input type="checkbox" id="chkSolar" name="camadas" value="solar" checked>
       <span class="swatch solar"></span>
       <div class="lt-text">
         <b>ZAER Solar Fotovoltaica</b>
         <span>371 348 ha mapeados</span>
       </div>
-    </div>
+    </label>
 
-    <div class="layer-toggle on eolica" id="toggleEolica">
-      <input type="checkbox" id="chkEolica" checked>
+    <label class="layer-toggle on eolica" id="toggleEolica" for="chkEolica">
+      <input type="checkbox" id="chkEolica" name="camadas" value="eolica" checked>
       <span class="swatch eolica"></span>
       <div class="lt-text">
         <b>ZAER Eólica</b>
         <span>84 489 ha mapeados</span>
       </div>
-    </div>
+    </label>
 
     <div class="stat-mini">
       <div><div class="num">193</div><div class="lab">municípios com potencial solar</div></div>
       <div><div class="num">111</div><div class="lab">municípios com potencial eólico</div></div>
     </div>
 
-    <div class="info-box">
-      <b>Critérios usados (síntese):</b>
-      <ul class="criteria-list">
-        <li><b>Solar:</b> GHI &gt; 1600 kWh/ano, área &gt;100 ha, &lt;10 km de subestação RNT/RND</li>
-        <li><b>Eólica:</b> NEPs &gt; 2100 h/ano (turbina ref. 3,6 MW, rotor 117 m, h=100 m), área &gt;20 ha</li>
-        <li>Excluídas áreas protegidas, RAN, património classificado, risco de erosão &gt;25%, servidões, buffers habitacionais (200 m solar / 1 km eólica), entre outros</li>
-      </ul>
-    </div>
+    <details class="disclosure">
+      <summary>Critérios usados (síntese)</summary>
+      <div>
+        <ul class="criteria-list">
+          <li><b>Solar:</b> GHI &gt; 1600 kWh/ano, área &gt;100 ha, &lt;10 km de subestação RNT/RND</li>
+          <li><b>Eólica:</b> NEPs &gt; 2100 h/ano (turbina ref. 3,6 MW, rotor 117 m, h=100 m), área &gt;20 ha</li>
+          <li>Excluídas áreas protegidas, RAN, património classificado, risco de erosão &gt;25%, servidões, buffers habitacionais (200 m solar / 1 km eólica), entre outros</li>
+        </ul>
+      </div>
+    </details>
 
-    <div class="warn-box">
-      <b>Nota de fiabilidade:</b> este mapa é uma sobreposição georreferenciada das imagens oficiais publicadas em <a href="https://renovaveisparticipa.pt" target="_blank" rel="noopener">renovaveisparticipa.pt</a> (escala original 1:2 000 000). As imagens foram recalibradas e reprojetadas offline (thin-plate-spline, ~830 pontos de controlo ao longo de todo o contorno, fonte Natural Earth 10m) contra o contorno real de Portugal Continental — erro residual mediano ~230 m, médio ~1 km; isoladamente até ~30 km numa pequena península costeira (Peniche) sem zonas ZAER. Não substitui os ficheiros SIG vetoriais oficiais, que à data não estão disponíveis publicamente para download, e não deve ser usado para fins cadastrais ou de licenciamento.
-    </div>
+    <details class="disclosure">
+      <summary>Precisão e limites de utilização</summary>
+      <div class="warn-box">
+        <b>Nota de fiabilidade:</b> este mapa é uma sobreposição georreferenciada das imagens oficiais publicadas em <a href="https://renovaveisparticipa.pt" target="_blank" rel="noopener">renovaveisparticipa.pt</a> (escala original 1:2 000 000). As imagens foram recalibradas e reprojetadas offline (thin-plate-spline, ~830 pontos de controlo ao longo de todo o contorno, fonte Natural Earth 10m) contra o contorno real de Portugal Continental — erro residual mediano ~230 m, médio ~1 km; isoladamente até ~30 km numa pequena península costeira (Peniche) sem zonas ZAER. Não substitui os ficheiros SIG vetoriais oficiais, que à data não estão disponíveis publicamente para download, e não deve ser usado para fins cadastrais ou de licenciamento.
+      </div>
+    </details>
 
     <div class="src-note">
       Fonte: Proposta de PSZAER (maio 2026), Relatório Temático — Integração da Informação Espacializada (LNEG, maio 2026).<br>
       Consulta pública: <a href="https://participa.pt" target="_blank" rel="noopener">participa.pt</a> · 17/06–15/07/2026.<br>
       Site oficial: <a href="https://renovaveisparticipa.pt" target="_blank" rel="noopener">renovaveisparticipa.pt</a>
     </div>
-  </div>
+  </aside>
 
-  <div id="map"></div>
-</div>
+  <div id="map" role="region" aria-label="Mapa das zonas de aceleração de energias renováveis"></div>
+</main>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
 <script>
-const map = L.map('map', {zoomControl:true}).setView([39.55,-8.0], 7);
+const map = L.map('map', {zoomControl:true, zoomSnap:0.25}).setView([39.55,-8.0], 7.25);
 
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
   attribution: '&copy; OpenStreetMap &copy; CARTO',
@@ -222,6 +256,18 @@ const eolicaLayer = L.imageOverlay('assets/zaer_eolica_overlay.png', imgBounds, 
 solarLayer.addTo(map);
 eolicaLayer.addTo(map);
 
+const legend = L.control({position:'bottomright'});
+legend.onAdd = () => {
+  const div = L.DomUtil.create('div', 'map-legend');
+  div.setAttribute('aria-label', 'Legenda do mapa');
+  div.innerHTML = '<div class="map-legend__title">Camadas visíveis</div>' +
+    '<div class="map-legend__item"><span class="map-legend__swatch" style="background:#FFA500"></span>Solar fotovoltaica</div>' +
+    '<div class="map-legend__item"><span class="map-legend__swatch" style="background:#1E6FEB"></span>Eólica</div>';
+  L.DomEvent.disableClickPropagation(div);
+  return div;
+};
+legend.addTo(map);
+
 document.getElementById('chkSolar').addEventListener('change', e=>{
   if(e.target.checked){ solarLayer.addTo(map); document.getElementById('toggleSolar').classList.add('on'); }
   else { map.removeLayer(solarLayer); document.getElementById('toggleSolar').classList.remove('on'); }
@@ -229,12 +275,6 @@ document.getElementById('chkSolar').addEventListener('change', e=>{
 document.getElementById('chkEolica').addEventListener('change', e=>{
   if(e.target.checked){ eolicaLayer.addTo(map); document.getElementById('toggleEolica').classList.add('on'); }
   else { map.removeLayer(eolicaLayer); document.getElementById('toggleEolica').classList.remove('on'); }
-});
-document.getElementById('toggleSolar').addEventListener('click', (e)=>{
-  if(e.target.tagName!=='INPUT'){ const c=document.getElementById('chkSolar'); c.checked=!c.checked; c.dispatchEvent(new Event('change')); }
-});
-document.getElementById('toggleEolica').addEventListener('click', (e)=>{
-  if(e.target.tagName!=='INPUT'){ const c=document.getElementById('chkEolica'); c.checked=!c.checked; c.dispatchEvent(new Event('change')); }
 });
 </script>
 
