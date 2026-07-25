@@ -211,9 +211,9 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
 /* These two PNGs were pre-warped in Python (bilinear resampling from
    the original raster into a plain equirectangular WGS84 grid, using
    an affine transform calibrated against the real ETRS89/PT-TM06
-   boundary of mainland Portugal). Because the correction is baked
-   into the image itself, a plain two-corner Leaflet imageOverlay is
-   enough — no custom rotation/transform code needed on the JS side. */
+   boundary of mainland Portugal). They deliberately contain only the
+   coloured ZAER areas: the Carto basemap remains the single source of
+   country borders and labels, avoiding a misaligned duplicate outline. */
 const imgBounds = [[36.70, -9.65], [42.40, -6.05]];
 
 const solarLayer  = L.imageOverlay('assets/zaer_solar_overlay.png',  imgBounds, {opacity:0.85});
