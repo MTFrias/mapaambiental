@@ -1176,10 +1176,10 @@
       <div class="method-block">
         <div class="method-num">7</div>
         <div>
-          <h4>Precisão do modelo calibrado</h4>
-          <p>O gráfico seguinte compara, para cada um dos 29 recetores, o valor estimado pelo modelo simplificado (eixo horizontal) com o valor previsto pelo CNOSSOS no EIA (eixo vertical). Num modelo perfeito, todos os pontos coincidiriam com a linha diagonal.</p>
+          <h4>Ajuste interno do modelo simplificado</h4>
+          <p>O gráfico seguinte mostra a comparação interna usada para ajustar o modelo simplificado aos 29 valores de ruído particular do Quadro 8.66. Esse quadro representa o cenário antes das medidas de minimização, enquanto o modo principal mostra o Quadro 8.68, já com medidas. Por isso este gráfico não é uma validação independente nem uma garantia de precisão do cenário principal.</p>
           <div id="accuracyChartHolder"></div>
-          <p class="method-caption">Erro médio: 0,0 dB &nbsp;·&nbsp; Desvio típico: ±0,96 dB &nbsp;·&nbsp; Erro máximo observado: 2,25 dB, num único recetor.</p>
+          <p class="method-caption">Ajuste face ao Quadro 8.66: erro médio 0,0 dB · desvio típico ±0,96 dB · pior caso 2,25 dB. Não usar estes números como margem de erro do ruído futuro.</p>
         </div>
       </div>
 
@@ -1683,25 +1683,28 @@ function testPoint(latlng, isRefresh){
     if(d < bestD){ bestD = d; nearestOfficial = r; }
   });
   const backgroundApprox = nearestOfficial.refLden;
-  const combinedTotal = (estimatedSpl < 20 ? backgroundApprox : 10*Math.log10(Math.pow(10,backgroundApprox/10) + Math.pow(10,estimatedSpl/10))) + currentCorrection();
+  /* A correção exploratória incide exclusivamente sobre a contribuição das
+     turbinas; nunca sobre o ruído de fundo que já existia no local. */
+  const correctedTurbineSpl = estimatedSpl < 20 ? -100 : estimatedSpl + currentCorrection();
+  const combinedTotal = correctedTurbineSpl < 0 ? backgroundApprox : combineNoise(backgroundApprox, correctedTurbineSpl);
   const increase = Math.round((combinedTotal - backgroundApprox)*10)/10;
 
   /* Estimativa específica da noite (Ln): os aerogeradores emitem de forma
      praticamente constante ao longo do dia (24h/dia), por isso o valor "por
      período" (Ld=Le=Ln) do parque é cerca de 6,4 dB abaixo do seu Lden
      (a diferença fixa introduzida pelas penalizações de +5 dB ao entardecer e
-     +10 dB à noite na fórmula do Lden, quando Ld=Le=Ln). Validado com dados
-     reais do EIA (RA06: previsto 42,4 dB, real 42,5 dB). O ruído de fundo à
+     +10 dB à noite na fórmula do Lden, quando Ld=Le=Ln). Confirmado contra a
+     previsão do EIA RA06 (42,4 dB estimados; 42,5 dB no quadro). O ruído de fundo à
      noite (refLn) é o valor medido no terreno, do recetor oficial mais próximo. */
-  const turbinePeriodEstimate = estimatedSpl < 20 ? -100 : estimatedSpl - 6.4;
+  const turbinePeriodEstimate = correctedTurbineSpl < 0 ? -100 : correctedTurbineSpl - 6.4;
   const nightBackground = nearestOfficial.refLn;
-  const nightTotal = (turbinePeriodEstimate < 0 ? nightBackground : 10*Math.log10(Math.pow(10,nightBackground/10) + Math.pow(10,turbinePeriodEstimate/10))) + currentCorrection();
+  const nightTotal = turbinePeriodEstimate < 0 ? nightBackground : combineNoise(nightBackground, turbinePeriodEstimate);
   const nightIncrease = Math.round((nightTotal - nightBackground)*10)/10;
-  const nightColor = nightIncrease >= 3 ? "#C4432A" : nightIncrease >= 1 ? "#D9A441" : "#4A7A55";
+  const nightColor = nightIncrease > 3 ? "#C4432A" : nightIncrease >= 1 ? "#D9A441" : "#4A7A55";
   const nightExempt = nightTotal <= 45;
   const nightVerdict = nightExempt
     ? "tecnicamente isento do limite, por o ruído total ser ≤ 45 dB(A) (art. 13.º, n.º 5 do RGR)"
-    : (nightIncrease >= 3 ? "acima do limite legal de 3 dB(A) (art. 13.º do RGR)" : "dentro do limite legal de 3 dB(A) (art. 13.º do RGR)");
+    : (nightIncrease > 3 ? "acima do limite legal de 3 dB(A) (art. 13.º do RGR)" : "dentro do limite legal de 3 dB(A) (art. 13.º do RGR)");
 
   if(!isRefresh){
     lastClickedLatLng = latlng;
@@ -1795,7 +1798,7 @@ function testPoint(latlng, isRefresh){
       <div class="panel-block-body">
         ${compareBarsHtml(backgroundApprox, combinedTotal, increase)}
         <div class="noise-context">"Sem parque" é o ruído de referência real medido pelo EIA no ponto oficial mais próximo (${nearestOfficial.id}, a ${Math.round(bestD)} m). "Com parque" soma esse fundo com o ruído do parque estimado neste ponto exato. Aproximação: o fundo real pode variar de casa para casa.</div>
-        ${ldenGaugeWithWhoHtml(combinedTotal, 55, 65, 45)}
+        ${ldenGaugeWithWhoHtml(combinedTotal, null, 45)}
       </div>
     </div>
 
@@ -1804,7 +1807,7 @@ function testPoint(latlng, isRefresh){
       <div class="panel-block-body">
         ${compareBarsHtml(nightBackground, nightTotal, nightIncrease)}
         <div class="noise-context" style="color:${nightColor}; font-weight:600;">${nightIncrease.toFixed(1)} dB(A) de aumento à noite, ${nightVerdict}.</div>
-        ${legalGaugeHtml(nightTotal, 45, 55, "Face aos limites absolutos de ruído noturno (Ln)")}
+        ${legalGaugeHtml(nightTotal, 45, 55, "Classificação acústica do ponto por confirmar")}
         <div class="noise-context">Estimativa derivada: como os aerogeradores emitem de forma praticamente constante 24h/dia, o valor por período (Ld≈Le≈Ln) fica cerca de 6,4 dB abaixo do Lden do parque, confirmado contra previsões do EIA. O fundo noturno vem do recetor oficial mais próximo.</div>
       </div>
     </div>
@@ -1975,6 +1978,25 @@ const officialReceptors = Object.entries(officialReceptorsData).map(([id, v]) =>
     near:v[2], nearDist:v[3], Ld:v[4], Le:v[5], Ln:v[6], Lden:v[7], refLden:v[8], refLn:v[9]
   };
 });
+
+/* PRA4 (RA27–RA29) é zona sensível; os restantes pontos PRA associados aos
+   recetores RA são classificados como zona mista no relatório acústico. */
+function officialZoneForReceptor(id){
+  return ["RA27", "RA28", "RA29"].includes(id)
+    ? {name:"SENSÍVEL", lden:55, ln:45}
+    : {name:"MISTA", lden:65, ln:55};
+}
+
+function combineNoise(...levels){
+  return 10*Math.log10(levels.reduce((energy, level) => energy + Math.pow(10, level/10), 0));
+}
+
+function applyTurbineOnlyCorrection(total, background, correction){
+  if(!correction) return total;
+  const turbineEnergy = Math.pow(10, total/10) - Math.pow(10, background/10);
+  if(turbineEnergy <= 0) return total;
+  return combineNoise(background, 10*Math.log10(turbineEnergy) + correction);
+}
 const officialMarkers = [];
 officialReceptors.forEach(r => {
   const marker = L.circleMarker(r.coords, {
@@ -1984,20 +2006,21 @@ officialReceptors.forEach(r => {
 
   function renderReceptor(){
     const corr = currentCorrection();
-    const effLden = r.Lden + corr;
-    const effLn = r.Ln + corr;
+    const zone = officialZoneForReceptor(r.id);
+    const effLden = applyTurbineOnlyCorrection(r.Lden, r.refLden, corr);
+    const effLn = applyTurbineOnlyCorrection(r.Ln, r.refLn, corr);
     const increase = Math.round((effLden - r.refLden)*10)/10;
     const nightIncrease = Math.round((effLn - r.refLn)*10)/10;
-    const nightColor = nightIncrease >= 3 ? "#C4432A" : nightIncrease >= 1 ? "#D9A441" : "#4A7A55";
+    const nightColor = nightIncrease > 3 ? "#C4432A" : nightIncrease >= 1 ? "#D9A441" : "#4A7A55";
     const nightExempt = effLn <= 45;
     const nightVerdict = nightExempt
       ? "tecnicamente isento do limite, por o ruído total ser ≤ 45 dB(A) (art. 13.º, n.º 5 do RGR)"
-      : (nightIncrease >= 3 ? "acima do limite legal de 3 dB(A) (art. 13.º do RGR)" : "dentro do limite legal de 3 dB(A) (art. 13.º do RGR)");
+      : (nightIncrease > 3 ? "acima do limite legal de 3 dB(A) (art. 13.º do RGR)" : "dentro do limite legal de 3 dB(A) (art. 13.º do RGR)");
     const groupNoteText = r.groupNote ? `<div class="pop-flag" style="margin-top:6px;">Partilha o mesmo ponto de referência do EIA com ${r.groupNote.join(", ")}: os valores de ruído são idênticos para todo o grupo. A posição de cada ponto neste mapa foi espalhada visualmente para ficar legível; o EIA não indica coordenadas GPS individuais para cada casa deste grupo.</div>` : "";
     const modeFlag = simulationMode === "real"
       ? `<div class="pop-flag" style="border-color:#8A5A1E;">Cenário exploratório ativo: valores com +${REAL_SAMPLE_CORRECTION.toFixed(1)} dB(A) simulados como teste de sensibilidade a terreno em vale. Baseia-se em estudos de outros parques; não é uma medição nem uma previsão oficial deste projeto.</div>`
       : "";
-    const nightVerdictShort = nightExempt ? "isento do limite (&le;45 dB(A))" : (nightIncrease >= 3 ? "acima do limite legal" : "dentro do limite legal");
+    const nightVerdictShort = nightExempt ? "isento do limite (&le;45 dB(A))" : (nightIncrease > 3 ? "acima do limite legal" : "dentro do limite legal");
 
     /* Popup do mapa: resumo curto, com o veredito noturno (o que mais importa
        para a decisão) logo a seguir ao título. Todo o detalhe (fonte, modo de
@@ -2008,7 +2031,7 @@ officialReceptors.forEach(r => {
         <div class="mp-period-label">De dia (Lden)</div>
         <div class="mp-night-row">
           <span class="mp-night-vals">${r.refLden.toFixed(1)} &rarr; ${effLden.toFixed(1)} dB(A)</span>
-          <span class="mp-night-inc" style="color:${increase >= 3 ? '#C4432A' : increase >= 1 ? '#D9A441' : '#4A7A55'};">+${increase.toFixed(1)} dB(A)</span>
+          <span class="mp-night-inc" style="color:${increase > 3 ? '#C4432A' : increase >= 1 ? '#D9A441' : '#4A7A55'};">+${increase.toFixed(1)} dB(A)</span>
         </div>
         ${compactGaugeHtml(effLden, 55, 65, 45)}
       </div>
@@ -2030,7 +2053,7 @@ officialReceptors.forEach(r => {
         <div class="panel-block-title">Sem parque → com parque (Lden)</div>
         <div class="panel-block-body">
           ${compareBarsHtml(r.refLden, effLden, increase)}
-          ${ldenGaugeWithWhoHtml(effLden, 55, 65, 45)}
+          ${ldenGaugeWithWhoHtml(effLden, zone, 45)}
         </div>
       </div>
       <div class="panel-block">
@@ -2038,15 +2061,15 @@ officialReceptors.forEach(r => {
         <div class="panel-block-body">
           ${compareBarsHtml(r.refLn, effLn, nightIncrease)}
           <div class="noise-context" style="color:${nightColor}; font-weight:600;">${nightIncrease.toFixed(1)} dB(A) de aumento à noite, ${nightVerdict}.</div>
-          ${legalGaugeHtml(effLn, 45, 55, "Face aos limites absolutos de ruído noturno (Ln)")}
+          ${legalGaugeHtml(effLn, 45, 55, `Face ao limite de zona ${zone.name} (${zone.ln} dB(A) Ln)`, zone)}
         </div>
       </div>
       <div class="fact"><span class="k">Aerogerador de referência</span><span class="v">${r.near} (${r.nearDist} m)</span></div>
-      <div class="fact"><span class="k">Ld (dia, com parque)</span><span class="v">${(r.Ld+currentCorrection()).toFixed(1)} dB(A)</span></div>
-      <div class="fact"><span class="k">Le (entardecer, com parque)</span><span class="v">${(r.Le+currentCorrection()).toFixed(1)} dB(A)</span></div>
+      <div class="fact"><span class="k">Ld (dia, com parque)</span><span class="v">${r.Ld.toFixed(1)} dB(A)</span></div>
+      <div class="fact"><span class="k">Le (entardecer, com parque)</span><span class="v">${r.Le.toFixed(1)} dB(A)</span></div>
       <div class="fact"><span class="k">Ln (noite, com parque)</span><span class="v">${effLn.toFixed(1)} dB(A)</span></div>
       ${r.groupNote ? `<div class="flag">Este recetor partilha o mesmo ponto de referência do EIA com ${r.groupNote.join(", ")} (mesmos valores de ruído). A posição exata de cada casa deste grupo não é dada individualmente pelo EIA; a posição aqui é espalhada apenas para visibilidade no mapa.</div>` : ""}
-      ${simulationMode === "real" ? `<div class="flag" style="border-color:#8A5A1E;">Cenário exploratório ativo: estes valores incluem +${REAL_SAMPLE_CORRECTION.toFixed(1)} dB(A) como teste de sensibilidade. Não são valores oficiais do EIA nem medições deste projeto; para voltar às previsões oficiais, escolhe "Estudo CNOSSOS (projeto)".</div>` : `<div class="flag"><b>Leitura dos valores do EIA (Quadro 8.68):</b> “sem parque” é o ruído de referência medido no terreno antes do projeto; “com parque” é o ruído ambiente decorrente previsto pelo CNOSSOS-EU. Fonte: EIA, Volume II, Relatório Síntese, pp. 701–702.</div>`}
+      ${simulationMode === "real" ? `<div class="flag" style="border-color:#8A5A1E;">Cenário exploratório ativo: +${REAL_SAMPLE_CORRECTION.toFixed(1)} dB(A) é aplicado apenas à componente estimada das turbinas antes de a somar ao fundo. Não são valores oficiais do EIA nem medições deste projeto; para voltar às previsões oficiais, escolhe "Estudo CNOSSOS (projeto)".</div>` : `<div class="flag"><b>Leitura dos valores do EIA (Quadro 8.68):</b> “sem parque” é o ruído de referência medido no terreno antes do projeto; “com parque” é o ruído ambiente decorrente previsto pelo CNOSSOS-EU. Fonte: EIA, Volume II, Relatório Síntese, pp. 701–702.</div>`}
     `;
     return {popupHtml, panelHtml};
   }
@@ -2058,7 +2081,7 @@ officialReceptors.forEach(r => {
     lastOfficialReceptorMarker = marker;
     const content = renderReceptor();
     marker.setPopupContent(content.popupHtml);
-    updateDbScale(r.Lden + currentCorrection(), "oficial no recetor " + r.id + (simulationMode === "real" ? " (simulação)" : " (EIA, Quadro 8.68)"));
+    updateDbScale(applyTurbineOnlyCorrection(r.Lden, r.refLden, currentCorrection()), "oficial no recetor " + r.id + (simulationMode === "real" ? " (simulação)" : " (EIA, Quadro 8.68)"));
     setInfo(content.panelHtml);
   });
   marker.addTo(layers.official);
@@ -2166,20 +2189,21 @@ function compactGaugeHtml(value, limiteSensivel, limiteMista, whoLimit){
     </div>`;
 }
 
-function legalGaugeHtml(value, limiteSensivel, limiteMista, label){
+function legalGaugeHtml(value, limiteSensivel, limiteMista, label, officialZone=null){
   const max = limiteMista + 10;
   const pctSensivel = Math.min(100, (limiteSensivel/max)*100);
   const pctMista = Math.min(100, (limiteMista/max)*100);
   const pctValue = Math.max(2, Math.min(100, (value/max)*100));
-  const cumpreMista = value <= limiteMista;
+  const legalLimit = officialZone ? officialZone.ln : null;
+  const cumpreLegal = legalLimit === null ? null : value <= legalLimit;
   const cumpreSensivel = value <= limiteSensivel;
   return `
     <div class="gauge-wrap">
-      <div class="zone-verdict ${cumpreMista ? 'zone-ok' : 'zone-bad'}">
-        <div class="zone-verdict-icon">${cumpreMista ? '✓' : '✗'}</div>
+      <div class="zone-verdict ${cumpreLegal === null || cumpreLegal ? 'zone-ok' : 'zone-bad'}">
+        <div class="zone-verdict-icon">${cumpreLegal === null || cumpreLegal ? '✓' : '✗'}</div>
         <div>
           <div class="zone-verdict-title">${label}</div>
-          <div class="zone-verdict-text">${value.toFixed(1)} dB(A), ${cumpreMista ? "dentro do limite legal" : "acima do limite legal"} de zona mista.</div>
+          <div class="zone-verdict-text">${officialZone ? `${value.toFixed(1)} dB(A), ${cumpreLegal ? "dentro do limite legal" : "acima do limite legal"} aplicável.` : "Estimativa fora de recetor oficial: esta barra não atribui um limite legal local."}</div>
         </div>
       </div>
 
@@ -2207,24 +2231,26 @@ function legalGaugeHtml(value, limiteSensivel, limiteMista, label){
    a recomendação da Organização Mundial da Saúde (2018): para ruído de
    parques eólicos, Lden ≤ 45 dB(A), uma orientação de saúde pública, não
    um limite legal. */
-function ldenGaugeWithWhoHtml(value, limiteSensivel, limiteMista, whoLimit){
+function ldenGaugeWithWhoHtml(value, officialZone, whoLimit){
+  const limiteSensivel = 55, limiteMista = 65;
   const max = limiteMista + 10;
   const pctSensivel = Math.min(100, (limiteSensivel/max)*100);
   const pctMista = Math.min(100, (limiteMista/max)*100);
   const pctValue = Math.max(2, Math.min(100, (value/max)*100));
   const pctWho = Math.min(100, (whoLimit/max)*100);
 
-  const cumpreMista = value <= limiteMista;
+  const legalLimit = officialZone ? officialZone.lden : null;
+  const cumpreLegal = legalLimit === null ? null : value <= legalLimit;
   const cumpreSensivel = value <= limiteSensivel;
   const whoExceeded = value > whoLimit;
 
   return `
     <div class="gauge-wrap">
-      <div class="zone-verdict ${cumpreMista ? 'zone-ok' : 'zone-bad'}">
-        <div class="zone-verdict-icon">${cumpreMista ? '✓' : '✗'}</div>
+      <div class="zone-verdict ${cumpreLegal === null || cumpreLegal ? 'zone-ok' : 'zone-bad'}">
+        <div class="zone-verdict-icon">${cumpreLegal === null || cumpreLegal ? '✓' : '✗'}</div>
         <div>
-          <div class="zone-verdict-title">Zona oficialmente aplicada aqui: MISTA (limite ${limiteMista} dB(A) Lden)</div>
-          <div class="zone-verdict-text">${value.toFixed(1)} dB(A), ${cumpreMista ? "dentro do limite legal" : "acima do limite legal"} de zona mista.</div>
+          <div class="zone-verdict-title">${officialZone ? `Zona oficialmente aplicada: ${officialZone.name} (limite ${legalLimit} dB(A) Lden)` : "Classificação acústica do ponto por confirmar"}</div>
+          <div class="zone-verdict-text">${officialZone ? `${value.toFixed(1)} dB(A), ${cumpreLegal ? "dentro do limite legal" : "acima do limite legal"} aplicável.` : "O ponto é uma estimativa fora dos recetores oficiais; esta barra não atribui um limite legal local."}</div>
         </div>
       </div>
 
@@ -2241,7 +2267,7 @@ function ldenGaugeWithWhoHtml(value, limiteSensivel, limiteMista, whoLimit){
         <span style="left:${pctMista}%;" class="tick-mista">mista<br>65</span>
       </div>
 
-      <div class="ref-note">*Zona sensível: limite mais apertado (habitações puramente residenciais). Não é a classificação aplicada aqui, mas serve de comparação: com este valor, ${cumpreSensivel ? "cumpriria também esse limite mais apertado" : "não cumpriria esse limite mais apertado, só o de zona mista"}.</div>
+      <div class="ref-note">*Zona sensível: limite mais apertado. Como comparação, este valor ${cumpreSensivel ? "ficaria dentro" : "ficaria acima"} desse limite de 55 dB(A).</div>
 
       <div class="who-callout ${whoExceeded ? 'who-exceeded' : 'who-ok'}">
         <div class="who-callout-icon">${whoExceeded ? '⚠' : '✓'}</div>
