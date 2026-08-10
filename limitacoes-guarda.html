@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Ambiental: Limitações projeto Guarda</title>
+
+    <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body>
+    <nav class="nav-content" aria-label="Main navigation">
+        <div class="menu-content">
+            <a href="index.html" aria-label="Main page">
+                <h4 class="header-logo">Mapa Ambiental</h4>
+            </a>
+            <ul class="main-menu">
+                <li><a href="about.html" class="menu-link">Sobre Nós</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <section class="why-section">
+            <div class="title-content">
+                <a href="projetoguarda.html" class="return-link return-text">Voltar ao projeto</a>
+                <h3 class="intro-title">Limitações</h3>
+                <span class="description-text">O que este mapa não consegue responder, e porquê</span>
+            </div>
+        </section>
+        <section class="main-section">
+            <article class="about-text">
+                <h3>Este projeto ainda está na fase de Definição de Âmbito, não no EIA</h3>
+                <p>O documento em que este mapa se baseia é a Proposta de Definição do Âmbito (PDA) do EIA do Parque
+                    Eólico da Guarda, não o próprio Estudo de Impacte Ambiental (EIA). A PDA é uma fase preliminar e
+                    obrigatória do procedimento de Avaliação de Impacte Ambiental (AIA), que serve para propor à
+                    Autoridade de AIA o âmbito do EIA a desenvolver depois.
+                </p>
+                <div class="featured-callout">
+                    <h5 class="featured-callout-title">Consequência direta</h5>
+                    <p>A PDA refere expressamente que estão previstas campanhas de medição de ruído ambiente junto
+                        dos recetores sensíveis mais próximos numa fase posterior do EIA. Não existem, portanto,
+                        previsões de ruído por ponto oficiais para este projeto.</p>
+                </div>
+
+                <h3>O simulador de ruído deste mapa não está validado</h3>
+                <p>Este mapa inclui um simulador que estima o ruído de qualquer ponto clicado, com o mesmo tipo de
+                    modelo físico simples (espalhamento esférico em campo livre) usado nos mapas do Paiva e do
+                    BigBATT. A diferença importante é que, nesses dois casos, foi possível testar o modelo contra
+                    valores oficiais (29 previsões CNOSSOS no Paiva, 2 recetores medidos no BigBATT) e confirmar que
+                    se aproximava bem deles. Aqui não existe nenhum valor oficial de ruído para comparar, porque o
+                    projeto ainda não tem EIA. O simulador usa apenas a gama de emissão sonora declarada na PDA (92 a
+                    106 dB(A), dependendo do vento) e as posições previstas dos 14 aerogeradores, sem qualquer
+                    correção de terreno, vegetação ou vento, e sem qualquer garantia de precisão. Deve ser lido como
+                    uma ilustração do tipo de cálculo que um EIA fará depois, não como uma previsão.</p>
+
+                <h3>A posição dos aerogeradores ainda pode mudar</h3>
+                <p>As 14 posições mostradas no mapa são as previstas nesta fase da PDA. O próprio documento indica
+                    que, em fases seguintes do procedimento (Estudo Prévio e Projeto de Execução), serão ainda
+                    analisadas e otimizadas as localizações dos aerogeradores e dos respetivos acessos e
+                    plataformas. Isto significa que a posição final pode diferir da apresentada aqui.
+                </p>
+
+                <h3>Os corredores da linha elétrica são alternativas, não o traçado final</h3>
+                <p>Os Corredores 1 e 2 representam duas soluções de ligação em estudo entre a subestação do parque e
+                    a Subestação de Chafariz (REN), a cerca de 18 km. O traçado definitivo da Linha de Muito Alta
+                    Tensão (LMAT) a 220 kV só será fixado numa fase posterior do procedimento de AIA.
+                </p>
+
+                <h3>A geometria das áreas foi simplificada</h3>
+                <p>Os contornos da área de estudo e dos corredores foram extraídos do ficheiro geográfico
+                    (GeoPackage) fornecido, mas o número de vértices de cada linha/polígono foi reduzido para tornar
+                    o mapa mais leve. A posição dos 14 aerogeradores, da subestação, do estaleiro e da torre
+                    meteorológica mantém-se exatamente a do ficheiro original.
+                </p>
+            </article>
+        </section>
+    </main>
+
+    <section class="why-section">
+            <h5>Porque existe</h5>
+            <p>
+                Acreditamos que uma sociedade mais informada participa de forma mais consciente.
+                Por isso, reunimos informação oficial num único espaço, tornando os processos de
+                participação pública mais acessíveis e transparentes.
+            </p>
+    </section>
+
+    <footer class="footer-content">
+        <p class="footer-copy">&copy; - <span id="current-year"></span>Mapa Ambiental</p>
+        <ul class="footer-menu">
+            <li><a href="about.html" class="menu-link">Sobre Nós</a></li>
+        </ul>
+        <a class="back-to-top" href="#"><img src="assets/images/arrow-up.png" alt="back to top" class="arrow-btn"></a>
+    </footer>
+
+    <div class="landing-footer">
+        <p>Protótipo cívico e independente. Dados extraídos da Proposta de Definição do Âmbito (PDA) do Parque
+            Eólico da Guarda. Não substitui os documentos oficiais nem o processo formal de participação pública em
+            <a href="https://participa.pt" target="_blank" rel="noopener">participa.pt</a>.</p>
+        <details class="privacy-note">
+            <summary>Privacidade e medição de audiência</summary>
+            <p>O site só utiliza Google Analytics e Microsoft Clarity se aceitares a medição de audiência. Estes
+                serviços podem usar cookies ou
+                tecnologias semelhantes; consulta as respetivas <a href="https://policies.google.com/privacy"
+                    target="_blank" rel="noopener">políticas da Google</a>
+                e <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener">da
+                    Microsoft</a>.
+            </p>
+        </details>
+    </div>
+
+    <script src="assets/js/scripts.js"></script>
+</body>
+
+</html>

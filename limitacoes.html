@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Ambiental: Limitações projeto Paiva</title>
+
+    <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body>
+    <nav class="nav-content" aria-label="Main navigation">
+        <div class="menu-content">
+            <a href="index.html" aria-label="Main page">
+                <h4 class="header-logo">Mapa Ambiental</h4>
+            </a>
+            <ul class="main-menu">
+                <li><a href="about.html" class="menu-link">Sobre Nós</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <section class="why-section">
+            <div class="title-content">
+                <a href="index.html" class="return-link return-text">Voltar à Homepage</a>
+                <h3 class="intro-title">Limitações</h3>
+                <span class="description-text">O que este mapa não consegue responder, e porquê</span>
+            </div>
+        </section>
+        <section class="main-section">
+            <article class="about-text">
+                <h3>A calibração aproxima-se do CNOSSOS, não da realidade</h3>
+                <p>Os 29 valores usados para calibrar e validar o modelo deste site não são medições de ruído feitas no
+                    terreno. São a saída do modelo CNOSSOS-EU, calculada pelo próprio EIA, para um parque que ainda não
+                    existe. Não há, nem podia haver, uma medição real do ruído deste parque em funcionamento.
+                </p>
+                <p>Isto significa que a calibração feita aqui aproxima o nosso modelo simplificado do <strong>resultado
+                        do
+                        CNOSSOS-EU</strong>, não da <strong>realidade acústica futura</strong>. Se o CNOSSOS, como
+                    método, tiver um
+                    erro sistemático nesta zona (por exemplo, subestimar o ruído por não ter em conta terreno complexo
+                    ou vegetação), o modelo deste site herda esse mesmo erro, porque foi ajustado para se parecer com
+                    ele. Calibrar um modelo contra outro modelo aproxima os dois entre si; não garante que algum dos
+                    dois está certo.
+                </p>
+                <h3>O que o CNOSSOS-EU é, e o que não foi pensado para fazer</h3>
+                <p>O CNOSSOS-EU foi desenvolvido para ruído de tráfego rodoviário, ferroviário, aéreo e indústria, e
+                    tornado obrigatório em Portugal por transposição de uma diretiva europeia (Decreto-Lei n.º
+                    136-A/2019). Não existe, em Portugal, uma metodologia oficial específica para ruído de parques
+                    eólicos. O estudo citado na bibliografia do EIA (Rosão, Leonardo, Santos, 2021) alerta para a
+                    necessidade de precauções e ajustamentos na previsão acústica de parques eólicos.</p>
+                <div class="featured-callout">
+                    <h5 class="featured-callout-title">Consequência direta</h5>
+                    <p>Não é possível, com os dados atualmente disponíveis, dizer com confiança qual será o ruído
+                        real deste parque depois de construído. O EIA apresenta uma previsão, calculada com um
+                        método que os próprios especialistas citados consideram inadequado para parques eólicos, sem
+                        os ajustamentos que esses mesmos especialistas recomendam.</p>
+                </div>
+                <h3>Sinais de que o risco pende para subestimar, não sobrestimar</h3>
+                <ul class="featured-list">
+                    <li>O estudo citado na bibliografia do EIA usa o termo "modelação insegura" para descrever o
+                        risco de o CNOSSOS e o ISO 9613-2, sem ajustes, subestimarem o ruído real em parques
+                        eólicos.</li>
+                    <li>Estudos de validação publicados, comparando previsões com medições reais em parques eólicos,
+                        mostram casos de terreno côncavo (em vale) onde o ruído medido foi superior ao previsto, por
+                        um efeito de foco do relevo. Parte da zona deste projeto (Serra da Nave) tem esse tipo de
+                        perfil.</li>
+                    <li>O próprio EIA não documenta ter aplicado nenhum dos ajustamentos recomendados pelo seu
+                        especialista responsável (altura do recetor, absorção do solo, correção de terreno em vale).
+                    </li>
+                </ul>
+                <h3>Como isto deveria ter sido feito</h3>
+                <p>Uma avaliação mais fiável identificaria parques eólicos já em funcionamento, com o mesmo modelo
+                    de turbina (Vestas V172) ou semelhante, e com relevo comparável ao desta zona (terreno
+                    montanhoso, com vales e encostas). Nesses parques, mede-se o ruído real junto de habitações a
+                    distâncias e orientações conhecidas, e compara-se essa medição com o que o modelo de propagação
+                    (CNOSSOS-EU ou ISO 9613-2) tinha previsto antes da construção. A diferença entre o previsto e o
+                    medido dá um fator de correção real, específico para turbinas e terrenos deste tipo, em vez de
+                    se assumir que o modelo genérico, pensado para tráfego e indústria, está certo sem verificação.
+                </p>
+                <p>É exatamente esse tipo de trabalho que o estudo citado na própria bibliografia do EIA (Rosão,
+                    Leonardo, Santos, 2021) realiza, propondo ajustamentos concretos ao método ISO 9613-2 a partir
+                    da comparação com dados reais de outros parques eólicos. O EIA cita este estudo como referência,
+                    mas não documenta ter aplicado nenhum dos ajustamentos que ele recomenda.
+                </p>
+            </article>
+        </section>
+    </main>
+
+    <section class="why-section">
+            <h5>Porque existe</h5>
+            <p>
+                Acreditamos que uma sociedade mais informada participa de forma mais consciente.
+                Por isso, reunimos informação oficial num único espaço, tornando os processos de
+                participação pública mais acessíveis e transparentes.
+            </p>
+    </section>
+
+    <footer class="footer-content">
+        <p class="footer-copy">&copy; - <span id="current-year"></span>Mapa Ambiental</p>
+        <ul class="footer-menu">
+            <li><a href="about.html" class="menu-link">Sobre Nós</a></li>
+        </ul>
+        <a class="back-to-top" href="#"><img src="assets/images/arrow-up.png" alt="back to top" class="arrow-btn"></a>
+    </footer>
+
+    <div class="landing-footer">
+        <p>Protótipo cívico e independente. Dados extraídos e verificados do Volume II do EIA. Não substitui os
+            documentos
+            oficiais nem o processo formal de participação pública em <a href="https://participa.pt" target="_blank"
+                rel="noopener">participa.pt</a>.</p>
+        <details class="privacy-note">
+            <summary>Privacidade e medição de audiência</summary>
+            <p>O site só utiliza Google Analytics e Microsoft Clarity se aceitares a medição de audiência. Estes
+                serviços podem usar cookies ou
+                tecnologias semelhantes; consulta as respetivas <a href="https://policies.google.com/privacy"
+                    target="_blank" rel="noopener">políticas da Google</a>
+                e <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener">da
+                    Microsoft</a>.
+            </p>
+        </details>
+    </div>
+
+    <script src="assets/js/scripts.js"></script>
+</body>
+
+</html>

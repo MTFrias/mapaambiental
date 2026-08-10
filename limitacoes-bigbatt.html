@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Ambiental: Limitações projeto BigBATT</title>
+
+    <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body>
+    <nav class="nav-content" aria-label="Main navigation">
+        <div class="menu-content">
+            <a href="index.html" aria-label="Main page">
+                <h4 class="header-logo">Mapa Ambiental</h4>
+            </a>
+            <ul class="main-menu">
+                <li><a href="about.html" class="menu-link">Sobre Nós</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <section class="why-section">
+            <div class="title-content">
+                <a href="projetobigbatt.html" class="return-link return-text">Voltar ao projeto</a>
+                <h3 class="intro-title">Limitações</h3>
+                <span class="description-text">O que este mapa não consegue responder, e porquê</span>
+            </div>
+        </section>
+        <section class="main-section">
+            <article class="about-text">
+                <h3>O modelo de propagação usado aqui é mais simples do que o do EIA</h3>
+                <p>O EIA do BigBATT calculou o ruído previsto com o método CNOSSOS-EU, através do software
+                    comercial IMMI, com um modelo digital do terreno, tipo de solo e condições meteorológicas
+                    detalhadas. Este mapa usa, em vez disso, uma fórmula simples de espalhamento esférico em campo
+                    livre (a atenuação do som só com a distância, sem terreno, obstáculos ou vento), somando
+                    energeticamente o ruído de todas as baterias e da subestação em cada ponto testado.
+                </p>
+                <div class="featured-callout">
+                    <h5 class="featured-callout-title">Porque ainda assim é uma boa aproximação aqui</h5>
+                    <p>Ao contrário de outros projetos deste site, aqui foi possível testar o modelo simplificado
+                        diretamente contra os 2 recetores oficiais do EIA (Quadro 8.14): a estimativa do ruído
+                        particular (período diurno) ficou a 0,0 dB de R1 e a 0,8 dB de R2, valores muito próximos do
+                        modelo oficial. O terreno desta zona é maioritariamente plano e sem obstáculos relevantes
+                        entre as fontes e os recetores, o que ajuda a explicar por que um modelo tão simples se
+                        aproxima tanto do resultado do IMMI/CNOSSOS-EU.</p>
+                </div>
+
+                <h3>Os 28 sistemas de conversão (PCS) não estão incluídos no cálculo</h3>
+                <p>Os dados geográficos fornecidos incluem a posição exata dos 83 contentores de baterias e da
+                    subestação, mas não a dos 28 sistemas de conversão de energia (PCS), que o EIA identifica como
+                    a segunda maior fonte de ruído do projeto (83,5 dB(A) cada, Quadro 8.13). Por não ter coordenadas
+                    para estes equipamentos, o modelo deste site omite-os, o que tende a subestimar ligeiramente o
+                    ruído total em qualquer ponto testado, sobretudo perto do centro da área de implantação.
+                </p>
+
+                <h3>Só há 2 recetores oficiais medidos</h3>
+                <p>O EIA caracteriza apenas dois locais (R1 e R2), ambos a sul da área do projeto. Não há dados
+                    oficiais para outras direções (norte, este ou oeste), pelo que qualquer estimativa deste mapa
+                    para essas zonas depende inteiramente do modelo simplificado, sem um ponto de validação próximo
+                    nessa direção.
+                </p>
+
+                <h3>A fase do processo pode mudar os números</h3>
+                <p>O EIA encontra-se em avaliação pela APA, e o Promotor já respondeu a um Pedido de Elementos
+                    Adicionais (maio de 2026). Os valores aqui apresentados são os da versão do EIA consolidada
+                    disponível; podem ainda ser ajustados no decurso do procedimento de AIA, incluindo caso a APA
+                    solicite nova modelação ou medições adicionais.
+                </p>
+            </article>
+        </section>
+    </main>
+
+    <section class="why-section">
+            <h5>Porque existe</h5>
+            <p>
+                Acreditamos que uma sociedade mais informada participa de forma mais consciente.
+                Por isso, reunimos informação oficial num único espaço, tornando os processos de
+                participação pública mais acessíveis e transparentes.
+            </p>
+    </section>
+
+    <footer class="footer-content">
+        <p class="footer-copy">&copy; - <span id="current-year"></span>Mapa Ambiental</p>
+        <ul class="footer-menu">
+            <li><a href="about.html" class="menu-link">Sobre Nós</a></li>
+        </ul>
+        <a class="back-to-top" href="#"><img src="assets/images/arrow-up.png" alt="back to top" class="arrow-btn"></a>
+    </footer>
+
+    <div class="landing-footer">
+        <p>Protótipo cívico e independente. Dados extraídos e verificados do EIA do Projeto BigBATT. Não substitui os
+            documentos oficiais nem o processo formal de participação pública em <a href="https://participa.pt"
+                target="_blank" rel="noopener">participa.pt</a>.</p>
+        <details class="privacy-note">
+            <summary>Privacidade e medição de audiência</summary>
+            <p>O site só utiliza Google Analytics e Microsoft Clarity se aceitares a medição de audiência. Estes
+                serviços podem usar cookies ou
+                tecnologias semelhantes; consulta as respetivas <a href="https://policies.google.com/privacy"
+                    target="_blank" rel="noopener">políticas da Google</a>
+                e <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener">da
+                    Microsoft</a>.
+            </p>
+        </details>
+    </div>
+
+    <script src="assets/js/scripts.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,2811 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mapa Ambiental: Processos de Consulta Pública em Portugal</title>
+<script>
+  const CONSENT_KEY = 'mapaambiental-analytics-consent-v1';
+
+  function loadAnalytics(){
+    if(window.__mapaAmbientalAnalyticsLoaded) return;
+    window.__mapaAmbientalAnalyticsLoaded = true;
+
+    const gtagScript = document.createElement('script');
+    gtagScript.async = true;
+    gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-7JEXZ9Z9S1';
+    document.head.appendChild(gtagScript);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function(){ window.dataLayer.push(arguments); };
+    window.gtag('js', new Date());
+    window.gtag('config', 'G-7JEXZ9Z9S1');
+
+    window.clarity = window.clarity || function(){ (window.clarity.q = window.clarity.q || []).push(arguments); };
+    const clarityScript = document.createElement('script');
+    clarityScript.async = true;
+    clarityScript.src = 'https://www.clarity.ms/tag/xoy15nb6dj';
+    document.head.appendChild(clarityScript);
+  }
+
+  function clearAnalyticsCookies(){
+    document.cookie.split(';').map(cookie => cookie.trim().split('=')[0]).filter(name => {
+      return /^_(ga|gid|gat|clck|clsk)/.test(name) || ['CLID', 'ANONCHK', 'MR', 'MUID'].includes(name);
+    }).forEach(name => {
+      document.cookie = name + '=; Max-Age=0; path=/; SameSite=Lax';
+    });
+  }
+
+  function setCookieConsent(choice){
+    try { localStorage.setItem(CONSENT_KEY, choice); } catch(error) {}
+    const banner = document.getElementById('cookieBanner');
+    if(banner) banner.hidden = true;
+    if(choice === 'accepted') loadAnalytics();
+    else clearAnalyticsCookies();
+  }
+
+  function openCookiePreferences(){
+    const banner = document.getElementById('cookieBanner');
+    if(banner) {
+      banner.hidden = false;
+      document.getElementById('cookieReject')?.focus();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    let consent = null;
+    try { consent = localStorage.getItem(CONSENT_KEY); } catch(error) {}
+    if(consent === 'accepted') loadAnalytics();
+    else if(consent !== 'rejected') document.getElementById('cookieBanner').hidden = false;
+  });
+</script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #E9E7DC;
+    --paper-deep: #DEDBCC;
+    --ink: #1C2B22;
+    --ink-soft: #4A5248;
+    --forest: #2F5233;
+    --forest-deep: #21391F;
+    --rust: #A8501F;
+    --steel: #4A6670;
+    --house: #9C3D28;
+    --line: #8B8B7A;
+    --card: #F4F2E9;
+    --stamp: #B5651D;
+    --wave: #C4432A;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  @supports (height: 100dvh){
+    html,body{height:100dvh;}
+  }
+  body{
+    font-family:'IBM Plex Sans',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+
+  /* Contour-line texture, subtle, on header only */
+  header{
+    position:relative;
+    background:var(--forest-deep);
+    color:var(--paper);
+    padding:18px 28px 16px;
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+    z-index:20;
+    border-bottom:3px solid var(--stamp);
+    background-image:
+      repeating-radial-gradient(circle at 85% -20%, transparent 0 34px, rgba(233,231,220,0.045) 34px 36px),
+      repeating-radial-gradient(circle at 85% -20%, transparent 0 60px, rgba(233,231,220,0.035) 60px 62px);
+  }
+  header .brand{display:flex; flex-direction:column; gap:2px;}
+  #backBtn{
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.25);
+    color:var(--paper); font-family:'IBM Plex Mono',monospace; font-size:12px;
+    padding:7px 12px; border-radius:3px; cursor:pointer; white-space:nowrap;
+    transition:background .15s ease;
+  }
+  #backBtn:hover{background:rgba(255,255,255,.18);}
+  header .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:#B9C9AE;
+  }
+  header h1{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:26px;
+    margin:0;
+    letter-spacing:.2px;
+  }
+  header .meta{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:#C9D6C0;
+    text-align:right;
+  }
+  header .meta strong{color:var(--paper); font-weight:500;}
+
+  .layout{flex:1; display:flex; min-height:0;}
+
+  /* Sidebar */
+  #sidebar{
+    width:340px;
+    min-width:230px;
+    max-width:75vw;
+    flex-shrink:0;
+    background:var(--card);
+    border-right:1px solid var(--paper-deep);
+    display:flex;
+    flex-direction:column;
+    overflow-y:auto;
+    position:relative;
+  }
+  #resizeHandle{
+    position:fixed;
+    top:0; left:340px;
+    width:10px; height:100vh;
+    cursor:col-resize;
+    z-index:40;
+    background:transparent;
+  }
+  #resizeHandle:hover, #resizeHandle.dragging{background:rgba(47,82,51,.18);}
+  #resizeHandle::after{
+    content:"";
+    position:absolute; top:50%; left:50%;
+    width:3px; height:36px;
+    transform:translate(-50%,-50%);
+    border-radius:2px;
+    background:var(--line);
+  }
+  body.resizing{cursor:col-resize; user-select:none;}
+  body.resizing #map{pointer-events:none;}
+  .sb-section{padding:18px 20px; border-bottom:1px solid var(--paper-deep);}
+  .mode-section{background:var(--forest-deep);}
+  .mode-section h2{color:#D7DED2 !important;}
+  .mode-section h2::before{background:var(--stamp) !important;}
+  .mode-buttons{display:flex; flex-direction:column; gap:6px;}
+  .mode-btn{
+    width:100%; text-align:left; padding:9px 12px; border-radius:3px;
+    font-family:'IBM Plex Sans',sans-serif; font-size:12.5px; font-weight:600;
+    background:rgba(255,255,255,.06); color:#D7DED2; border:1.5px solid rgba(255,255,255,.15);
+    cursor:pointer; transition:background .15s ease;
+  }
+  .mode-btn:hover{background:rgba(255,255,255,.12);}
+  .mode-btn.active{background:var(--stamp); color:#fff; border-color:var(--stamp);}
+  .mode-note{font-size:10.5px; line-height:1.5; color:#B9C9AE; margin-top:10px;}
+  .sb-section h2{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    color:var(--ink-soft);
+    margin:0 0 12px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .sb-section h2::before{
+    content:"";
+    width:14px; height:1px; background:var(--line);
+  }
+
+  .project-card{
+    background:var(--paper);
+    border:1px solid var(--paper-deep);
+    border-left:4px solid var(--forest);
+    border-radius:2px;
+    padding:14px 14px 12px;
+    cursor:pointer;
+    transition:background .15s ease, transform .1s ease;
+  }
+  .project-card:hover{background:#fff; transform:translateX(2px);}
+  .project-card.active{background:#fff; border-left-color:var(--stamp);}
+  .project-card .type{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    color:var(--steel);
+  }
+  .project-card h3{
+    font-family:'Fraunces',serif;
+    font-size:17px;
+    font-weight:500;
+    margin:4px 0 6px;
+    color:var(--ink);
+  }
+  .project-card .status{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:11.5px;
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--stamp);
+  }
+  .project-card .status .dot{
+    width:6px; height:6px; border-radius:50%; background:var(--stamp);
+  }
+
+  .placeholder-row{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    padding:10px 12px;
+    border:1px dashed var(--line);
+    border-radius:2px;
+    line-height:1.5;
+  }
+
+  /* Layer toggles */
+  .layer-row{
+    display:flex; align-items:center; gap:10px;
+    padding:7px 0;
+    font-size:13.5px;
+  }
+  .layer-row input{accent-color:var(--forest); width:15px; height:15px; cursor:pointer;}
+  .layer-row .swatch{width:11px; height:11px; border-radius:50%; flex-shrink:0;}
+  .layer-row label{cursor:pointer; flex:1;}
+
+  /* Info panel (selected feature) */
+  #infopanel{padding:18px 20px; flex:1; overflow-y:auto;}
+  #infopanel .empty{color:var(--ink-soft); font-size:13px; line-height:1.6;}
+  #infopanel h3{
+    font-family:'Fraunces',serif;
+    font-size:19px;
+    margin:0 0 4px;
+  }
+  #infopanel .kicker{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    color:var(--steel);
+    margin-bottom:10px;
+    display:block;
+  }
+  .fact{
+    display:flex; justify-content:space-between;
+    padding:8px 0;
+    border-bottom:1px solid var(--paper-deep);
+    font-size:13px;
+  }
+  .fact .k{color:var(--ink-soft);}
+  .fact .v{font-family:'IBM Plex Mono',monospace; font-weight:500; text-align:right;}
+  .flag{
+    margin-top:12px;
+    background:#F6E9DC;
+    border-left:3px solid var(--stamp);
+    padding:10px 12px;
+    font-size:12.5px;
+    line-height:1.55;
+    color:#5C3417;
+  }
+
+  /* Map */
+  #mapWrap{flex:1; position:relative; min-width:0;}
+  #map{position:absolute; inset:0; background:#DCE3DD;}
+  .leaflet-container:focus, .leaflet-container{ outline:none; }
+  .leaflet-marker-icon:focus, .leaflet-interactive:focus{ outline:none; }
+  .leaflet-popup-content-wrapper{
+    background:var(--card);
+    border-radius:3px;
+    font-family:'IBM Plex Sans',sans-serif;
+  }
+  .leaflet-popup-content{font-size:13px; margin:12px 14px;}
+  .leaflet-popup-content b{font-family:'Fraunces',serif; font-size:15px;}
+
+  .pop-fact{display:flex; justify-content:space-between; gap:14px; margin-top:4px; font-size:12px;}
+  .pop-fact .k{color:var(--ink-soft);}
+  .pop-fact .v{font-family:'IBM Plex Mono',monospace;}
+  .pop-flag{
+    margin-top:6px; padding:5px 7px; background:#F6E9DC; border-left:2px solid var(--stamp);
+    font-size:11px; color:#5C3417;
+  }
+
+  /* countdown stamp */
+  .stamp-badge{
+    display:inline-flex; align-items:center; gap:6px;
+    border:1px solid var(--stamp);
+    color:var(--stamp);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    padding:3px 8px;
+    border-radius:2px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    margin-top:8px;
+  }
+
+  ::-webkit-scrollbar{width:9px;}
+  ::-webkit-scrollbar-thumb{background:var(--paper-deep); border-radius:5px;}
+
+  .los-btn{
+    margin-top:12px;
+    width:100%;
+    background:var(--forest);
+    color:var(--paper);
+    border:none;
+    border-radius:2px;
+    padding:9px 12px;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:12.5px;
+    font-weight:500;
+    cursor:pointer;
+    transition:background .15s ease;
+  }
+  .los-btn:hover{background:var(--forest-deep);}
+  .los-btn:disabled{opacity:.6; cursor:wait;}
+  .los-row{
+    display:flex; align-items:flex-start; gap:8px;
+    font-size:12.5px; padding:5px 0; line-height:1.5;
+  }
+  .los-dot{width:9px; height:9px; border-radius:50%; flex-shrink:0; margin-top:4px;}
+
+  /* Sound propagation legend, floats over the map */
+  #dbLegend{
+    position:absolute;
+    right:16px;
+    top:16px;
+    z-index:15;
+    background:rgba(244,242,233,.96);
+    border:1px solid var(--paper-deep);
+    border-left:3px solid var(--wave);
+    border-radius:3px;
+    padding:12px 14px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    min-width:190px;
+    max-width:230px;
+    display:none;
+    box-shadow:0 2px 10px rgba(28,43,34,.12);
+  }
+  #dbLegend.visible{display:block;}
+  #dbLegend .lg-title{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:600;
+    font-size:12.5px;
+    margin-bottom:6px;
+    color:var(--ink);
+  }
+  #dbLegend .lg-row{display:flex; align-items:center; gap:8px; padding:2px 0;}
+  #dbLegend .lg-swatch{width:12px; height:12px; border-radius:50%; border:1.5px solid var(--wave); flex-shrink:0;}
+  #dbLegend .lg-note{
+    margin-top:8px; padding-top:8px; border-top:1px dashed var(--paper-deep);
+    font-family:'IBM Plex Sans',sans-serif; font-size:10.5px; line-height:1.5; color:var(--ink-soft);
+  }
+  #propToggleWrap{display:none;}
+  #propToggleWrap.visible{display:flex;}
+
+  #windSelectWrap{display:block; margin-top:8px; padding-top:10px; border-top:1px dashed var(--paper-deep);}
+  #windSelectWrap.visible{display:block;}
+  #windSelectWrap label{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--ink-soft); display:block; margin-bottom:6px;
+  }
+  #windSelect{
+    width:100%; padding:7px 8px; font-family:'IBM Plex Sans',sans-serif; font-size:12.5px;
+    border:1px solid var(--paper-deep); border-radius:2px; background:#fff; color:var(--ink); cursor:pointer;
+  }
+  #windSpeedSlider{width:100%; accent-color:var(--forest); cursor:pointer;}
+  .wind-readout{
+    margin-top:8px; padding:8px 10px;
+    background:var(--card); border:1px solid var(--paper-deep); border-left:3px solid var(--forest);
+    border-radius:2px; font-size:12px; line-height:1.6; color:var(--ink);
+  }
+  .wind-readout b{font-family:'IBM Plex Mono',monospace;}
+  .wind-readout .status-stopped{color:var(--rust); font-weight:600;}
+  .wind-readout .status-running{color:var(--forest); font-weight:600;}
+
+  /* Basemap toggle button, floats top-left over the map */
+  #basemapToggle{
+    position:absolute; left:16px; top:16px; z-index:15;
+    background:rgba(244,242,233,.96);
+    border:1px solid var(--paper-deep);
+    border-radius:3px;
+    padding:8px 12px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    letter-spacing:.04em;
+    cursor:pointer;
+    box-shadow:0 2px 10px rgba(28,43,34,.12);
+    color:var(--ink);
+    display:flex; align-items:center; gap:7px;
+  }
+  #basemapToggle:hover{background:#fff;}
+  #basemapToggle .sw{width:9px; height:9px; border-radius:50%; background:var(--forest);}
+
+  #modeBadge{
+    position:absolute; left:16px; top:60px; z-index:15;
+    background:var(--forest-deep);
+    border:1px solid var(--stamp);
+    border-radius:3px;
+    padding:8px 12px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.03em;
+    cursor:pointer;
+    box-shadow:0 2px 10px rgba(28,43,34,.25);
+    color:var(--paper);
+    display:flex; align-items:center; gap:7px;
+    max-width:220px;
+  }
+  #modeBadge:hover{background:#2A4A28;}
+  #modeBadge .sw{width:9px; height:9px; border-radius:50%; background:var(--stamp); flex-shrink:0;}
+  @media (max-width:860px){
+    #modeBadge{top:auto; bottom:calc(70px + env(safe-area-inset-bottom, 0px) + 10px); left:10px; font-size:10.5px; padding:7px 10px; max-width:75vw;}
+  }
+
+  /* Click-to-measure popup styling */
+  .measure-popup{min-width:220px;}
+  .measure-popup > b{font-family:'Fraunces',serif; font-size:15px; display:block; margin-bottom:8px;}
+  .mp-turbines{border-top:1px solid #E5E2D4;}
+  .mp-turbine{padding:7px 0; border-bottom:1px solid #E5E2D4;}
+  .mp-turbine-top{display:flex; align-items:center; gap:8px; margin-bottom:2px;}
+  .mp-name{font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:var(--ink);}
+  .mp-tag{
+    font-family:'IBM Plex Mono',monospace; font-size:9px; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--forest); background:#E4EBE1; padding:1px 6px; border-radius:8px;
+  }
+  .mp-dist{font-size:13px; color:var(--ink);}
+  .mp-dist b{font-family:'IBM Plex Mono',monospace; font-size:15px; color:var(--forest);}
+  .mp-dist .mp-sub{font-size:10.5px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace;}
+  .mp-noise{
+    margin-top:8px; padding:8px 0 4px; border-top:1px solid #E5E2D4;
+    display:flex; align-items:baseline; justify-content:space-between; gap:8px;
+  }
+  .mp-noise-num{font-family:'Fraunces',serif; font-size:24px; font-weight:600; color:var(--forest);}
+  .mp-noise-unit{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-soft); font-weight:400;}
+  .mp-noise-label{font-size:10.5px; color:var(--ink-soft); text-align:right; max-width:110px; line-height:1.3;}
+  .mp-night{margin-top:8px; padding-top:6px; border-top:1px dashed #E5E2D4;}
+  .mp-period{margin-top:8px; padding-top:8px; border-top:1px solid #E5E2D4;}
+  .mp-period-label{
+    font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase;
+    letter-spacing:.05em; color:var(--forest); font-weight:600; margin-bottom:3px;
+  }
+  .mp-night-label{
+    font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase;
+    letter-spacing:.05em; color:var(--ink-soft); margin-bottom:3px;
+  }
+  .mp-night-row{display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:4px 10px;}
+  .mp-night-vals{font-size:12px; color:var(--ink); font-family:'IBM Plex Mono',monospace;}
+  .mp-night-inc{font-size:12.5px; font-weight:600; font-family:'IBM Plex Mono',monospace; white-space:nowrap;}
+
+  /* Turbine icon */
+  .turbine-icon{filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.35));}
+  .turbine-icon:hover{filter:drop-shadow(0 1px 2.5px rgba(0,0,0,.55));}
+  .turbine-blades{
+    animation: spin-turbine var(--spin-duration, 5.6s) linear infinite;
+    animation-play-state: var(--spin-state, running);
+  }
+  @keyframes spin-turbine{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+
+  /* Etiquetas permanentes com o nome do aerogerador / recetor */
+  .ag-label, .ra-label{
+    background:rgba(255,255,255,.92); border:1px solid rgba(0,0,0,.12);
+    border-radius:2px; padding:1px 5px; font-family:'IBM Plex Mono',monospace;
+    font-weight:600; box-shadow:none; white-space:nowrap;
+    transition:opacity .15s ease;
+  }
+  .ag-label{color:#3A4A50; font-size:10.5px;}
+  .ra-label{color:#2F5233; font-size:10.5px; border-color:#2F5233;}
+  .ag-label::before, .ra-label::before{display:none;}
+  .leaflet-tooltip.ag-label, .leaflet-tooltip.ra-label{
+    box-shadow:0 1px 3px rgba(0,0,0,.15);
+  }
+  #map.labels-hidden .ag-label, #map.labels-hidden .ra-label{
+    opacity:0; pointer-events:none;
+  }
+
+  /* dB reference scale */
+  #dbScaleHolder svg{width:100%; display:block;}
+  .db-readout{
+    margin-top:8px; padding:8px 10px;
+    background:var(--paper); border:1px solid var(--paper-deep); border-left:3px solid var(--forest);
+    border-radius:2px; font-size:12px; line-height:1.5; color:var(--ink);
+  }
+  .db-readout b{font-family:'IBM Plex Mono',monospace;}
+
+  /* Painel do ponto testado, reorganizado em blocos */
+  .panel-block{
+    border:1px solid var(--paper-deep); border-radius:3px; margin-bottom:12px; overflow:hidden;
+  }
+  .panel-block-title{
+    background:var(--paper); padding:7px 12px;
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--ink-soft); border-bottom:1px solid var(--paper-deep);
+  }
+  .panel-block-body{padding:10px 12px; background:#fff;}
+  .dist-row{display:flex; align-items:baseline; justify-content:space-between; padding:6px 0; border-bottom:1px dashed var(--paper-deep); font-size:12.5px;}
+  .dist-row:last-child{border-bottom:none;}
+  .dist-row .dr-name{font-family:'IBM Plex Mono',monospace; color:var(--ink-soft);}
+  .dist-row .dr-blade{font-family:'IBM Plex Mono',monospace; font-weight:600; color:var(--forest); font-size:14px;}
+  .dist-row .dr-hub{font-family:'IBM Plex Mono',monospace; color:var(--ink-soft); font-size:10.5px;}
+  .noise-readout{
+    display:flex; align-items:baseline; gap:10px; padding:4px 0;
+  }
+  .noise-readout .nr-num{font-family:'Fraunces',serif; font-size:36px; font-weight:600; color:var(--forest); line-height:1;}
+  .noise-readout .nr-unit{font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--ink-soft);}
+  .noise-context{font-size:11.5px; color:var(--ink-soft); margin-top:6px; line-height:1.5;}
+
+  /* Barras de comparação sem parque / com parque */
+  .compare-wrap{padding:2px 0;}
+  .compare-row{display:flex; align-items:center; gap:8px; margin-bottom:5px;}
+  .compare-label{font-size:10.5px; color:var(--ink-soft); width:62px; flex-shrink:0; font-family:'IBM Plex Mono',monospace;}
+  .compare-track{flex:1; height:9px; background:#EAE8DC; border-radius:5px; overflow:hidden;}
+  .compare-fill{height:100%; border-radius:5px;}
+  .compare-before{background:#8B8B7A;}
+  .compare-after{background:#C4432A;}
+  .compare-val{font-family:'IBM Plex Mono',monospace; font-size:11px; width:32px; text-align:right; flex-shrink:0;}
+  .compare-increase{font-size:11.5px; font-weight:600; margin-top:2px; font-family:'IBM Plex Mono',monospace;}
+
+  .gauge-wrap{margin-top:10px;}
+  .gauge-label{
+    font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase;
+    letter-spacing:.05em; color:var(--ink-soft); margin-bottom:5px;
+  }
+  .gauge-track{position:relative; height:10px; border-radius:5px; background:#EAE8DC; overflow:visible; margin-top:10px;}
+  .gauge-zone-sens, .gauge-zone-mista, .gauge-zone-over{position:absolute; top:0; height:100%;}
+  .gauge-zone-sens{border-radius:5px 0 0 5px;}
+  .gauge-zone-sens{position:absolute; top:0; left:0; height:100%; background:#4A7A55; opacity:.35;}
+  .gauge-zone-mista{position:absolute; top:0; height:100%; background:#D9A441; opacity:.4;}
+  .gauge-zone-over{position:absolute; top:0; height:100%; background:#C4432A; opacity:.4;}
+  .gauge-marker{
+    position:absolute; top:-3px; width:3px; height:16px; background:#1C2B22;
+    border-radius:2px; transform:translateX(-50%);
+    box-shadow:0 0 0 1.5px #fff; z-index:3;
+  }
+  .gauge-ticks{position:relative; height:28px; margin-top:4px;}
+  .gauge-ticks span{
+    position:absolute; top:0; transform:translateX(-50%); font-size:8.5px;
+    font-family:'IBM Plex Mono',monospace; color:var(--ink-soft); white-space:nowrap;
+    text-align:center; line-height:1.3;
+  }
+  .gauge-ticks span.tick-who{color:#1E5C8A; font-weight:600;}
+  .gauge-ticks span.tick-mista{color:#8A5A1E; font-weight:600;}
+  .gauge-status{font-size:11.5px; font-weight:600; margin-top:8px; font-family:'IBM Plex Mono',monospace;}
+
+  .gauge-who-line{
+    position:absolute; top:0; width:2px; height:100%; background:#1E5C8A;
+    transform:translateX(-50%); z-index:2;
+  }
+
+  .gauge-compact{margin-top:6px;}
+  .gauge-compact .gauge-track{margin-top:6px; height:8px;}
+  .gauge-compact .gauge-ticks{height:20px;}
+  .gauge-compact .gauge-ticks span{font-size:8px;}
+  .ref-note{font-size:11px; line-height:1.5; color:var(--ink-soft); margin-top:6px; font-style:italic;}
+
+  .zone-verdict{
+    display:flex; gap:10px; align-items:flex-start;
+    padding:12px 14px; border-radius:3px; border:1.5px solid;
+  }
+  .zone-verdict.zone-ok{background:#EBF3EC; border-color:#4A7A55;}
+  .zone-verdict.zone-bad{background:#FBEAE3; border-color:#C4432A;}
+  .zone-verdict-icon{
+    font-size:16px; flex-shrink:0; width:22px; height:22px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff;
+  }
+  .zone-ok .zone-verdict-icon{background:#4A7A55;}
+  .zone-bad .zone-verdict-icon{background:#C4432A;}
+  .zone-verdict-title{
+    font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase;
+    letter-spacing:.04em; color:var(--ink-soft); margin-bottom:3px;
+  }
+  .zone-verdict-text{font-family:'IBM Plex Sans',sans-serif; font-weight:600; font-size:13px; color:var(--ink);}
+  .zone-ok .zone-verdict-text{color:#2A4A2E;}
+  .zone-bad .zone-verdict-text{color:#6B2415;}
+
+  .who-callout{
+    display:flex; gap:10px; align-items:flex-start;
+    margin-top:14px; padding:12px 14px; border-radius:3px;
+    border:1.5px solid #1E5C8A;
+  }
+  .who-callout.who-exceeded{background:#EAF1F6;}
+  .who-callout.who-ok{background:#EBF3EC; border-color:#4A7A55;}
+  .who-callout-icon{
+    font-size:16px; flex-shrink:0; width:22px; height:22px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-weight:700;
+    background:#1E5C8A; color:#fff;
+  }
+  .who-ok .who-callout-icon{background:#4A7A55;}
+  .who-callout-title{
+    font-family:'IBM Plex Sans',sans-serif; font-weight:600; font-size:12.5px; color:#123A54; margin-bottom:4px;
+  }
+  .who-ok .who-callout-title{color:#2A4A2E;}
+  .who-callout-text{font-size:12px; line-height:1.55; color:#2A4A5A;}
+  .who-ok .who-callout-text{color:#3A5A3E;}
+
+  @media (max-width: 860px){
+    #sidebar{
+      position:absolute; z-index:1000; height:70%;
+      bottom:0; left:0; right:0; width:100% !important; min-width:0; max-width:none;
+      transform:translateY(calc(100% - 52px));
+      transition:transform .25s ease;
+      border-top:none;
+      border-radius:14px 14px 0 0;
+      box-shadow:0 -6px 24px rgba(28,43,34,.35);
+      padding-bottom:env(safe-area-inset-bottom, 0px);
+      overflow-y:auto;
+    }
+    #sidebar.open{transform:translateY(0);}
+    #dragHandle{
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      padding:14px 10px; cursor:pointer;
+      background:var(--forest-deep);
+      border-radius:14px 14px 0 0;
+      font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.06em;
+      text-transform:uppercase; color:var(--paper);
+      min-height:48px;
+      touch-action:manipulation;
+      box-shadow:0 -2px 10px rgba(28,43,34,.25);
+    }
+    #dragHandle::before{
+      content:"▲";
+      font-size:11px;
+      transition:transform .25s ease;
+    }
+    #sidebar.open #dragHandle::before{ transform:rotate(180deg); }
+    #resizeHandle{display:none !important;}
+    header{padding:14px 16px;}
+    header h1{font-size:18px;}
+    header .eyebrow{font-size:9.5px;}
+    header .meta{display:none;}
+    #backBtn{font-size:11px; padding:6px 9px;}
+    #basemapToggle{left:10px; top:10px; padding:6px 9px; font-size:10.5px;}
+    #dbLegend{right:10px; top:10px; min-width:150px; max-width:180px; padding:9px 10px;}
+    #dbLegend .lg-title{font-size:11px;}
+    .leaflet-control-zoom{margin-bottom:calc(70px + env(safe-area-inset-bottom, 0px)) !important;}
+    .stat-grid{grid-template-columns:repeat(2,1fr);}
+    .landing-body{padding:28px 18px 60px;}
+    .landing-hero h2{font-size:23px;}
+    .landing-header{padding:16px 18px;}
+    .project-card-big{padding:18px 16px;}
+    .project-card-big h4{font-size:20px;}
+  }
+  #dragHandle{display:none;}
+  @media (max-width:860px){ #dragHandle{display:flex;} }
+
+  /* ---------- LANDING PAGE ---------- */
+  #landingView{
+    height:100%; overflow-y:auto; background:var(--paper);
+    background-image: repeating-radial-gradient(circle at 15% 8%, transparent 0 60px, rgba(47,82,51,0.035) 60px 62px),
+                       repeating-radial-gradient(circle at 15% 8%, transparent 0 110px, rgba(47,82,51,0.03) 110px 112px);
+  }
+  .landing-header{
+    background:var(--forest-deep); color:var(--paper); padding:22px 32px;
+    border-bottom:3px solid var(--stamp);
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .landing-header .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:#B9C9AE;}
+  .landing-header h1{font-family:'Fraunces',serif; font-weight:500; font-size:28px; margin:2px 0 0;}
+  #aboutBtn{
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.25);
+    color:var(--paper); font-family:'IBM Plex Mono',monospace; font-size:12.5px;
+    padding:8px 16px; border-radius:3px; cursor:pointer; white-space:nowrap;
+    transition:background .15s ease;
+  }
+  #aboutBtn:hover{background:rgba(255,255,255,.18);}
+  #aboutView{display:none; height:100%; overflow-y:auto; background:var(--paper);}
+  .about-text{font-size:15px; line-height:1.75; color:var(--ink); max-width:620px; margin:0 0 20px;}
+  #aboutBackBtn{
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.25);
+    color:var(--paper); font-family:'IBM Plex Mono',monospace; font-size:12.5px;
+    padding:8px 16px; border-radius:3px; cursor:pointer; white-space:nowrap;
+    transition:background .15s ease;
+  }
+  #aboutBackBtn:hover{background:rgba(255,255,255,.18);}
+
+  #landingView .landing-body{max-width:880px; margin:0 auto; padding:48px 28px 80px; display:flex; flex-direction:column;}
+  #aboutView .landing-body{max-width:880px; margin:0 auto; padding:48px 28px 80px;}
+  .landing-hero{margin-bottom:44px;}
+  .landing-hero h2{
+    font-family:'Fraunces',serif; font-weight:500; font-size:32px; line-height:1.25;
+    color:var(--ink); margin:0 0 14px; max-width:640px;
+  }
+  .landing-hero p{font-size:15.5px; line-height:1.6; color:var(--ink-soft); max-width:560px;}
+  .hero-deadline{
+    display:inline-flex; margin:2px 0 18px; padding:5px 9px; border:1px solid var(--stamp);
+    border-radius:2px; color:var(--stamp) !important; font:600 11px 'IBM Plex Mono',monospace !important;
+    letter-spacing:.03em; text-transform:uppercase;
+  }
+  .landing-action-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:22px;}
+  .landing-action{
+    display:inline-flex; align-items:center; justify-content:center; min-height:42px; padding:10px 14px;
+    border:1px solid var(--forest); border-radius:3px; background:var(--forest); color:var(--paper);
+    font:600 12px 'IBM Plex Mono',monospace; letter-spacing:.02em; text-decoration:none; cursor:pointer;
+  }
+  .landing-action:hover{background:var(--forest-deep);}
+  .landing-action.secondary{background:transparent; color:var(--forest);}
+  .landing-action.secondary:hover{background:#E4EBE1;}
+  .reading-guide{
+    margin:-18px 0 42px; padding:18px 20px; background:#fff; border:1px solid var(--paper-deep);
+    border-top:3px solid var(--steel); border-radius:3px;
+  }
+  .reading-guide h3{margin-bottom:14px;}
+  .guide-steps{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  .guide-step{position:relative; padding:12px 12px 12px 42px; border-radius:3px; background:var(--card); min-height:82px;}
+  .guide-step .guide-step-num{
+    position:absolute; left:11px; top:11px; width:26px; height:26px; border-radius:50%; display:grid; place-items:center;
+    color:#fff !important; background:#1F5C35; border:2px solid #fff; box-shadow:0 0 0 1px #1F5C35;
+    font:700 12px 'IBM Plex Mono',monospace; line-height:1;
+  }
+  .guide-step:nth-child(2) .guide-step-num{background:#1E5C78; box-shadow:0 0 0 1px #1E5C78;}
+  .guide-step:nth-child(3) .guide-step-num{background:#914D08; box-shadow:0 0 0 1px #914D08;}
+  .guide-step strong{display:block; margin-bottom:4px; color:var(--ink); font:600 12px 'IBM Plex Mono',monospace;}
+  .guide-step span{font-size:12px; line-height:1.42; color:var(--ink-soft);}
+  .data-key{display:flex; flex-wrap:wrap; gap:8px 14px; margin-top:14px; font-size:11.5px; color:var(--ink-soft);}
+  .data-key-item{display:inline-flex; align-items:center; gap:6px;}
+  .data-key-dot{width:9px; height:9px; border-radius:50%; flex-shrink:0;}
+  .data-key-dot.measured{background:var(--forest);}
+  .data-key-dot.predicted{background:var(--steel);}
+  .data-key-dot.exploratory{background:#8A5A1E;}
+  .sidebar-key{margin-top:12px; padding:10px; border:1px solid rgba(255,255,255,.16); border-radius:3px; background:rgba(255,255,255,.05);}
+  .sidebar-key-title{font:600 10px 'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--paper); margin-bottom:8px;}
+  .sidebar-key-row{display:flex; align-items:flex-start; gap:7px; font-size:10.5px; color:#D9E2D2; line-height:1.4; margin-top:5px;}
+  .sidebar-key .data-key-dot{margin-top:3px;}
+  .glossary-row{display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:14px;}
+  .glossary-intro{
+    flex-basis:100%; font-family:'IBM Plex Mono',monospace; font-size:10.5px;
+    text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); margin-bottom:2px;
+  }
+  .glossary-item{
+    display:flex; align-items:center; gap:10px;
+    background:var(--card); border:1px solid var(--paper-deep); border-radius:3px;
+    padding:8px 14px; max-width:340px;
+  }
+  .glossary-code{
+    font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:13px;
+    color:var(--forest); background:#E4EBE1; padding:2px 8px; border-radius:3px; flex-shrink:0;
+  }
+  .glossary-def{font-size:12px; color:var(--ink-soft); line-height:1.4;}
+
+  .landing-section{margin-bottom:48px;}
+  .landing-section h3{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; text-transform:uppercase;
+    letter-spacing:.1em; color:var(--steel); margin:0 0 16px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .landing-section h3::after{content:""; flex:1; height:1px; background:var(--paper-deep);}
+
+  .project-card-big{
+    display:block; width:100%; text-align:left; font:inherit; text-decoration:none;
+    background:var(--card); border:1px solid var(--paper-deep); border-left:5px solid var(--forest);
+    border-radius:3px; padding:24px 26px; cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .project-card-big:hover{transform:translateY(-2px); box-shadow:0 6px 22px rgba(28,43,34,.12); border-left-color:var(--stamp);}
+  .project-card-big .pcb-top{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:8px;}
+  .project-card-big .type{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--steel);}
+  .project-card-big h4{font-family:'Fraunces',serif; font-size:24px; font-weight:500; margin:4px 0 8px; color:var(--ink);}
+  .project-card-big p{font-size:13.5px; color:var(--ink-soft); margin:0 0 16px; line-height:1.55;}
+  .project-card-big .pcb-cta{
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:500; color:var(--forest);
+    text-transform:uppercase; letter-spacing:.04em;
+  }
+
+  .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .stat-card{
+    background:var(--card); border:1px solid var(--paper-deep); border-radius:3px;
+    padding:18px 16px; text-align:left;
+  }
+  .stat-card-warn{border-left:4px solid var(--stamp); background:#F6E9DC;}
+  .stat-num{font-family:'Fraunces',serif; font-size:34px; font-weight:600; color:var(--forest); line-height:1;}
+  .stat-card-warn .stat-num{color:var(--stamp);}
+  .stat-label{font-size:11.5px; color:var(--ink-soft); margin-top:8px; line-height:1.4;}
+
+  .law-box{
+    background:var(--card); border:1px solid var(--paper-deep); border-left:4px solid var(--forest);
+    border-radius:3px; padding:18px 20px; margin-bottom:18px;
+  }
+  .law-box-title{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase;
+    letter-spacing:.06em; color:var(--forest); margin-bottom:10px; font-weight:600;
+  }
+  .law-box-text{font-size:13px; line-height:1.6; color:var(--ink-soft); margin:0 0 12px;}
+  .law-box-limits{display:flex; flex-wrap:wrap; gap:14px; margin-bottom:12px;}
+  .law-limit{
+    background:#fff; border:1px solid var(--paper-deep); border-radius:3px;
+    padding:10px 16px; text-align:center; flex:1; min-width:110px;
+  }
+  .law-limit-num{
+    display:block; font-family:'Fraunces',serif; font-size:20px; font-weight:600; color:var(--ink);
+  }
+  .law-limit-label{
+    display:block; font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase;
+    letter-spacing:.04em; color:var(--ink-soft); margin-top:3px;
+  }
+
+  .landing-footer{
+    margin-top:56px; padding-top:20px; border-top:1px solid var(--paper-deep);
+    font-size:12px; color:var(--ink-soft); line-height:1.6;
+  }
+  .landing-footer a{color:var(--forest);}
+  .source-box{
+    margin-top:14px; background:#fff; border:1px solid var(--paper-deep); border-left:3px solid var(--steel);
+    border-radius:3px; padding:12px 14px; font-size:12px; line-height:1.55; color:var(--ink-soft);
+  }
+  .source-box b{color:var(--ink);}
+  .source-box a{color:var(--forest);}
+  .privacy-note{margin-top:14px; font-size:11.5px; color:var(--ink-soft);}
+  .privacy-note summary{cursor:pointer; color:var(--forest); font-weight:600;}
+  .privacy-note p{margin:7px 0 0; line-height:1.55;}
+  .cookie-settings{
+    margin-top:10px; padding:0; border:0; border-bottom:1px solid currentColor; background:transparent;
+    color:var(--forest); font:600 11.5px 'IBM Plex Sans',sans-serif; cursor:pointer;
+  }
+  #cookieBanner{
+    position:fixed; z-index:3000; right:20px; bottom:20px; width:min(460px, calc(100vw - 40px));
+    background:#fff; border:1px solid var(--paper-deep); border-left:4px solid var(--forest); border-radius:4px;
+    padding:18px; box-shadow:0 12px 36px rgba(28,43,34,.25); color:var(--ink);
+  }
+  #cookieBanner[hidden]{display:none;}
+  #cookieBanner h2{font:500 20px 'Fraunces',serif; margin:0 0 7px;}
+  #cookieBanner p{margin:0; color:var(--ink-soft); font-size:12.5px; line-height:1.55;}
+  .cookie-actions{display:flex; gap:10px; margin-top:15px;}
+  .cookie-action{
+    flex:1; min-height:40px; padding:9px 12px; border:1px solid var(--forest); border-radius:3px;
+    background:#fff; color:var(--forest); font:600 12px 'IBM Plex Mono',monospace; cursor:pointer;
+  }
+  .cookie-action:hover{background:#E4EBE1;}
+  .cookie-action.accept{background:var(--forest); color:var(--paper);}
+  .cookie-action.accept:hover{background:var(--forest-deep);}
+
+  #landingView .landing-hero{order:1;}
+  #landingView .reading-guide{order:2;}
+  #landingView .process-section{order:3;}
+  #landingView .stats-section{order:4;}
+  #landingView .sound-section{order:5;}
+  #landingView .method-section{order:6;}
+  #landingView .findings-section{order:7;}
+  #landingView .truth-section{order:8;}
+  #landingView .landing-footer{order:9;}
+
+  .project-card-big:focus-visible, .landing-action:focus-visible{
+    outline:3px solid #1E6FEB; outline-offset:3px;
+  }
+
+  #dbScaleHolderBig svg{width:100%; display:block;}
+
+  .method-block{display:flex; gap:16px; margin-bottom:26px;}
+  .method-details{margin-top:4px;}
+  .method-details summary{
+    cursor:pointer; list-style:none;
+    font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600;
+    color:var(--forest); background:var(--card); border:1px solid var(--paper-deep);
+    border-left:3px solid var(--forest); border-radius:3px; padding:12px 16px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .method-details summary::-webkit-details-marker{display:none;}
+  .method-details summary::after{content:"Mostrar ▾"; color:var(--ink-soft); font-weight:400; font-size:11px;}
+  .method-details[open] summary::after{content:"Esconder ▴";}
+  .method-details[open] summary{margin-bottom:22px; border-radius:3px 3px 0 0;}
+  .method-details .method-block:first-of-type{margin-top:6px;}
+  .method-num{
+    flex-shrink:0; width:30px; height:30px; border-radius:50%;
+    background:var(--forest); color:var(--paper);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fraunces',serif; font-weight:600; font-size:15px;
+  }
+  .method-block h4{
+    font-family:'Fraunces',serif; font-size:17px; font-weight:500; margin:0 0 6px; color:var(--ink);
+  }
+  .method-block p{font-size:13.5px; line-height:1.6; color:var(--ink-soft); margin:0 0 8px;}
+  .method-block p b{color:var(--ink); font-weight:600;}
+  .formula{
+    font-family:'IBM Plex Mono',monospace; font-size:13px; background:var(--card);
+    border:1px solid var(--paper-deep); border-left:3px solid var(--forest);
+    padding:10px 14px; border-radius:2px; margin:8px 0; color:var(--ink); overflow-x:auto;
+  }
+  .method-caption{font-size:11.5px; color:var(--ink-soft); text-align:center; margin-top:8px !important;}
+  #accuracyChartHolder{margin-top:10px;}
+  #accuracyChartHolder svg{width:100%; display:block; background:#fff; border:1px solid var(--paper-deep); border-radius:3px;}
+  .traceability-box{margin:10px 0 4px; overflow-x:auto; border:1px solid var(--paper-deep); border-radius:3px; background:#fff;}
+  .traceability-table{width:100%; min-width:590px; border-collapse:collapse; font-size:12px; color:var(--ink-soft);}
+  .traceability-table th,.traceability-table td{padding:9px 10px; border-bottom:1px solid var(--paper-deep); text-align:left; vertical-align:top;}
+  .traceability-table th{background:var(--card); color:var(--ink); font:600 11px 'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.02em;}
+  .traceability-table tr:last-child td{border-bottom:none;}
+  .evidence-note{margin:10px 0 0; padding:11px 13px; border-left:3px solid #8A5A1E; background:#FFF7EB; color:#654A2C; font-size:12.5px; line-height:1.55;}
+
+  .method-group{margin-bottom:8px;}
+  .method-group + .method-group{margin-top:34px; padding-top:30px; border-top:2px dashed var(--paper-deep);}
+  .method-group-title{
+    display:flex; align-items:center; gap:10px; margin-bottom:20px;
+  }
+  .method-group-tag{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; text-transform:uppercase;
+    letter-spacing:.05em; padding:4px 9px; border-radius:2px; white-space:nowrap;
+  }
+  .method-group-cnossos .method-group-tag{background:var(--forest); color:var(--paper);}
+  .method-group-cnossos .method-num{background:var(--forest);}
+  .method-group-real .method-group-tag{background:#8A5A1E; color:var(--paper);}
+  .method-group-real .method-num{background:#8A5A1E;}
+  .method-group-title h4{
+    font-family:'Fraunces',serif; font-size:15.5px; font-weight:500; color:var(--ink); margin:0;
+  }
+  .method-group-intro{font-size:13px; color:var(--ink-soft); margin:0 0 20px; line-height:1.6;}
+
+  .truth-section{
+    background:var(--forest-deep); color:var(--paper);
+    margin-left:-28px; margin-right:-28px; padding:36px 28px;
+    border-top:3px solid var(--stamp); border-bottom:3px solid var(--stamp);
+  }
+  .truth-section h3{color:var(--paper);}
+  .truth-section h3::after{background:rgba(255,255,255,.25);}
+  .truth-grid{display:grid; grid-template-columns:1fr 1fr; gap:36px; margin-top:20px;}
+  .truth-col h4{
+    font-family:'Fraunces',serif; font-weight:500; font-size:16px; color:var(--paper);
+    margin:20px 0 8px;
+  }
+  .truth-col h4:first-child{margin-top:0;}
+  .truth-col p{font-size:13.5px; line-height:1.65; color:#D7DED2; margin:0 0 12px;}
+  .truth-col p b{color:#fff;}
+  .truth-list{margin:0 0 14px; padding-left:18px;}
+  .truth-list li{font-size:13.5px; line-height:1.6; color:#D7DED2; margin-bottom:10px;}
+  .truth-callout{
+    background:rgba(255,255,255,.08); border:1.5px solid var(--stamp);
+    border-radius:3px; padding:16px 18px; margin-bottom:20px;
+  }
+  .truth-callout-title{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase;
+    letter-spacing:.06em; color:var(--stamp); margin-bottom:8px; font-weight:600;
+  }
+  .truth-callout p{color:#fff; margin:0; font-size:14px; line-height:1.6;}
+
+  @media (max-width:760px){
+    .truth-section{margin-left:-18px; margin-right:-18px; padding:28px 18px;}
+    .truth-grid{grid-template-columns:1fr; gap:8px;}
+    .landing-action{width:100%;}
+    #cookieBanner{right:12px; bottom:12px; width:calc(100vw - 24px); padding:16px;}
+  }
+
+  @media (max-width:760px){
+    .stat-grid{grid-template-columns:repeat(2,1fr);}
+    .landing-hero h2{font-size:25px;}
+    .guide-steps{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div id="landingView">
+  <header class="landing-header">
+    <div class="brand">
+      <span class="eyebrow">Consulta Pública · Ambiente · Portugal</span>
+      <h1>Mapa Ambiental</h1>
+    </div>
+    <button id="aboutBtn" onclick="showAbout()">Sobre nós</button>
+  </header>
+
+  <div class="landing-body">
+    <div class="landing-section truth-section">
+      <h3>O que este mapa não consegue responder, e porquê</h3>
+      <div class="truth-grid">
+        <div class="truth-col">
+          <h4>A calibração aproxima-se do CNOSSOS, não da realidade</h4>
+          <p>Os 29 valores usados para calibrar e validar o modelo deste site não são medições de ruído feitas no terreno. São a saída do modelo CNOSSOS-EU, calculada pelo próprio EIA, para um parque que ainda não existe. Não há, nem podia haver, uma medição real do ruído deste parque em funcionamento.</p>
+          <p>Isto significa que a calibração feita aqui aproxima o nosso modelo simplificado do <b>resultado do CNOSSOS-EU</b>, não da <b>realidade acústica futura</b>. Se o CNOSSOS, como método, tiver um erro sistemático nesta zona (por exemplo, subestimar o ruído por não ter em conta terreno complexo ou vegetação), o modelo deste site herda esse mesmo erro, porque foi ajustado para se parecer com ele. Calibrar um modelo contra outro modelo aproxima os dois entre si; não garante que algum dos dois está certo.</p>
+          <h4>O que o CNOSSOS-EU é, e o que não foi pensado para fazer</h4>
+          <p>O CNOSSOS-EU foi desenvolvido para ruído de tráfego rodoviário, ferroviário, aéreo e indústria, e tornado obrigatório em Portugal por transposição de uma diretiva europeia (Decreto-Lei n.º 136-A/2019). Não existe, em Portugal, uma metodologia oficial específica para ruído de parques eólicos. O estudo citado na bibliografia do EIA (Rosão, Leonardo, Santos, 2021) alerta para a necessidade de precauções e ajustamentos na previsão acústica de parques eólicos.</p>
+        </div>
+        <div class="truth-col">
+          <div class="truth-callout">
+            <div class="truth-callout-title">Consequência direta</div>
+            <p>Não é possível, com os dados atualmente disponíveis, dizer com confiança qual será o ruído real deste parque depois de construído. O EIA apresenta uma previsão, calculada com um método que os próprios especialistas citados consideram inadequado para parques eólicos, sem os ajustamentos que esses mesmos especialistas recomendam.</p>
+          </div>
+          <h4>Sinais de que o risco pende para subestimar, não sobrestimar</h4>
+          <ul class="truth-list">
+            <li>O estudo citado na bibliografia do EIA usa o termo "modelação insegura" para descrever o risco de o CNOSSOS e o ISO 9613-2, sem ajustes, subestimarem o ruído real em parques eólicos.</li>
+            <li>Estudos de validação publicados, comparando previsões com medições reais em parques eólicos, mostram casos de terreno côncavo (em vale) onde o ruído medido foi superior ao previsto, por um efeito de foco do relevo. Parte da zona deste projeto (Serra da Nave) tem esse tipo de perfil.</li>
+            <li>O próprio EIA não documenta ter aplicado nenhum dos ajustamentos recomendados pelo seu especialista responsável (altura do recetor, absorção do solo, correção de terreno em vale).</li>
+          </ul>
+          <h4>Como isto deveria ter sido feito</h4>
+          <p>Uma avaliação mais fiável identificaria parques eólicos já em funcionamento, com o mesmo modelo de turbina (Vestas V172) ou semelhante, e com relevo comparável ao desta zona (terreno montanhoso, com vales e encostas). Nesses parques, mede-se o ruído real junto de habitações a distâncias e orientações conhecidas, e compara-se essa medição com o que o modelo de propagação (CNOSSOS-EU ou ISO 9613-2) tinha previsto antes da construção. A diferença entre o previsto e o medido dá um fator de correção real, específico para turbinas e terrenos deste tipo, em vez de se assumir que o modelo genérico, pensado para tráfego e indústria, está certo sem verificação.</p>
+          <p>É exatamente esse tipo de trabalho que o estudo citado na própria bibliografia do EIA (Rosão, Leonardo, Santos, 2021) realiza, propondo ajustamentos concretos ao método ISO 9613-2 a partir da comparação com dados reais de outros parques eólicos. O EIA cita este estudo como referência, mas não documenta ter aplicado nenhum dos ajustamentos que ele recomenda.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="landing-hero">
+      <p class="hero-deadline">Consulta pública do Paiva até 03/08/2026</p>
+      <h2>Parque Eólico do Paiva: o que está em causa antes de participar</h2>
+      <p>45 aerogeradores entre Aguiar da Beira e Sátão. Esta página traduz o EIA em mapas, números e factos verificáveis, para qualquer pessoa compreender o projeto e participar de forma informada.</p>
+      <div class="landing-action-row">
+        <button class="landing-action" type="button" onclick="enterProject()">Explorar o mapa do Paiva →</button>
+        <a class="landing-action secondary" href="https://participa.pt" target="_blank" rel="noopener">Abrir participa.pt ↗</a>
+      </div>
+    </div>
+
+    <section class="reading-guide" aria-labelledby="guideTitle">
+      <h3 id="guideTitle">Como ler este mapa</h3>
+      <div class="guide-steps">
+        <div class="guide-step"><span class="guide-step-num">1</span><strong>Escolhe um recetor RA</strong><span>Os pontos verdes representam habitações ou grupos de habitações avaliados pelo EIA.</span></div>
+        <div class="guide-step"><span class="guide-step-num">2</span><strong>Compara “sem” e “com” parque</strong><span>O fundo é uma medição de referência; o valor com parque é uma previsão CNOSSOS do EIA.</span></div>
+        <div class="guide-step"><span class="guide-step-num">3</span><strong>Explora com cuidado</strong><span>O modo +3 dB é um teste de sensibilidade, não uma previsão oficial nem uma medição futura.</span></div>
+      </div>
+      <div class="data-key" aria-label="Legenda de origem dos dados">
+        <span class="data-key-item"><i class="data-key-dot measured"></i>Medição de referência no terreno</span>
+        <span class="data-key-item"><i class="data-key-dot predicted"></i>Previsão oficial do EIA (CNOSSOS)</span>
+        <span class="data-key-item"><i class="data-key-dot exploratory"></i>Estimativa exploratória do site</span>
+      </div>
+    </section>
+
+    <div class="landing-section process-section">
+      <h3>Escolhe um processo</h3>
+      <a class="project-card-big" href="#appView" onclick="enterProject()" aria-label="Explorar o mapa interativo do Parque Eólico do Paiva">
+        <div class="pcb-top">
+          <span class="type">Energia eólica · AIA n.º 3853</span>
+          <span class="stamp-badge">Consulta pública até 03/08/2026</span>
+        </div>
+        <h4>Parque Eólico do Paiva</h4>
+        <p>45 aerogeradores, Vestas V172, entre Aguiar da Beira e Sátão. Promotor: LSBP Portugal SPV 1 (Lightsource bp).</p>
+        <div class="pcb-cta">Explorar o mapa interativo →</div>
+      </a>
+      <a class="project-card-big" style="margin-top:14px;" href="zaer.html" aria-label="Explorar o mapa das Zonas de Aceleração de Energias Renováveis">
+        <div class="pcb-top">
+          <span class="type">Planeamento nacional · Programa Setorial</span>
+          <span class="stamp-badge">Consulta pública encerrada 15/07/2026</span>
+        </div>
+        <h4>Zonas de Aceleração de Energias Renováveis (ZAER)</h4>
+        <p>Mapa nacional das áreas identificadas pelo LNEG/IST como preferenciais para solar fotovoltaico e eólico em terra, com licenciamento simplificado ao abrigo da Diretiva RED III.</p>
+        <div class="pcb-cta">Explorar o mapa interativo →</div>
+      </a>
+      <div class="placeholder-row" style="margin-top:14px;">
+        Mais processos (solares, linhas elétricas, barragens, minas) serão adicionados aqui à medida que forem analisados.
+      </div>
+      <div class="glossary-row">
+        <div class="glossary-intro">No mapa interativo, vais encontrar códigos como:</div>
+        <div class="glossary-item"><span class="glossary-code">AG37</span><span class="glossary-def">Aerogerador n.º 37, um dos 45 identificados no EIA (turbina eólica)</span></div>
+        <div class="glossary-item"><span class="glossary-code">RA12</span><span class="glossary-def">Recetor n.º 12, uma habitação ou grupo de habitações avaliado no EIA quanto ao ruído</span></div>
+      </div>
+    </div>
+
+    <div class="landing-section stats-section">
+      <h3>O que os números do próprio EIA mostram</h3>
+      <div class="law-box">
+        <div class="law-box-title">Artigo 13.º do RGR (Decreto-Lei n.º 9/2007), Critério de Incomodidade</div>
+        <p class="law-box-text">A diferença entre o ruído previsto com o parque em funcionamento e o ruído medido antes do projeto não pode exceder:</p>
+        <div class="law-box-limits">
+          <div class="law-limit"><span class="law-limit-num">5 dB(A)</span><span class="law-limit-label">período diurno</span></div>
+          <div class="law-limit"><span class="law-limit-num">4 dB(A)</span><span class="law-limit-label">entardecer</span></div>
+          <div class="law-limit"><span class="law-limit-num">3 dB(A)</span><span class="law-limit-label">período noturno</span></div>
+        </div>
+        <p class="law-box-text">Exceto se o ruído ambiente total, em qualquer período, for igual ou inferior a 45 dB(A), caso em que o critério deixa de se aplicar (art. 13.º, n.º 5).</p>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-num">45</div>
+          <div class="stat-label">aerogeradores, até 7,2 MW cada, 135 m de altura de torre</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">29</div>
+          <div class="stat-label">recetores (casas) avaliados formalmente pelo EIA nesta zona</div>
+        </div>
+        <div class="stat-card stat-card-warn">
+          <div class="stat-num">21<span style="font-size:16px;">/29</span></div>
+          <div class="stat-label">recetores com aumento de ruído noturno calculado acima dos 3 dB(A) do RGR, a maioria "cumpre" só por isenções ou critérios alternativos do regulamento</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">620 m</div>
+          <div class="stat-label">distância mínima calculada entre uma pá (AG37) e uma habitação identificada</div>
+        </div>
+      </div>
+      <div class="source-box">
+        <b>Fontes deste resumo:</b> características do parque — EIA, Volume II, Quadro 5.1 (p. 82); recetores e níveis de ruído — Quadros 8.66, 8.68 e 8.69; regra de incomodidade — Decreto-Lei n.º 9/2007, art. 13.º. <a href="https://participa.pt" target="_blank" rel="noopener">Consultar os documentos oficiais em participa.pt ↗</a>
+      </div>
+    </div>
+
+    <div class="landing-section sound-section">
+      <h3>Quanto é que isso significa em barulho?</h3>
+      <p style="margin-bottom:14px; color:var(--ink-soft); font-size:13.5px;">Os decibéis (dB) não são uma escala linear: cada 10 dB a mais significa o dobro do barulho percebido pelo ouvido humano. Esta régua compara os valores previstos pelo EIA com sons do dia a dia.</p>
+      <div id="dbScaleHolderBig"></div>
+    </div>
+
+    <div class="landing-section method-section">
+      <h3>Como calculamos os decibéis (metodologia)</h3>
+      <p style="margin-bottom:16px; color:var(--ink-soft); font-size:13.5px; line-height:1.6;">
+        Este mapa separa três coisas: <b>medições de referência feitas no terreno</b>, <b>previsões oficiais CNOSSOS do EIA</b> e <b>estimativas simplificadas deste site</b>. Esta secção explica claramente o que representa cada uma.
+      </p>
+
+      <details class="method-details">
+        <summary>Ver a metodologia completa, incluindo as fórmulas usadas</summary>
+
+      <div class="method-group method-group-cnossos">
+        <div class="method-group-title">
+          <span class="method-group-tag">Modelo base do mapa</span>
+          <h4>Estudo CNOSSOS (projeto) — dados e cálculo do EIA</h4>
+        </div>
+        <p class="method-group-intro">Este bloco descreve as medições de referência do EIA, as previsões CNOSSOS e o modelo simplificado calibrado contra essas previsões. É a metodologia usada por omissão no modo "Estudo CNOSSOS (projeto)".</p>
+
+      <div class="method-block">
+        <div class="method-num">1</div>
+        <div>
+          <h4>Três origens de dados, três significados</h4>
+          <p>As posições dos 45 aerogeradores provêm do Quadro 4.3 do EIA e as especificações técnicas do Quadro 5.1. O relatório acreditado de ruído ambiente mede, antes da construção, o ruído de referência junto de 20 pontos PRC, PRF e PRA. Os 29 recetores RA são outra coisa: valores <b>previstos</b> pelo CNOSSOS-EU para habitações ou grupos de habitações, usando esses níveis de referência.</p>
+          <div class="evidence-note"><b>Leitura correta do mapa:</b> “sem parque” corresponde a uma medição de referência no terreno; “com parque” é uma previsão do EIA. Não existem medições do Parque Eólico do Paiva em funcionamento, porque o parque ainda não existe.</div>
+        </div>
+      </div>
+
+      <div class="method-block">
+        <div class="method-num">1a</div>
+        <div>
+          <h4>Rastreabilidade: dos pontos medidos aos 29 recetores</h4>
+          <p>Vários recetores RA partilham o mesmo ponto de medição PRA. A tabela mostra a ligação usada neste mapa; o Lden é o ruído de referência medido no relatório acústico de 2025.</p>
+          <div class="traceability-box"><table class="traceability-table">
+            <thead><tr><th>Ponto medido</th><th>Recetores RA associados</th><th>Lden de referência</th><th>Origem</th></tr></thead>
+            <tbody>
+              <tr><td>PRA1</td><td>RA01–RA03</td><td>44,8 dB(A)</td><td>Medição no terreno</td></tr>
+              <tr><td>PRA2 / PRA3</td><td>RA04–RA05 / RA06–RA08</td><td>46,5 / 46,4 dB(A)</td><td>Medição no terreno</td></tr>
+              <tr><td>PRA10 / PRA9</td><td>RA09–RA12 / RA13–RA17</td><td>47,7 / 45,5 dB(A)</td><td>Medição no terreno</td></tr>
+              <tr><td>PRA8 / PRA6</td><td>RA18 / RA19–RA22</td><td>54,2 / 45,4 dB(A)</td><td>Medição no terreno</td></tr>
+              <tr><td>PRA7 / PRA5 / PRA4</td><td>RA23–RA24 / RA25–RA26 / RA27–RA29</td><td>55,9 / 47,9 / 47,6 dB(A)</td><td>Medição no terreno</td></tr>
+            </tbody>
+          </table></div>
+          <p class="method-caption">O mapa conserva os valores do EIA; no PRA1, o relatório acústico apresenta 44,8 dB(A), enquanto o Quadro 8.68 do EIA usa 44,7 dB(A).</p>
+        </div>
+      </div>
+
+      <div class="method-block">
+        <div class="method-num">!</div>
+        <div>
+          <h4>O que falta para confirmar o impacto</h4>
+          <p>A confirmação do ruído do parque exige uma campanha de monitorização depois da entrada em funcionamento: medições independentes junto dos recetores mais expostos, com registo da operação das turbinas e das condições meteorológicas. Até existir essa evidência, os valores “com parque” nesta página e no EIA permanecem previsões, não resultados observados.</p>
+          <div class="evidence-note"><b>Pedido verificável para a consulta pública:</b> publicar o plano de monitorização pós‑obra, os pontos a medir, a periodicidade, as condições de ensaio e os resultados, incluindo as medidas adicionais a aplicar se houver desconformidades.</div>
+        </div>
+      </div>
+
+      <div class="method-block">
+        <div class="method-num">2</div>
+        <div>
+          <h4>O modelo simplificado, para os restantes pontos do mapa</h4>
+          <p>O EIA não avaliou todas as localizações possíveis, apenas os 29 recetores identificados. Para qualquer outro ponto selecionado no mapa, o site aplica a fórmula geral de propagação sonora para uma fonte ao ar livre:</p>
+          <div class="formula">Nível(d) = Potência − 20·log₁₀(d) − 11 − atenuação extra</div>
+          <p>O som perde intensidade com o quadrado da distância: duplicar a distância reduz o nível em 6 dB. O cálculo parte da potência sonora real de cada aerogerador (105,0 ou 106,9 dB(A), consoante consta ou não da lista de aerogeradores restringidos do EIA). O valor "−11" é uma constante da própria fórmula, sem significado físico adicional. A contribuição dos 45 aerogeradores no ponto selecionado é depois combinada energeticamente, não apenas a do mais próximo.</p>
+          <p>A "atenuação extra" corresponde a 0,006 dB por metro de distância, representando a perda de energia sonora por absorção atmosférica, com uma margem adicional para dispersão no ar. Ao contrário da perda geométrica, que depende do quadrado da distância, esta componente é linear: a 1000 metros representa cerca de 6 dB adicionais de perda.</p>
+        </div>
+      </div>
+
+      <div class="method-block">
+        <div class="method-num">3</div>
+        <div>
+          <h4>Combinação do ruído de vários aerogeradores</h4>
+          <p>Os níveis sonoros em decibéis não se podem somar diretamente. Dois aerogeradores, cada um a 90 dB(A), não resultam em 180 dB(A) juntos, mas em 93 dB(A), porque o dB é uma escala logarítmica: duplicar a energia sonora aumenta o nível em apenas 3 dB. A combinação da contribuição dos 45 aerogeradores segue a fórmula de soma de fontes de ruído:</p>
+          <div class="formula">Total = 10 × log₁₀( 10^(L₁/10) + 10^(L₂/10) + ... + 10^(L₄₅/10) )</div>
+          <p>Cada valor em dB é convertido para energia sonora, as energias são somadas, e o resultado é convertido novamente para dB. Este cálculo é executado sempre que se testa um ponto no mapa.</p>
+        </div>
+      </div>
+
+      <div class="method-block">
+        <div class="method-num">4</div>
+        <div>
+          <h4>O indicador Lden e a estimativa do período noturno</h4>
+          <p>O Lden é o indicador legal que resume o ruído de um dia inteiro num único valor. Não corresponde a uma média simples: penaliza o entardecer (+5 dB) e a noite (+10 dB) antes da combinação com o período diurno, refletindo o maior incómodo do ruído nesses períodos. A fórmula é:</p>
+          <div class="formula">Lden = 10 × log₁₀( (12·10^(Ld/10) + 4·10^((Le+5)/10) + 8·10^((Ln+10)/10)) / 24 )</div>
+          <p>Os aerogeradores operam de forma praticamente constante ao longo do dia, pelo que a sua contribuição em cada período (Ld, Le, Ln) é semelhante, ao contrário do ruído de fundo natural, geralmente mais baixo à noite. Quando Ld, Le e Ln são iguais entre si (designado aqui por X), a fórmula do Lden simplifica-se para X mais uma constante fixa:</p>
+          <div class="formula">Lden = X + 10 × log₁₀( (12 + 4·10^0,5 + 8·10) / 24 ) = X + 6,4 dB</div>
+          <p>O valor de 6,4 dB usado para estimar o nível noturno a partir do Lden do parque resulta diretamente desta fórmula, aplicada ao caso de uma fonte com emissão constante. O cálculo foi confirmado contra um dos 29 valores <b>previstos</b> pelo EIA (42,4 dB estimados por período; 42,5 dB no quadro do EIA) antes de ser incorporado no mapa.</p>
+        </div>
+      </div>
+
+      <div class="method-block">
+        <div class="method-num">5</div>
+        <div>
+          <h4>Validação do modelo</h4>
+          <p>A fórmula simplificada não considera terreno, vegetação, solo nem meteorologia, fatores que o modelo oficial CNOSSOS-EU do EIA calcula com maior detalhe. A comparação entre a fórmula sem ajuste e os 29 valores <b>previstos pelo CNOSSOS</b> mostrou que as estimativas ficavam sistematicamente abaixo desses valores, com um erro crescente à medida que a distância aumentava.</p>
+        </div>
+      </div>
+
+      <div class="method-block">
+        <div class="method-num">6</div>
+        <div>
+          <h4>Calibração do modelo</h4>
+          <p>A diferença entre o modelo simplificado e os valores <b>previstos pelo CNOSSOS</b> foi corrigida por comparação direta, ponto a ponto, com os 29 recetores do EIA. A regressão resultante aproxima este modelo simplificado do modelo CNOSSOS; não é uma validação contra medições do parque em funcionamento. A correção depende da distância ao aerogerador mais próximo:</p>
+          <div class="formula">correção(d) = 9,22 + 0,00499 × d &nbsp;&nbsp;(d em metros, resultado em dB)</div>
+          <p>Esta correção está incorporada nas estimativas do mapa. Corresponde a uma calibração contra 29 saídas oficiais do modelo do EIA, não contra 29 medições acústicas futuras.</p>
+        </div>
+      </div>
+
+      <div class="method-block">
+        <div class="method-num">7</div>
+        <div>
+          <h4>Ajuste interno do modelo simplificado</h4>
+          <p>O gráfico seguinte mostra a comparação interna usada para ajustar o modelo simplificado aos 29 valores de ruído particular do Quadro 8.66. Esse quadro representa o cenário antes das medidas de minimização, enquanto o modo principal mostra o Quadro 8.68, já com medidas. Por isso este gráfico não é uma validação independente nem uma garantia de precisão do cenário principal.</p>
+          <div id="accuracyChartHolder"></div>
+          <p class="method-caption">Ajuste face ao Quadro 8.66: erro médio 0,0 dB · desvio típico ±0,96 dB · pior caso 2,25 dB. Não usar estes números como margem de erro do ruído futuro.</p>
+        </div>
+      </div>
+
+      <div class="method-block">
+        <div class="method-num">8</div>
+        <div>
+          <h4>Limitações do modelo</h4>
+          <p>Este modelo não corresponde ao modelo CNOSSOS-EU oficial. É uma aproximação simplificada, calibrada contra as previsões CNOSSOS desta zona, com um desvio típico inferior a 1 dB face a essas previsões. Nos recetores oficiais (marcados a verde), é apresentado o valor exato do EIA: a referência “sem parque” foi medida no terreno e o valor “com parque” é previsto pelo CNOSSOS. A estimativa simplificada aplica-se apenas onde não existe dado oficial.</p>
+        </div>
+      </div>
+
+      </div>
+
+      <div class="method-group method-group-real">
+        <div class="method-group-title">
+          <span class="method-group-tag">Modo opcional</span>
+          <h4>Cenário exploratório (+3 dB) — sensibilidade a terreno em vale</h4>
+        </div>
+        <p class="method-group-intro">Este bloco é independente do anterior: descreve uma correção adicional de +3 dB(A), aplicada apenas no cenário exploratório. Não faz parte do EIA, não é uma previsão oficial e vem de estudos publicados sobre outros parques eólicos.</p>
+
+      <div class="method-block">
+        <div class="method-num">1</div>
+        <div>
+          <h4>Porque existe este cenário exploratório</h4>
+          <p>A correção de +3 dB(A) usada neste modo não foi inventada para este site. Vem de dois estudos técnicos publicados, sobre parques eólicos reais noutros países, com terreno em declive semelhante ao de parte desta zona (o som "cai" do aerogerador para a casa em vez de se afastar em terreno plano):</p>
+          <p><b>Bass, Bullmore &amp; Sloth (1998)</b>, <i>Development of a Wind Farm Noise Propagation Prediction Model</i>, Comissão Europeia, programa Joule III, contrato JOR3-CT95-0051. Recomenda adicionar 3 dB(A) à previsão do método ISO 9613-2 sempre que o terreno desce significativamente entre o aerogerador e a casa.</p>
+          <p><b>Cooper &amp; Evans (2013)</b>, <i>Accuracy of noise predictions for wind farms</i>, 5.ª Conferência Internacional sobre Ruído de Turbinas Eólicas, Denver. Compara previsões com medições reais em <b>13 pontos de medição, em 6 parques eólicos diferentes</b>. Nos pontos com declive côncavo entre o aerogerador e a casa, a subestimação chegou a 4 dB(A), a uma distância de cerca de 1500 m, confirmando a recomendação de Bass, Bullmore &amp; Sloth.</p>
+          <p>Fonte consultável do estudo de Cooper &amp; Evans: <a href="https://puc.sd.gov/commission/dockets/electric/2017/el17-028/dr2-20.pdf" target="_blank" rel="noopener">puc.sd.gov/commission/dockets/electric/2017/el17-028/dr2-20.pdf</a>.</p>
+          <p>Nenhum destes 13 pontos é do Paiva: são medições de outros parques, com condições de terreno comparáveis, não deste projeto específico. Por isso este modo é apenas um teste de sensibilidade baseado em evidência externa; não é uma medição nem uma previsão validada para o Paiva.</p>
+        </div>
+      </div>
+
+      </div>
+
+      </details>
+    </div>
+
+    <div class="landing-section findings-section">
+      <h3>Pontos identificados na análise do EIA</h3>
+      <div class="method-block">
+        <div class="method-num">!</div>
+        <div>
+          <h4>A cláusula que explica a maioria dos "cumpre"</h4>
+          <p>O Quadro 8.69 do EIA inclui a seguinte nota, aplicada ao critério de emergência sonora noturna:</p>
+          <div class="formula" style="font-family:'IBM Plex Sans',sans-serif; font-style:italic;">"N/A: Limites do Critério de incomodidade não aplicável, dado que o ruído ambiente resultante é igual ou inferior a 45 dB(A), conforme estabelecido no número 5, Artigo 13.º do RGR."</div>
+          <p>Da contagem dos 29 recetores no Quadro 8.69, apenas 3 (RA18, RA23 e RA24) têm o limite noturno de 3 dB(A) efetivamente aplicável, por terem um ruído ambiente noturno previsto acima de 45 dB(A). Nos restantes 26 recetores, o critério de emergência sonora noturna é automaticamente considerado não aplicável, independentemente do aumento de ruído calculado, que nalguns casos ultrapassa os 6 dB(A) (por exemplo, RA19: +6,7 dB(A)).</p>
+        </div>
+      </div>
+
+      <div class="method-block">
+        <div class="method-num">!</div>
+        <div>
+          <h4>Uma coordenada duplicada no EIA (PRA9 e PRA7)</h4>
+          <p>Ao verificar as coordenadas GPS de cada ponto de referência (Quadro 6.86), foi identificada uma inconsistência: a coordenada indicada para o PRA9 (40°50'7.65"N; 7°33'29.91"W, junto a Coja, caracterizando os recetores RA13 a RA17 próximos do aerogerador AG39) está a apenas 0,2 metros da coordenada indicada para o PRA7 (Quinta da Estrada, caracterizando os recetores RA23 e RA24 próximos do aerogerador AG45), dois locais que o próprio texto do EIA descreve como estando a mais de 4 km de distância um do outro.</p>
+          <p>Esta coincidência é, com grande probabilidade, um erro de transcrição no documento do EIA. Neste mapa, a posição do grupo RA13-RA17 foi por isso calculada a partir da distância e do rumo ao aerogerador mais próximo indicados no texto (510 m, a sudeste do AG39), em vez da coordenada GPS fornecida para o PRA9, por não ser fiável.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="landing-footer">
+      <p>Protótipo cívico e independente. Dados extraídos e verificados do Volume II do EIA. Não substitui os documentos oficiais nem o processo formal de participação pública em <a href="https://participa.pt" target="_blank" rel="noopener">participa.pt</a>.</p>
+      <details class="privacy-note">
+        <summary>Privacidade e medição de audiência</summary>
+        <p>O site só utiliza Google Analytics e Microsoft Clarity se aceitares a medição de audiência. Estes serviços podem usar cookies ou tecnologias semelhantes; consulta as respetivas <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">políticas da Google</a> e <a href="https://privacy.microsoft.com/privacystatement" target="_blank" rel="noopener">da Microsoft</a>.</p>
+      </details>
+      <button class="cookie-settings" type="button" onclick="openCookiePreferences()">Gerir preferências de cookies</button>
+    </div>
+  </div>
+</div>
+
+<div id="aboutView">
+  <header class="landing-header">
+    <div class="brand">
+      <span class="eyebrow">Consulta Pública · Ambiente · Portugal</span>
+      <h1>Mapa Ambiental</h1>
+    </div>
+    <button id="aboutBackBtn" onclick="backToLandingFromAbout()">&larr; Voltar</button>
+  </header>
+
+  <div class="landing-body" style="max-width:680px;">
+    <div class="landing-section" style="margin-bottom:0;">
+      <h3>Sobre nós</h3>
+      <p class="about-text">Somos um movimento cívico que acredita que a transição energética é um objetivo essencial para construir um futuro mais sustentável. Para isso, é necessário reduzir as emissões de gases com efeito de estufa para mitigar o aquecimento global. No entanto, defendemos que essa transição deve ser realizada de forma justa e transparente.</p>
+      <p class="about-text">Promovemos um modelo de desenvolvimento que concilie a produção de energia renovável com a proteção das comunidades, da biodiversidade e da paisagem.</p>
+       <p class="about-text">Consideramos igualmente que as decisões devem assentar em estudos científicos independentes, processos de participação pública efetivos e numa avaliação rigorosa dos impactos ambientais, sociais e económicos.</p>
+      <p class="about-text">Defendemos que a transição energética só será verdadeiramente sustentável quando respeitar o bem-estar dos cidadãos, proteger os animais e preservar a natureza para as gerações futuras.</p>
+      <p class="about-text">O nosso compromisso é contribuir para um debate informado, através da disponibilização de informação acessível que demonstre o impacto e as consequências dos projetos. Assim, incentivamos todos os cidadãos a informar-se e a participar nas decisões que afetam o país, principalmente o seu território de residência.</p>
+    </div>
+  </div>
+</div>
+
+<div id="appView" style="display:none; flex-direction:column; height:100%;">
+<header>
+  <div class="brand" style="flex-direction:row; align-items:center; gap:14px;">
+    <button id="backBtn" onclick="backToLanding()" title="Voltar aos processos">← Processos</button>
+    <div>
+      <span class="eyebrow">Consulta Pública · Ambiente · Portugal</span>
+      <h1>Mapa Ambiental</h1>
+    </div>
+  </div>
+  <div class="meta">
+    <strong>1 processo ativo</strong> em base de dados<br>
+    Protótipo, dados do EIA em consulta pública
+  </div>
+</header>
+
+<div class="layout">
+  <aside id="sidebar">
+    <div id="dragHandle">Ver processos e camadas do mapa</div>
+
+    <div class="sb-section mode-section">
+      <h2>Modelo de ruído usado no mapa</h2>
+      <div class="mode-buttons">
+        <button id="modeBtnCnossos" class="mode-btn active" onclick="setSimulationMode('cnossos')">Estudo CNOSSOS (projeto)</button>
+        <button id="modeBtnReal" class="mode-btn" onclick="setSimulationMode('real')">Cenário exploratório (+3 dB)</button>
+      </div>
+      <div class="mode-note" id="modeNote">Valores tal como constam do EIA (Quadro 8.68) ou do modelo deste site calibrado contra eles, sem qualquer correção adicional.</div>
+      <div class="sidebar-key" aria-label="Como interpretar os dados no mapa">
+        <div class="sidebar-key-title">Como interpretar</div>
+        <div class="sidebar-key-row"><i class="data-key-dot measured"></i><span>“Sem parque”: medição de referência no terreno.</span></div>
+        <div class="sidebar-key-row"><i class="data-key-dot predicted"></i><span>“Com parque”: previsão oficial CNOSSOS do EIA.</span></div>
+        <div class="sidebar-key-row"><i class="data-key-dot exploratory"></i><span>+3 dB: cenário exploratório, não oficial.</span></div>
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <h2>Processos em consulta pública</h2>
+      <div class="project-card active" id="card-paiva" onclick="focusProject()">
+        <span class="type">Energia eólica · AIA n.º 3853</span>
+        <h3>Parque Eólico do Paiva</h3>
+        <span class="status"><span class="dot"></span> Consulta pública até 03/08/2026</span>
+      </div>
+      <div style="height:10px"></div>
+      <div class="placeholder-row">
+        Mais processos (solares, linhas elétricas, barragens, minas) podem ser adicionados aqui à medida que forem analisados. Este protótipo inclui, para já, apenas o Parque Eólico do Paiva, com dados extraídos e verificados do Volume II do EIA.
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <h2>Ficha técnica (EIA, Vol. II)</h2>
+      <div class="fact"><span class="k">Promotor</span><span class="v">LSBP Portugal SPV 1</span></div>
+      <div class="fact"><span class="k">Processo</span><span class="v">AIA 3853 · PDA 246</span></div>
+      <div class="fact"><span class="k">N.º de aerogeradores</span><span class="v">45</span></div>
+      <div class="fact"><span class="k">Modelo</span><span class="v">Vestas V172</span></div>
+      <div class="fact"><span class="k">Potência unitária</span><span class="v">até 7,2 MW</span></div>
+      <div class="fact"><span class="k">Altura da torre</span><span class="v">135 m</span></div>
+      <div class="fact"><span class="k">Diâmetro do rotor</span><span class="v">172 m</span></div>
+      <div class="fact"><span class="k">Comprimento das pás</span><span class="v">86 m</span></div>
+      <div class="fact"><span class="k">Rotação do rotor</span><span class="v">4,3 – 12,1 rpm</span></div>
+      <div class="fact"><span class="k">Vento: arranque / nominal / paragem</span><span class="v">3 / 13 / 25 m/s</span></div>
+      <div class="fact"><span class="k">Emissão sonora (2 modos)</span><span class="v">105,0 / 106,9 dB(A)</span></div>
+      <div class="fact"><span class="k">Limite RGR, art. 13.º (dia/entardecer/noite)</span><span class="v">5 / 4 / 3 dB(A)</span></div>
+      <div class="fact"><span class="k">Isenção do limite (art. 13.º, n.º 5)</span><span class="v">ambiente ≤ 45 dB(A)</span></div>
+      <div class="lg-note" style="margin-top:8px;">Fonte: EIA do Parque Eólico do Paiva, Volume II, Relatório Síntese, Quadro 5.1 (p. 82) e Decreto-Lei n.º 9/2007 (RGR, art. 13.º).</div>
+    </div>
+
+    <div class="sb-section">
+      <h2>Camadas do mapa</h2>
+      <div class="layer-row">
+        <input type="checkbox" id="ly-turbines" checked onchange="toggleLayer('turbines', this.checked)">
+        <span class="swatch" style="background:#4A6670"></span>
+        <label for="ly-turbines">Aerogeradores (45)</label>
+      </div>
+      <div class="layer-row">
+        <input type="checkbox" id="ly-official" checked onchange="toggleLayer('official', this.checked)">
+        <span class="swatch" style="background:#2F5233"></span>
+        <label for="ly-official">Recetores oficiais do EIA (previsões CNOSSOS, Quadro 8.68)</label>
+      </div>
+      <div class="layer-row">
+        <input type="checkbox" id="ly-sweep" onchange="toggleLayer('sweep', this.checked)">
+        <span class="swatch" style="background:#2FA8C4"></span>
+        <label for="ly-sweep">Raio varrido pelas pás (86 m; opcional)</label>
+      </div>
+      <div class="layer-row">
+        <input type="checkbox" id="ly-excluded" checked onchange="toggleLayer('excluded', this.checked)">
+        <span class="swatch" style="background:#B5651D"></span>
+        <label for="ly-excluded">Aerogeradores fora da minimização sonora</label>
+      </div>
+      <div class="layer-row" id="propToggleWrap">
+        <input type="checkbox" id="ly-propagation" checked onchange="setPropagationVisible(this.checked)">
+        <span class="swatch" style="background:#C4432A"></span>
+        <label for="ly-propagation">Propagação sonora (aerogerador selecionado)</label>
+      </div>
+      <div id="windSelectWrap">
+        <label for="windSpeedSlider">Simulador · velocidade do vento (especificação do EIA, Quadro 5.1)</label>
+        <input type="range" id="windSpeedSlider" min="0" max="25" step="0.5" value="8" oninput="setWindSpeed(parseFloat(this.value))">
+        <div id="windSpeedReadout" class="wind-readout"></div>
+        <label for="windSelect" style="margin-top:10px;">Simulador · direção do vento (propagação)</label>
+        <select id="windSelect" onchange="setWindCondition(this.value)">
+          <option value="favoravel">A favor do vento (cenário do EIA)</option>
+          <option value="cruzado">Vento cruzado</option>
+          <option value="contra">Contra o vento</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="sb-section" style="flex:1; border-bottom:none;">
+      <h2>Elemento selecionado</h2>
+      <div id="infopanel">
+        <p class="empty">A seleção de um ponto do mapa apresenta a distância e uma estimativa de ruído nesse local. É também possível selecionar um aerogerador ou um dos recetores oficiais do EIA (pontos brancos com contorno verde).</p>
+      </div>
+    </div>
+
+    <div class="sb-section" style="border-bottom:none;">
+      <h2>Escala de referência (dB)</h2>
+      <div id="dbScaleHolder"></div>
+      <div id="dbScaleReadout" class="db-readout">A seleção de um aerogerador, um recetor, ou um ponto do mapa indica aqui o valor correspondente.</div>
+      <div class="lg-note" style="margin-top:8px;">Valores de referência de conhecimento acústico geral (não específicos deste projeto), só para dar noção de escala.</div>
+    </div>
+  <div id="resizeHandle"></div>
+  </aside>
+
+  <div id="mapWrap">
+    <div id="map"></div>
+    <div id="modeBadge" onclick="openSidebarAtMode()" title="Toca para mudar o modelo de ruído">
+      <span class="sw" id="modeBadgeDot"></span>
+      <span id="modeBadgeLabel">Modelo: Estudo CNOSSOS (projeto)</span>
+    </div>
+    <div id="basemapToggle" onclick="toggleBasemap()">
+      <span class="sw" id="basemapDot"></span>
+      <span id="basemapLabel">Ver mapa base</span>
+    </div>
+    <div id="dbLegend">
+      <div class="lg-title">Propagação sonora estimada</div>
+      <div id="lgRows"></div>
+      <div class="lg-note">Modelo simplificado, calibrado por regressão contra 29 previsões CNOSSOS do EIA (desvio típico ±0,9 dB, pior caso ±2,2 dB). Não é o modelo CNOSSOS-EU oficial. As curvas variam com a condição de vento escolhida no simulador.</div>
+    </div>
+  </div>
+</div>
+</div> <!-- /appView -->
+
+<section id="cookieBanner" role="dialog" aria-modal="true" aria-labelledby="cookieTitle" aria-describedby="cookieText" hidden>
+  <h2 id="cookieTitle">Medição de audiência</h2>
+  <p id="cookieText">Podemos usar Google Analytics e Microsoft Clarity para perceber, de forma agregada, como o mapa é utilizado. A recusa não altera o acesso a qualquer conteúdo.</p>
+  <div class="cookie-actions">
+    <button id="cookieReject" class="cookie-action" type="button" onclick="setCookieConsent('rejected')">Recusar</button>
+    <button class="cookie-action accept" type="button" onclick="setCookieConsent('accepted')">Aceitar analítica</button>
+  </div>
+</section>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+<script>
+/* ---------- DATA ---------- */
+/* Turbine coordinates: EIA do Parque Eólico do Paiva, Vol. II, Quadro 4.3
+   (convertidas de PT-TM06/ETRS89 para WGS84) */
+const turbines = {
+  AG01:[40.824239,-7.818217], AG02:[40.819041,-7.80655], AG03:[40.815247,-7.796123], AG04:[40.814736,-7.788615],
+  AG05:[40.812276,-7.783048], AG06:[40.807329,-7.783659], AG07:[40.804919,-7.77834], AG08:[40.799088,-7.782908],
+  AG09:[40.801944,-7.772473], AG10:[40.799272,-7.764535], AG11:[40.795468,-7.761876], AG12:[40.789728,-7.731382],
+  AG13:[40.789495,-7.724325], AG14:[40.795175,-7.724841], AG15:[40.799138,-7.726922], AG16:[40.801372,-7.718936],
+  AG17:[40.811994,-7.648194], AG18:[40.815141,-7.638288], AG19:[40.80884,-7.641339], AG20:[40.803802,-7.638928],
+  AG21:[40.801987,-7.643117], AG22:[40.81403,-7.602393], AG23:[40.81685,-7.602409], AG24:[40.82005,-7.602832],
+  AG25:[40.821432,-7.593523], AG26:[40.827892,-7.594226], AG27:[40.834529,-7.594559], AG28:[40.834255,-7.586873],
+  AG29:[40.8401,-7.593819], AG30:[40.840395,-7.584313], AG31:[40.847221,-7.582862], AG32:[40.843335,-7.573073],
+  AG33:[40.850572,-7.572231], AG34:[40.849475,-7.564575], AG35:[40.85932,-7.567304], AG36:[40.856059,-7.562159],
+  AG37:[40.806569,-7.58939], AG38:[40.801821,-7.581422], AG39:[40.807981,-7.574123], AG40:[40.812587,-7.578216],
+  AG41:[40.813975,-7.565086], AG42:[40.819586,-7.568564], AG43:[40.824546,-7.571354], AG44:[40.826596,-7.562115],
+  AG45:[40.83126,-7.552531]
+};
+
+/* Aerogeradores efetivamente restringidos ("V172 SO1", 105,0 dB(A)) no cenário
+   "com medidas de minimização". Fonte: EIA, Vol. II, Relatório Síntese, p. ~939:
+   "todos com exceção dos aerogeradores AG28, AG30, AG31, AG32, AG39, AG43, AG44
+   e AG45" operam em modo V172 PO7200 [106,9 dB(A)], ou seja, só estes 8 ficam
+   condicionados ao modo mais silencioso; os restantes 37 (incluindo AG22, AG37
+   e AG38) operam sempre à emissão máxima.
+   NOTA DE CORREÇÃO: uma versão anterior deste site definia este conjunto apenas
+   com 3 aerogeradores (AG22, AG37, AG38), o que fazia com que os outros 34
+   aerogeradores não-restringidos fossem incorretamente tratados como restringidos
+   (105,0 em vez de 106,9 dB(A)) em todos os cálculos de ruído do mapa. Foi
+   corrigido depois de uma validação cruzada com o texto do EIA. */
+const restrictedTurbines = new Set(["AG28","AG30","AG31","AG32","AG39","AG43","AG44","AG45"]);
+/* Interface .has() mantida por compatibilidade com o resto do código: devolve
+   true quando o aerogerador NÃO está na lista de restringidos (ou seja, opera
+   sempre à emissão máxima, 106,9 dB(A)). */
+const excludedFromMinimisation = { has: (name) => !restrictedTurbines.has(name) };
+/* Raio do rotor (comprimento das pás), EIA Vol. II, Quadro 5.1, p. 82 */
+const ROTOR_RADIUS = 86;
+
+/* ---------- MAP SETUP ---------- */
+const map = L.map('map', {zoomControl:false}).setView([40.55,-7.9], 8);
+L.control.zoom({position:'bottomright'}).addTo(map);
+
+const baseSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics',
+  maxZoom: 19
+}).addTo(map);
+
+const satelliteLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 19, pane: 'shadowPane'
+}).addTo(map);
+
+const baseStreets = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap, &copy; CARTO',
+  maxZoom: 19
+});
+
+let onSatellite = true;
+function toggleBasemap(){
+  onSatellite = !onSatellite;
+  if(onSatellite){
+    map.removeLayer(baseStreets); map.addLayer(baseSatellite); map.addLayer(satelliteLabels);
+    document.getElementById('basemapLabel').textContent = "Ver mapa base";
+  } else {
+    map.removeLayer(baseSatellite); map.removeLayer(satelliteLabels); map.addLayer(baseStreets);
+    document.getElementById('basemapLabel').textContent = "Ver satélite";
+  }
+}
+
+const layers = { turbines: L.layerGroup(), excluded: L.layerGroup(), sweep: L.layerGroup(), official: L.layerGroup() };
+layers.official.addTo(map);
+layers.turbines.addTo(map);
+layers.excluded.addTo(map);
+
+function setInfo(html){ document.getElementById('infopanel').innerHTML = html; }
+
+/* Escapa texto antes de o inserir em innerHTML. Usado sobretudo para
+   mensagens de erro (ex. err.message de chamadas à API Open-Meteo), que
+   nunca deviam ser tratadas como HTML de confiança. */
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = String(str);
+  return d.innerHTML;
+}
+
+/* ---------- ESCALA DE REFERÊNCIA (dB) ---------- */
+/* Valores de referência de conhecimento acústico geral e amplamente publicado
+   (ex. guias da OMS/EPA sobre ruído ambiental), não específicos deste projeto.
+   Servem só para dar uma noção intuitiva do que significa um valor em dB(A). */
+const DB_REFS = [
+  {db: 20,  label: "Sussurro",       full: "Sussurro, a 1 metro"},
+  {db: 40,  label: "Quarto calmo",   full: "Quarto sossegado, à noite"},
+  {db: 55,  label: "Conversa",       full: "Conversa normal, a 1 metro"},
+  {db: 70,  label: "Aspirador",      full: "Aspirador, num quarto"},
+  {db: 80,  label: "Trânsito",       full: "Trânsito urbano intenso"},
+  {db: 90,  label: "Motor diesel",   full: "Motor diesel, de perto"},
+  {db: 100, label: "Britadeira",     full: "Britadeira / berbequim"},
+  {db: 115, label: "Avião",          full: "Avião a descolar, perto"},
+];
+const DB_MIN = 0, DB_MAX = 130;
+const SCALE_W = 280, SCALE_H = 128;
+
+function xForDbW(db, w){
+  return 10 + ((db - DB_MIN)/(DB_MAX - DB_MIN)) * (w - 20);
+}
+function xForDb(db){ return xForDbW(db, SCALE_W); }
+
+function buildDbScale(){
+  const barY = 36, barH = 14;
+  let gradientStops = `<stop offset="0%" stop-color="#4A7A55"/><stop offset="45%" stop-color="#D9A441"/><stop offset="70%" stop-color="#C4432A"/><stop offset="100%" stop-color="#7A2418"/>`;
+  let ticks = DB_REFS.map(r => `
+    <line x1="${xForDb(r.db)}" y1="${barY-5}" x2="${xForDb(r.db)}" y2="${barY+barH+5}" stroke="#6B6B5C" stroke-width="1.2"/>
+  `).join('');
+  let labels = DB_REFS.map((r,i) => {
+    const x = xForDb(r.db);
+    const y = barY + barH + 18 + (i%2)*28;
+    return `
+      <line x1="${x}" y1="${barY+barH+5}" x2="${x}" y2="${y-9}" stroke="#C7C4B0" stroke-width="1" stroke-dasharray="1,2"/>
+      <text x="${x}" y="${y}" font-size="9.5" font-weight="600" fill="#2A362F" font-family="IBM Plex Mono, monospace" text-anchor="middle">${r.db}</text>
+      <text x="${x}" y="${y+11}" font-size="8.5" fill="#5C6058" font-family="IBM Plex Sans, sans-serif" text-anchor="middle">${r.label}</text>
+    `;
+  }).join('');
+
+  const svg = `
+    <svg viewBox="0 0 ${SCALE_W} ${SCALE_H}" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="dbGrad" x1="0" y1="0" x2="1" y2="0">${gradientStops}</linearGradient></defs>
+      <rect x="10" y="${barY}" width="${SCALE_W-20}" height="${barH}" rx="3" fill="url(#dbGrad)"/>
+      ${ticks}
+      ${labels}
+      <polygon id="dbIndicator" points="0,0 0,0 0,0" fill="#2F5233" stroke="#fff" stroke-width="1" style="display:none;"/>
+      <line id="dbIndicatorLine" x1="0" y1="0" x2="0" y2="0" stroke="#2F5233" stroke-width="2.2" style="display:none;"/>
+    </svg>`;
+  document.getElementById('dbScaleHolder').innerHTML = svg;
+}
+buildDbScale();
+
+/* Versão grande, para a página de entrada: mesma escala, rótulos completos,
+   mais espaço, para se ler tudo sem cortes nem sobreposição. */
+function buildBigDbScale(){
+  const W = 900, H = 175, barY = 46, barH = 20;
+  let gradientStops = `<stop offset="0%" stop-color="#4A7A55"/><stop offset="45%" stop-color="#D9A441"/><stop offset="70%" stop-color="#C4432A"/><stop offset="100%" stop-color="#7A2418"/>`;
+  let ticks = DB_REFS.map(r => `
+    <line x1="${xForDbW(r.db,W)}" y1="${barY-7}" x2="${xForDbW(r.db,W)}" y2="${barY+barH+7}" stroke="#6B6B5C" stroke-width="1.4"/>
+  `).join('');
+  let labels = DB_REFS.map((r,i) => {
+    const x = xForDbW(r.db,W);
+    const y = barY + barH + 24 + (i%3)*32;
+    return `
+      <line x1="${x}" y1="${barY+barH+7}" x2="${x}" y2="${y-13}" stroke="#C7C4B0" stroke-width="1" stroke-dasharray="1,3"/>
+      <text x="${x}" y="${y}" font-size="13" font-weight="600" fill="#2A362F" font-family="IBM Plex Mono, monospace" text-anchor="middle">${r.db} dB</text>
+      <text x="${x}" y="${y+16}" font-size="11.5" fill="#5C6058" font-family="IBM Plex Sans, sans-serif" text-anchor="middle">${r.full}</text>
+    `;
+  }).join('');
+  const svg = `
+    <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="dbGradBig" x1="0" y1="0" x2="1" y2="0">${gradientStops}</linearGradient></defs>
+      <rect x="10" y="${barY}" width="${W-20}" height="${barH}" rx="4" fill="url(#dbGradBig)"/>
+      ${ticks}
+      ${labels}
+    </svg>`;
+  document.getElementById('dbScaleHolderBig').innerHTML = svg;
+}
+
+function updateDbScale(db, context){
+  const clamped = Math.max(DB_MIN, Math.min(DB_MAX, db));
+  const x = xForDb(clamped);
+  const barY = 36, barH = 14;
+  const indicator = document.getElementById('dbIndicator');
+  const line = document.getElementById('dbIndicatorLine');
+  if(indicator){
+    indicator.setAttribute('points', `${x-7},${barY-16} ${x+7},${barY-16} ${x},${barY-5}`);
+    indicator.style.display = 'block';
+  }
+  if(line){
+    line.setAttribute('x1', x); line.setAttribute('x2', x);
+    line.setAttribute('y1', barY-3); line.setAttribute('y2', barY+barH+3);
+    line.style.display = 'block';
+  }
+  const nearestRef = DB_REFS.reduce((best, r) => Math.abs(r.db-db) < Math.abs(best.db-db) ? r : best, DB_REFS[0]);
+  document.getElementById('dbScaleReadout').innerHTML =
+    `<b>${db < 20 ? "< 20" : Math.round(db)} dB(A)</b> ${context || ""}, parecido com: ${nearestRef.full.toLowerCase()}.`;
+}
+
+/* ---------- CLICK ANYWHERE: TESTE DE IMPACTO ---------- */
+/* Permite a qualquer pessoa clicar na sua própria casa (não só nas 5 já levantadas)
+   e ver o aerogerador mais próximo e uma estimativa de ruído no local exato,
+   usando o mesmo modelo simplificado e ilustrativo da camada de propagação sonora. */
+let measureMarker = null;
+let measureLine = null;
+let lastClickedLatLng = null;
+let lastOfficialReceptorMarker = null;
+
+/* Dois modos de apresentação dos valores de ruído:
+
+   "cnossos": os valores tal como saem do EIA (para os 29 recetores oficiais)
+   ou do nosso modelo calibrado contra eles (para qualquer outro ponto).
+   Nenhuma correção adicional.
+
+   "real": simula o efeito de uma correção documentada em estudos publicados
+   de medições reais em parques eólicos (não deste projeto, de outros, ver
+   secção "Pontos identificados" na página inicial). Especificamente, usa a
+   correção de +3 dB(A) recomendada pela literatura técnica (Bass, Bullmore
+   e Sloth, 1998, e confirmada por Cooper & Evans, 2013) para situações em
+   que o terreno desce significativamente entre o aerogerador e a casa, como
+   acontece em parte desta zona. Esta correção NÃO foi medida neste projeto
+   específico: é uma simulação baseada em padrões observados noutros parques,
+   com terreno semelhante, não uma medição real do Paiva. */
+let simulationMode = "cnossos";
+const REAL_SAMPLE_CORRECTION = 3.0;
+
+function currentCorrection(){
+  return simulationMode === "real" ? REAL_SAMPLE_CORRECTION : 0;
+}
+
+function setSimulationMode(mode){
+  simulationMode = mode;
+  document.getElementById('modeBtnCnossos').classList.toggle('active', mode === 'cnossos');
+  document.getElementById('modeBtnReal').classList.toggle('active', mode === 'real');
+  const note = document.getElementById('modeNote');
+  const badgeLabel = document.getElementById('modeBadgeLabel');
+  if(mode === 'real'){
+    note.innerHTML = `Teste de sensibilidade: acrescenta +${REAL_SAMPLE_CORRECTION.toFixed(1)} dB(A) com base em estudos de outros parques eólicos e terreno em vale. Não é uma medição nem uma previsão validada para este projeto.`;
+    badgeLabel.textContent = "Cenário exploratório (+3 dB; não é medição local)";
+  } else {
+    note.innerHTML = `Valores tal como constam do EIA (Quadro 8.68) ou do modelo deste site calibrado contra eles, sem qualquer correção adicional.`;
+    badgeLabel.textContent = "Modelo: Estudo CNOSSOS (projeto)";
+  }
+  if(currentTurbine) drawPropagation(currentTurbine, excludedFromMinimisation.has(currentTurbine));
+  if(lastClickedLatLng) testPoint(lastClickedLatLng, true);
+  if(lastOfficialReceptorMarker) lastOfficialReceptorMarker.fire('click');
+}
+
+/* Toca no badge do mapa para abrir a sidebar já na secção do modelo de
+   ruído (útil sobretudo em telemóvel, onde a sidebar começa fechada). */
+function openSidebarAtMode(){
+  const sidebar = document.getElementById('sidebar');
+  sidebar.classList.add('open');
+  const modeSection = document.querySelector('.mode-section');
+  if(modeSection) modeSection.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function clearMeasure(){
+  if(measureMarker){ map.removeLayer(measureMarker); measureMarker = null; }
+  if(measureLine){ map.removeLayer(measureLine); measureLine = null; }
+  lastClickedLatLng = null;
+}
+
+function testPoint(latlng, isRefresh){
+  const here = [latlng.lat, latlng.lng];
+  const ranked = Object.entries(turbines)
+    .map(([name, coords]) => ({name, dist: haversine(here, coords)}))
+    .sort((a,b) => a.dist - b.dist)
+    .slice(0, 3);
+
+  const nearest = ranked[0];
+  const estimatedSpl = cumulativeSplAt(here);
+  const splLabel = estimatedSpl < 20 ? "&lt; 20 dB(A) (impercetível a esta distância)" : estimatedSpl.toFixed(0) + " dB(A)";
+  const windLabel = windCondition === "favoravel" ? "a favor do vento" : windCondition === "cruzado" ? "vento cruzado" : "contra o vento";
+
+  /* Aproximação do ruído de fundo (sem parque) neste ponto: usa o ruído de
+     referência do recetor oficial mais próximo, como estimativa da zona.
+     Depois soma energeticamente com o ruído do parque estimado neste ponto
+     exato, para dar um total "com parque" comparável. */
+  let nearestOfficial = officialReceptors[0], bestD = Infinity;
+  officialReceptors.forEach(r => {
+    const d = haversine(here, r.coords);
+    if(d < bestD){ bestD = d; nearestOfficial = r; }
+  });
+  const backgroundApprox = nearestOfficial.refLden;
+  /* A correção exploratória incide exclusivamente sobre a contribuição das
+     turbinas; nunca sobre o ruído de fundo que já existia no local. */
+  const correctedTurbineSpl = estimatedSpl < 20 ? -100 : estimatedSpl + currentCorrection();
+  const combinedTotal = correctedTurbineSpl < 0 ? backgroundApprox : combineNoise(backgroundApprox, correctedTurbineSpl);
+  const increase = Math.round((combinedTotal - backgroundApprox)*10)/10;
+
+  /* Estimativa específica da noite (Ln): os aerogeradores emitem de forma
+     praticamente constante ao longo do dia (24h/dia), por isso o valor "por
+     período" (Ld=Le=Ln) do parque é cerca de 6,4 dB abaixo do seu Lden
+     (a diferença fixa introduzida pelas penalizações de +5 dB ao entardecer e
+     +10 dB à noite na fórmula do Lden, quando Ld=Le=Ln). Confirmado contra a
+     previsão do EIA RA06 (42,4 dB estimados; 42,5 dB no quadro). O ruído de fundo à
+     noite (refLn) é o valor medido no terreno, do recetor oficial mais próximo. */
+  const turbinePeriodEstimate = correctedTurbineSpl < 0 ? -100 : correctedTurbineSpl - 6.4;
+  const nightBackground = nearestOfficial.refLn;
+  const nightTotal = turbinePeriodEstimate < 0 ? nightBackground : combineNoise(nightBackground, turbinePeriodEstimate);
+  const nightIncrease = Math.round((nightTotal - nightBackground)*10)/10;
+  const nightColor = nightIncrease > 3 ? "#C4432A" : nightIncrease >= 1 ? "#D9A441" : "#4A7A55";
+  const nightExempt = nightTotal <= 45;
+  const nightVerdict = nightExempt
+    ? "tecnicamente isento do limite, por o ruído total ser ≤ 45 dB(A) (art. 13.º, n.º 5 do RGR)"
+    : (nightIncrease > 3 ? "acima do limite legal de 3 dB(A) (art. 13.º do RGR)" : "dentro do limite legal de 3 dB(A) (art. 13.º do RGR)");
+
+  if(!isRefresh){
+    lastClickedLatLng = latlng;
+    if(measureMarker) map.removeLayer(measureMarker);
+    if(measureLine) map.removeLayer(measureLine);
+
+    measureLine = L.layerGroup([
+      L.polyline([here, turbines[nearest.name]], {color:"#FFFFFF", weight:4.5, opacity:.9}),
+      L.polyline([here, turbines[nearest.name]], {color:"#F2C230", weight:2.2, dashArray:"2,7", opacity:1})
+    ]).addTo(map);
+
+    measureMarker = L.circleMarker(latlng, {
+      radius:7, color:"#2F5233", weight:2.5, fillColor:"#2F5233", fillOpacity:.9
+    }).addTo(map);
+
+    currentTurbine = null;
+    clearPropagation();
+  }
+
+  const rows = ranked.map((r,i) => {
+    const bladeDist = Math.max(0, Math.round(r.dist - ROTOR_RADIUS));
+    return `
+    <div class="mp-turbine">
+      <div class="mp-turbine-top">
+        <span class="mp-name">${r.name}</span>
+        ${i===0 ? '<span class="mp-tag">mais próximo</span>' : ''}
+      </div>
+      <div class="mp-dist"><b>${bladeDist} m</b> à pá <span class="mp-sub">(${Math.round(r.dist)} m ao cubo)</span></div>
+    </div>`;
+  }).join('');
+
+  const popupHtml = `
+    <div class="measure-popup">
+      <b>Ponto selecionado</b>
+      <div class="mp-turbines">${rows}</div>
+      <div class="mp-period">
+        <div class="mp-period-label">De dia (Lden)</div>
+        <div class="mp-night-row">
+          <span class="mp-night-vals">${backgroundApprox.toFixed(1)} &rarr; ${combinedTotal.toFixed(1)} dB(A)</span>
+          <span class="mp-night-inc" style="color:${increase >= 3 ? '#C4432A' : increase >= 1 ? '#D9A441' : '#4A7A55'};">+${increase.toFixed(1)} dB(A)</span>
+        </div>
+        ${compactGaugeHtml(combinedTotal, 55, 65, 45)}
+      </div>
+      <div class="mp-night">
+        <div class="mp-night-label">À noite (Ln)</div>
+        <div class="mp-night-row">
+          <span class="mp-night-vals">${nightBackground.toFixed(1)} &rarr; ${nightTotal.toFixed(1)} dB(A)</span>
+          <span class="mp-night-inc" style="color:${nightColor};">+${nightIncrease.toFixed(1)} dB(A)</span>
+        </div>
+        ${compactGaugeHtml(nightTotal, 45, 55, 45, false)}
+      </div>
+      <div class="pop-flag" style="font-size:10.5px;">A marca OMS (45 dB) é mostrada apenas na barra de dia (Lden). À noite, a barra mostra os limites legais de Ln.</div>
+    </div>`;
+
+  if(measureMarker){
+    if(isRefresh){
+      measureMarker.setPopupContent(popupHtml);
+    } else {
+      measureMarker.bindPopup(popupHtml, {maxWidth: 280, minWidth: 240, maxHeight: 420}).openPopup();
+    }
+  }
+
+  updateDbScale(estimatedSpl, "no ponto selecionado");
+
+  const distRows = ranked.map((r,i) => {
+    const bd = Math.max(0, Math.round(r.dist - ROTOR_RADIUS));
+    return `<div class="dist-row">
+      <span class="dr-name">${r.name}${i===0 ? " · mais próximo" : ""}</span>
+      <span><span class="dr-blade">${bd} m</span> <span class="dr-hub">à pá</span></span>
+    </div>`;
+  }).join('');
+
+  setInfo(`
+    <span class="kicker">Ponto testado</span>
+    <h3>Ponto selecionado</h3>
+
+    <div class="panel-block">
+      <div class="panel-block-title">Localização</div>
+      <div class="panel-block-body">
+        <div class="fact" style="border-bottom:none; padding:2px 0;"><span class="k">Coordenadas (WGS84)</span><span class="v">${here[0].toFixed(6)}, ${here[1].toFixed(6)}</span></div>
+      </div>
+    </div>
+
+    <div class="panel-block">
+      <div class="panel-block-title">Distância aos aerogeradores próximos</div>
+      <div class="panel-block-body">${distRows}</div>
+    </div>
+
+    <div class="panel-block">
+      <div class="panel-block-title">Sem parque → com parque</div>
+      <div class="panel-block-body">
+        ${compareBarsHtml(backgroundApprox, combinedTotal, increase)}
+        <div class="noise-context">"Sem parque" é o ruído de referência real medido pelo EIA no ponto oficial mais próximo (${nearestOfficial.id}, a ${Math.round(bestD)} m). "Com parque" soma esse fundo com o ruído do parque estimado neste ponto exato. Aproximação: o fundo real pode variar de casa para casa.</div>
+        ${ldenGaugeWithWhoHtml(combinedTotal, null, 45)}
+      </div>
+    </div>
+
+    <div class="panel-block">
+      <div class="panel-block-title">À noite (Ln): o período com o limite mais apertado</div>
+      <div class="panel-block-body">
+        ${compareBarsHtml(nightBackground, nightTotal, nightIncrease)}
+        <div class="noise-context" style="color:${nightColor}; font-weight:600;">${nightIncrease.toFixed(1)} dB(A) de aumento à noite, ${nightVerdict}.</div>
+        ${legalGaugeHtml(nightTotal, 45, 55, "Classificação acústica do ponto por confirmar")}
+        <div class="noise-context">Estimativa derivada: como os aerogeradores emitem de forma praticamente constante 24h/dia, o valor por período (Ld≈Le≈Ln) fica cerca de 6,4 dB abaixo do Lden do parque, confirmado contra previsões do EIA. O fundo noturno vem do recetor oficial mais próximo.</div>
+      </div>
+    </div>
+
+    <div class="panel-block">
+      <div class="panel-block-title">Só o parque eólico (${windLabel})</div>
+      <div class="panel-block-body">
+        <div class="noise-readout">
+          <span class="nr-num">${splLabel.includes("&lt;") ? "&lt;20" : Math.round(estimatedSpl)}</span>
+          <span class="nr-unit">dB(A)</span>
+        </div>
+        <div class="noise-context">Soma de todos os aerogeradores, calibrada por regressão contra 29 previsões CNOSSOS do EIA (desvio típico ±0,9 dB, pior caso ±2,2 dB). Não corresponde ao modelo CNOSSOS-EU oficial. Este painel atualiza-se automaticamente com as condições de vento selecionadas na barra lateral.</div>
+      </div>
+    </div>
+
+    <div class="flag">Para o valor exato deste local, compara com o recetor oficial mais próximo (camada "Recetores oficiais do EIA"). O círculo azul à volta de cada aerogerador mostra o raio varrido pelas pás (86 m, EIA Quadro 5.1).</div>
+
+    <button id="losBtn" onclick='runLineOfSight(${JSON.stringify(here)}, "${nearest.name}")' class="los-btn">Calcular linha de vista até ${nearest.name}</button>
+    <div id="losResult"></div>
+  `);
+}
+
+map.on('click', (e) => testPoint(e.latlng, false));
+
+
+/* Ícone de aerogerador, SVG desenhado à mão (torre + nacelle + 3 pás) */
+function turbineIcon(color, s){
+  const blade = (angleDeg) => `<path d="M0,0 C -2.1,-3.6 -1.6,-8.4 0,-12 C 1.6,-8.4 2.1,-3.6 0,0 Z" fill="#FFFFFF" stroke="${color}" stroke-width="1" transform="rotate(${angleDeg})"/>`;
+  const svg = `
+    <svg width="${s}" height="${s}" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <line x1="20" y1="16.5" x2="20" y2="37" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round"/>
+      <line x1="20" y1="16.5" x2="20" y2="37" stroke="${color}" stroke-width="1.4" stroke-linecap="round"/>
+      <g transform="translate(20,15)">
+        <g class="turbine-blades" style="transform-origin:0px 0px;">
+          ${blade(0)}
+          ${blade(120)}
+          ${blade(240)}
+        </g>
+        <circle cx="0" cy="0" r="2.1" fill="${color}" stroke="#fff" stroke-width="0.8"/>
+      </g>
+    </svg>`;
+  return L.divIcon({
+    html: svg, className: 'turbine-icon',
+    iconSize: [s, s], iconAnchor: [s/2, s-3], popupAnchor: [0, -(s-6)], tooltipAnchor: [0, -(s-10)]
+  });
+}
+
+/* Tamanho do ícone cresce com o zoom, para não parecer cada vez mais pequeno à medida que se aproxima */
+function iconSizeForZoom(z){
+  if(z <= 9)  return 13;
+  if(z <= 10) return 16;
+  if(z <= 11) return 20;
+  if(z <= 12) return 25;
+  if(z <= 13) return 30;
+  if(z <= 14) return 36;
+  if(z <= 15) return 44;
+  if(z <= 16) return 54;
+  if(z <= 17) return 66;
+  return 80;
+}
+/* Tamanho dos pontos de recetor oficial, também cresce com o zoom */
+function receptorRadiusForZoom(z){
+  if(z <= 10) return 4;
+  if(z <= 12) return 5;
+  if(z <= 13) return 6.5;
+  if(z <= 14) return 8;
+  if(z <= 15) return 10;
+  if(z <= 16) return 12.5;
+  return 15;
+}
+
+/* ---------- RECETORES OFICIAIS DO EIA (previsões CNOSSOS, não simplificadas) ---------- */
+/* Valores exatos de "ruído ambiente decorrente" (fundo + parque) previstos pelo
+   modelo CNOSSOS-EU do EIA, Quadro 8.68 (cenário final, com medidas de minimização
+   aplicadas aos aerogeradores AG28,30,31,32,39,43,44,45). Volume II, Relatório
+   Síntese, pp. 701-702.
+   O 9.º valor de cada linha é o "ruído de referência" (Lden), medido no terreno
+   ANTES do parque existir: o ruído de fundo real da zona (tráfego, natureza),
+   também do Quadro 8.68 (mesma página). É este valor que permite comparar
+   "sem parque" com "com parque" no mesmo ponto.
+   Posições: os grupos de recetores (ex. RA06 a RA08) partilham o mesmo ponto de
+   medição de referência (PRAx). Para 8 dos 10 pontos PRA (incluindo o PRA10,
+   verificado nesta revisão), o EIA dá coordenadas GPS reais do ponto de
+   referência (Quadro 6.86, p. 422-425, coordenadas ETRS89 convertidas).
+   Para RA13-RA17 (PRA9), a coordenada dada no EIA (40°50'7.65"N; 7°33'29.91"W)
+   é idêntica, a 0,2 m, à coordenada dada para o PRA7 (Quinta da Estrada,
+   junto ao AG45), apesar de o texto descrever o PRA9 como estando junto ao
+   AG39, a mais de 4 km de distância. É, com quase toda a certeza, um erro de
+   cópia no próprio documento do EIA, pelo que a posição do PRA9 foi antes
+   estimada a partir da distância e rumo ao aerogerador mais próximo (510 m,
+   a sudeste do AG39), também indicados no texto do EIA. Todas as posições
+   são, por isso, aproximadas ao nível do agrupamento de casas, não da casa
+   individual: dentro de cada grupo, os pontos são espalhados visualmente
+   (ver JITTER_RADIUS abaixo), sem correspondência a coordenadas GPS
+   individuais, que o EIA não fornece. */
+const officialReceptorsData = {
+ RA01:[40.835089,-7.578728,"AG28",678, 46.1,45.2,44.9,51.4, 44.7, 37.1],
+ RA02:[40.835089,-7.578728,"AG28",678, 45.6,44.5,44.1,50.7, 44.7, 37.1],
+ RA03:[40.835089,-7.578728,"AG28",678, 46.0,45.1,44.7,51.2, 44.7, 37.1],
+ RA04:[40.823969,-7.616353,"AG24",1221, 44.7,42.0,42.5,49.1, 46.5, 39.6],
+ RA05:[40.823969,-7.616353,"AG24",1221, 44.7,41.9,42.4,49.0, 46.5, 39.6],
+ RA06:[40.807136,-7.603025,"AG22",765, 46.4,44.7,43.9,50.7, 46.4, 38.6],
+ RA07:[40.807136,-7.603025,"AG22",765, 46.1,44.4,43.5,50.3, 46.4, 38.6],
+ RA08:[40.807136,-7.603025,"AG22",765, 46.0,44.2,43.3,50.1, 46.4, 38.6],
+ RA09:[40.803011,-7.596436,"AG37",713, 46.8,45.3,44.5,51.2, 47.7, 40.3],
+ RA10:[40.803011,-7.596436,"AG37",713, 46.8,45.4,44.5,51.3, 47.7, 40.3],
+ RA11:[40.803011,-7.596436,"AG37",713, 46.7,45.1,44.2,51.0, 47.7, 40.3],
+ RA12:[40.803011,-7.596436,"AG37",713, 46.6,45.0,44.2,51.0, 47.7, 40.3],
+ RA13:[40.804738,-7.569838,"AG39",510, 44.6,43.3,43.0,49.6, 45.5, 38.4],
+ RA14:[40.804738,-7.569838,"AG39",510, 45.4,44.4,44.3,50.8, 45.5, 38.4],
+ RA15:[40.804738,-7.569838,"AG39",510, 44.9,43.7,43.4,50.0, 45.5, 38.4],
+ RA16:[40.804738,-7.569838,"AG39",510, 44.9,43.7,43.4,50.0, 45.5, 38.4],
+ RA17:[40.804738,-7.569838,"AG39",510, 45.1,44.0,43.9,50.4, 45.5, 38.4],
+ RA18:[40.826322,-7.550900,"AG45",550, 53.2,49.7,47.3,55.2, 54.2, 45.8],
+ RA19:[40.830442,-7.567400,"AG44",644, 46.2,45.0,44.8,51.3, 45.4, 38.1],
+ RA20:[40.830442,-7.567400,"AG44",644, 46.0,44.8,44.5,51.1, 45.4, 38.1],
+ RA21:[40.830442,-7.567400,"AG44",644, 45.6,44.3,43.9,50.5, 45.4, 38.1],
+ RA22:[40.830442,-7.567400,"AG44",644, 45.4,44.0,43.7,50.3, 45.4, 38.1],
+ RA23:[40.835458,-7.558306,"AG45",653, 55.4,49.5,48.4,56.6, 55.9, 47.3],
+ RA24:[40.835458,-7.558306,"AG45",653, 55.4,49.4,48.3,56.5, 55.9, 47.3],
+ RA25:[40.847361,-7.589594,"AG31",566, 48.0,45.8,45.2,52.0, 47.9, 39.9],
+ RA26:[40.847361,-7.589594,"AG31",566, 48.0,45.7,44.9,51.8, 47.9, 39.9],
+ RA27:[40.860861,-7.581094,"AG35",1054, 45.1,43.5,43.3,49.9, 47.6, 40.8],
+ RA28:[40.860861,-7.581094,"AG35",1054, 45.1,43.5,43.2,49.8, 47.6, 40.8],
+ RA29:[40.860861,-7.581094,"AG35",1054, 45.2,43.6,43.3,49.9, 47.6, 40.8],
+};
+
+/* Destino a partir de um rumo e distância (fórmula geodésica), usado só para
+   espalhar visualmente recetores que partilham o mesmo ponto de referência do
+   EIA (ver nota abaixo). */
+function destinationPoint(lat, lon, bearingDeg, distM){
+  const R = 6371000;
+  const br = bearingDeg * Math.PI/180;
+  const lat1 = lat*Math.PI/180, lon1 = lon*Math.PI/180;
+  const lat2 = Math.asin(Math.sin(lat1)*Math.cos(distM/R) + Math.cos(lat1)*Math.sin(distM/R)*Math.cos(br));
+  const lon2 = lon1 + Math.atan2(Math.sin(br)*Math.sin(distM/R)*Math.cos(lat1), Math.cos(distM/R)-Math.sin(lat1)*Math.sin(lat2));
+  return [lat2*180/Math.PI, lon2*180/Math.PI];
+}
+
+/* O EIA agrupa vários recetores (casas) sob um único ponto de medição de
+   referência (PRAx), pelo que várias entradas de officialReceptorsData
+   partilham exatamente as mesmas coordenadas (ex. RA09 a RA12, todos junto ao
+   AG37). Para que fiquem visíveis e distinguíveis no mapa, em vez de
+   sobrepostos no mesmo ponto, são aqui espalhados num pequeno círculo de 22 m
+   de raio à volta da posição estimada. Este espalhamento é apenas visual,
+   para legibilidade do mapa: não representa a posição GPS individual de cada
+   casa, que o EIA não fornece. Os valores de ruído de cada recetor mantêm-se
+   exatamente os do EIA, independentemente desta posição. */
+const coordGroups = {};
+Object.entries(officialReceptorsData).forEach(([id, v]) => {
+  const key = v[0] + "," + v[1];
+  (coordGroups[key] = coordGroups[key] || []).push(id);
+});
+const JITTER_RADIUS = 22;
+const officialReceptors = Object.entries(officialReceptorsData).map(([id, v]) => {
+  const key = v[0] + "," + v[1];
+  const group = coordGroups[key];
+  let coords = [v[0], v[1]];
+  let groupNote = null;
+  if(group.length > 1){
+    const i = group.indexOf(id);
+    const bearing = (360 / group.length) * i;
+    coords = destinationPoint(v[0], v[1], bearing, JITTER_RADIUS);
+    groupNote = group.filter(g => g !== id);
+  }
+  return {
+    id, coords, groupIds: group, groupNote,
+    near:v[2], nearDist:v[3], Ld:v[4], Le:v[5], Ln:v[6], Lden:v[7], refLden:v[8], refLn:v[9]
+  };
+});
+
+/* PRA4 (RA27–RA29) é zona sensível; os restantes pontos PRA associados aos
+   recetores RA são classificados como zona mista no relatório acústico. */
+function officialZoneForReceptor(id){
+  return ["RA27", "RA28", "RA29"].includes(id)
+    ? {name:"SENSÍVEL", lden:55, ln:45}
+    : {name:"MISTA", lden:65, ln:55};
+}
+
+function combineNoise(...levels){
+  return 10*Math.log10(levels.reduce((energy, level) => energy + Math.pow(10, level/10), 0));
+}
+
+function applyTurbineOnlyCorrection(total, background, correction){
+  if(!correction) return total;
+  const turbineEnergy = Math.pow(10, total/10) - Math.pow(10, background/10);
+  if(turbineEnergy <= 0) return total;
+  return combineNoise(background, 10*Math.log10(turbineEnergy) + correction);
+}
+const officialMarkers = [];
+officialReceptors.forEach(r => {
+  const marker = L.circleMarker(r.coords, {
+    radius: receptorRadiusForZoom(map.getZoom()), color:"#2F5233", weight:2.5, fillColor:"#FFFFFF", fillOpacity:.95
+  });
+  marker.bindTooltip(r.id, {permanent:true, direction:'right', offset:[6,0], className:'ra-label'});
+
+  function renderReceptor(){
+    const corr = currentCorrection();
+    const zone = officialZoneForReceptor(r.id);
+    const effLden = applyTurbineOnlyCorrection(r.Lden, r.refLden, corr);
+    const effLn = applyTurbineOnlyCorrection(r.Ln, r.refLn, corr);
+    const increase = Math.round((effLden - r.refLden)*10)/10;
+    const nightIncrease = Math.round((effLn - r.refLn)*10)/10;
+    const nightColor = nightIncrease > 3 ? "#C4432A" : nightIncrease >= 1 ? "#D9A441" : "#4A7A55";
+    const nightExempt = effLn <= 45;
+    const nightVerdict = nightExempt
+      ? "tecnicamente isento do limite, por o ruído total ser ≤ 45 dB(A) (art. 13.º, n.º 5 do RGR)"
+      : (nightIncrease > 3 ? "acima do limite legal de 3 dB(A) (art. 13.º do RGR)" : "dentro do limite legal de 3 dB(A) (art. 13.º do RGR)");
+    const groupNoteText = r.groupNote ? `<div class="pop-flag" style="margin-top:6px;">Partilha o mesmo ponto de referência do EIA com ${r.groupNote.join(", ")}: os valores de ruído são idênticos para todo o grupo. A posição de cada ponto neste mapa foi espalhada visualmente para ficar legível; o EIA não indica coordenadas GPS individuais para cada casa deste grupo.</div>` : "";
+    const modeFlag = simulationMode === "real"
+      ? `<div class="pop-flag" style="border-color:#8A5A1E;">Cenário exploratório ativo: valores com +${REAL_SAMPLE_CORRECTION.toFixed(1)} dB(A) simulados como teste de sensibilidade a terreno em vale. Baseia-se em estudos de outros parques; não é uma medição nem uma previsão oficial deste projeto.</div>`
+      : "";
+    const nightVerdictShort = nightExempt ? "isento do limite (&le;45 dB(A))" : (nightIncrease > 3 ? "acima do limite legal" : "dentro do limite legal");
+
+    /* Popup do mapa: resumo curto, com o veredito noturno (o que mais importa
+       para a decisão) logo a seguir ao título. Todo o detalhe (fonte, modo de
+       simulação, partilha de ponto) fica só no painel lateral (panelHtml). */
+    const popupHtml = `
+      <b>${r.id}</b> <span style="font-size:10px; color:#2F5233;">(dado oficial do EIA${simulationMode === "real" ? " + simulação" : ""})</span><br>
+      <div class="mp-period">
+        <div class="mp-period-label">De dia (Lden)</div>
+        <div class="mp-night-row">
+          <span class="mp-night-vals">${r.refLden.toFixed(1)} &rarr; ${effLden.toFixed(1)} dB(A)</span>
+          <span class="mp-night-inc" style="color:${increase > 3 ? '#C4432A' : increase >= 1 ? '#D9A441' : '#4A7A55'};">+${increase.toFixed(1)} dB(A)</span>
+        </div>
+        ${compactGaugeHtml(effLden, 55, 65, 45)}
+      </div>
+      <div class="mp-night">
+        <div class="mp-night-label">À noite (Ln) &mdash; ${nightVerdictShort}</div>
+        <div class="mp-night-row">
+          <span class="mp-night-vals">${r.refLn} &rarr; ${effLn.toFixed(1)} dB(A)</span>
+          <span class="mp-night-inc" style="color:${nightColor};">+${nightIncrease.toFixed(1)} dB(A)</span>
+        </div>
+        ${compactGaugeHtml(effLn, 45, 55, 45, false)}
+      </div>
+      <div class="pop-flag" style="margin-top:6px; font-size:10.5px;">A marca OMS (45 dB) é mostrada apenas na barra de dia (Lden). À noite, a barra mostra os limites legais de Ln.</div>
+    `;
+
+    const panelHtml = `
+      <span class="kicker">Recetor oficial do EIA</span>
+      <h3>${r.id}</h3>
+      <div class="panel-block">
+        <div class="panel-block-title">Sem parque → com parque (Lden)</div>
+        <div class="panel-block-body">
+          ${compareBarsHtml(r.refLden, effLden, increase)}
+          ${ldenGaugeWithWhoHtml(effLden, zone, 45)}
+        </div>
+      </div>
+      <div class="panel-block">
+        <div class="panel-block-title">À noite (Ln): o período com o limite mais apertado</div>
+        <div class="panel-block-body">
+          ${compareBarsHtml(r.refLn, effLn, nightIncrease)}
+          <div class="noise-context" style="color:${nightColor}; font-weight:600;">${nightIncrease.toFixed(1)} dB(A) de aumento à noite, ${nightVerdict}.</div>
+          ${legalGaugeHtml(effLn, 45, 55, `Face ao limite de zona ${zone.name} (${zone.ln} dB(A) Ln)`, zone)}
+        </div>
+      </div>
+      <div class="fact"><span class="k">Aerogerador de referência</span><span class="v">${r.near} (${r.nearDist} m)</span></div>
+      <div class="fact"><span class="k">Ld (dia, com parque)</span><span class="v">${r.Ld.toFixed(1)} dB(A)</span></div>
+      <div class="fact"><span class="k">Le (entardecer, com parque)</span><span class="v">${r.Le.toFixed(1)} dB(A)</span></div>
+      <div class="fact"><span class="k">Ln (noite, com parque)</span><span class="v">${effLn.toFixed(1)} dB(A)</span></div>
+      ${r.groupNote ? `<div class="flag">Este recetor partilha o mesmo ponto de referência do EIA com ${r.groupNote.join(", ")} (mesmos valores de ruído). A posição exata de cada casa deste grupo não é dada individualmente pelo EIA; a posição aqui é espalhada apenas para visibilidade no mapa.</div>` : ""}
+      ${simulationMode === "real" ? `<div class="flag" style="border-color:#8A5A1E;">Cenário exploratório ativo: +${REAL_SAMPLE_CORRECTION.toFixed(1)} dB(A) é aplicado apenas à componente estimada das turbinas antes de a somar ao fundo. Não são valores oficiais do EIA nem medições deste projeto; para voltar às previsões oficiais, escolhe "Estudo CNOSSOS (projeto)".</div>` : `<div class="flag"><b>Leitura dos valores do EIA (Quadro 8.68):</b> “sem parque” é o ruído de referência medido no terreno antes do projeto; “com parque” é o ruído ambiente decorrente previsto pelo CNOSSOS-EU. Fonte: EIA, Volume II, Relatório Síntese, pp. 701–702.</div>`}
+    `;
+    return {popupHtml, panelHtml};
+  }
+
+  const initial = renderReceptor();
+  marker.bindPopup(initial.popupHtml, {maxWidth: 280, minWidth: 240, maxHeight: 420});
+
+  marker.on('click', () => {
+    lastOfficialReceptorMarker = marker;
+    const content = renderReceptor();
+    marker.setPopupContent(content.popupHtml);
+    updateDbScale(applyTurbineOnlyCorrection(r.Lden, r.refLden, currentCorrection()), "oficial no recetor " + r.id + (simulationMode === "real" ? " (simulação)" : " (EIA, Quadro 8.68)"));
+    setInfo(content.panelHtml);
+  });
+  marker.addTo(layers.official);
+  officialMarkers.push(marker);
+});
+
+/* Turbines */
+const turbineMarkers = [];
+Object.entries(turbines).forEach(([name, latlng]) => {
+  const isExcluded = excludedFromMinimisation.has(name);
+  const marker = L.marker(latlng, { icon: turbineIcon("#3A4A50", iconSizeForZoom(map.getZoom())) });
+  marker.bindPopup(popupTurbine(name, isExcluded));
+  marker.bindTooltip(name, {permanent:true, direction:'right', offset:[6,0], className:'ag-label'});
+  marker.on('click', () => showTurbineInfo(name, isExcluded));
+  marker.addTo(layers.turbines);
+  if(isExcluded) marker.addTo(layers.excluded);
+  turbineMarkers.push(marker);
+
+  const sweep = L.layerGroup([
+    L.circle(latlng, { radius: ROTOR_RADIUS, color:"#FFFFFF", weight:4, fillOpacity:0, opacity:.9 }),
+    L.circle(latlng, { radius: ROTOR_RADIUS, color:"#2FA8C4", weight:2, fillColor:"#2FA8C4", fillOpacity:.14, opacity:1, dashArray:"6,5" })
+  ]);
+  sweep.getLayers()[1].bindTooltip("Raio das pás: " + ROTOR_RADIUS + " m", {direction:"center", className:"dist-tip"});
+  sweep.addTo(layers.sweep);
+});
+
+function updateLabelVisibility(){
+  const el = document.getElementById('map');
+  if(map.getZoom() < 12) el.classList.add('labels-hidden');
+  else el.classList.remove('labels-hidden');
+}
+map.on('zoomend', () => {
+  const s = iconSizeForZoom(map.getZoom());
+  turbineMarkers.forEach(m => m.setIcon(turbineIcon("#3A4A50", s)));
+  const r = receptorRadiusForZoom(map.getZoom());
+  officialMarkers.forEach(m => m.setRadius(r));
+  updateLabelVisibility();
+});
+updateLabelVisibility();
+
+/* Duas barras horizontais comparando o ruído sem parque (referência) e com
+   parque (ambiente decorrente / estimado), com o aumento em dB(A) destacado. */
+function compareBarsHtml(before, after, increase){
+  const max = 65;
+  const wBefore = Math.max(4, Math.min(100, (before/max)*100));
+  const wAfter = Math.max(4, Math.min(100, (after/max)*100));
+  const incColor = increase >= 3 ? "#C4432A" : increase >= 1 ? "#D9A441" : "#4A7A55";
+  return `
+    <div class="compare-wrap">
+      <div class="compare-row">
+        <span class="compare-label">Sem parque</span>
+        <div class="compare-track"><div class="compare-fill compare-before" style="width:${wBefore}%"></div></div>
+        <span class="compare-val">${before.toFixed(1)}</span>
+      </div>
+      <div class="compare-row">
+        <span class="compare-label">Com parque</span>
+        <div class="compare-track"><div class="compare-fill compare-after" style="width:${wAfter}%"></div></div>
+        <span class="compare-val">${after.toFixed(1)}</span>
+      </div>
+      <div class="compare-increase" style="color:${incColor};">+${increase.toFixed(1)} dB(A) por causa do parque</div>
+    </div>`;
+}
+
+/* Escala visual que mostra onde um valor de ruído (Ln ou Lden) se situa face
+   aos limites absolutos do RGR: zona sensível (mais apertado, habitações
+   puramente residenciais) e zona mista (mais permissivo, é o que está
+   oficialmente aplicado a esta zona, por aviso municipal). Ver secção
+   "Pontos identificados na análise do EIA" para o porquê desta distinção
+   ser relevante aqui. */
+/* Escala para o Ln (ruído noturno). Desenhada para ficar visualmente
+   equivalente à escala do Lden (mesmo estilo de veredito, barra e
+   marcações), para que dia e noite se leiam como um par comparável.
+   Não inclui uma marca da OMS: ao contrário do Lden, a OMS não emite
+   recomendação específica de Lnight para ruído de parques eólicos
+   (falta de evidência suficiente, Diretrizes de Ruído Ambiental 2018),
+   pelo que colocar aqui um valor seria inventado. */
+/* Barra compacta para os popups do mapa (não o painel lateral): mesmas
+   zonas e marca da OMS que a barra grande, mas sem o veredito nem os
+   parágrafos de explicação, só para dar uma referência visual rápida.
+   Usada tanto para o valor de dia como para o de noite, com a MESMA marca
+   da OMS (45 dB) em ambas, para que fiquem lado a lado e comparáveis.
+   A barra noturna não apresenta OMS: mostra apenas os limites legais de Ln. */
+function compactGaugeHtml(value, limiteSensivel, limiteMista, whoLimit, showWho=true){
+  const max = limiteMista + 10;
+  const pctSensivel = Math.min(100, (limiteSensivel/max)*100);
+  const pctMista = Math.min(100, (limiteMista/max)*100);
+  const pctValue = Math.max(2, Math.min(100, (value/max)*100));
+  const pctWho = Math.min(100, (whoLimit/max)*100);
+  return `
+    <div class="gauge-wrap gauge-compact">
+      <div class="gauge-track">
+        <div class="gauge-zone-sens" style="width:${pctSensivel}%"></div>
+        <div class="gauge-zone-mista" style="left:${pctSensivel}%; width:${pctMista-pctSensivel}%"></div>
+        <div class="gauge-zone-over" style="left:${pctMista}%; width:${100-pctMista}%"></div>
+        ${showWho ? `<div class="gauge-who-line" style="left:${pctWho}%;"></div>` : ''}
+        <div class="gauge-marker" style="left:${pctValue}%;" title="${value.toFixed(1)} dB(A)"></div>
+      </div>
+      <div class="gauge-ticks">
+        ${showWho ? `<span style="left:${pctWho}%;" class="tick-who">OMS<br>${whoLimit}</span>` : ''}
+        <span style="left:${pctSensivel}%;">sensível<br>${limiteSensivel}</span>
+        <span style="left:${pctMista}%;" class="tick-mista">mista<br>${limiteMista}</span>
+      </div>
+    </div>`;
+}
+
+function legalGaugeHtml(value, limiteSensivel, limiteMista, label, officialZone=null){
+  const max = limiteMista + 10;
+  const pctSensivel = Math.min(100, (limiteSensivel/max)*100);
+  const pctMista = Math.min(100, (limiteMista/max)*100);
+  const pctValue = Math.max(2, Math.min(100, (value/max)*100));
+  const legalLimit = officialZone ? officialZone.ln : null;
+  const cumpreLegal = legalLimit === null ? null : value <= legalLimit;
+  const cumpreSensivel = value <= limiteSensivel;
+  return `
+    <div class="gauge-wrap">
+      <div class="zone-verdict ${cumpreLegal === null || cumpreLegal ? 'zone-ok' : 'zone-bad'}">
+        <div class="zone-verdict-icon">${cumpreLegal === null || cumpreLegal ? '✓' : '✗'}</div>
+        <div>
+          <div class="zone-verdict-title">${label}</div>
+          <div class="zone-verdict-text">${officialZone ? `${value.toFixed(1)} dB(A), ${cumpreLegal ? "dentro do limite legal" : "acima do limite legal"} aplicável.` : "Estimativa fora de recetor oficial: esta barra não atribui um limite legal local."}</div>
+        </div>
+      </div>
+
+      <div class="gauge-track">
+        <div class="gauge-zone-sens" style="width:${pctSensivel}%"></div>
+        <div class="gauge-zone-mista" style="left:${pctSensivel}%; width:${pctMista-pctSensivel}%"></div>
+        <div class="gauge-zone-over" style="left:${pctMista}%; width:${100-pctMista}%"></div>
+        <div class="gauge-marker" style="left:${pctValue}%;" title="${value.toFixed(1)} dB(A)"></div>
+      </div>
+      <div class="gauge-ticks">
+        <span style="left:${pctSensivel}%;">sensível*<br>${limiteSensivel}</span>
+        <span style="left:${pctMista}%;" class="tick-mista">mista<br>${limiteMista}</span>
+      </div>
+
+      <div class="ref-note">*Zona sensível: limite mais apertado (habitações puramente residenciais). Não é a classificação aplicada aqui, mas serve de comparação: com este valor, ${cumpreSensivel ? "cumpriria também esse limite mais apertado" : "não cumpriria esse limite mais apertado, só o de zona mista"}.</div>
+      <div class="ref-note">A OMS não emite uma recomendação específica de ruído noturno (Ln) para parques eólicos, por falta de evidência suficiente (só recomenda um limite para o Lden, mostrado na barra de dia).</div>
+    </div>`;
+}
+
+/* Escala para o Lden (indicador diário completo). Mostra, em primeiro lugar
+   e de forma inequívoca, o veredito face à zona OFICIALMENTE aplicada nesta
+   área (zona mista, por aviso municipal, limite 65 dB(A)). A zona sensível
+   (55 dB(A)) é mostrada só como referência de comparação, claramente
+   identificada como hipotética, não como o que está em vigor. Inclui também
+   a recomendação da Organização Mundial da Saúde (2018): para ruído de
+   parques eólicos, Lden ≤ 45 dB(A), uma orientação de saúde pública, não
+   um limite legal. */
+function ldenGaugeWithWhoHtml(value, officialZone, whoLimit){
+  const limiteSensivel = 55, limiteMista = 65;
+  const max = limiteMista + 10;
+  const pctSensivel = Math.min(100, (limiteSensivel/max)*100);
+  const pctMista = Math.min(100, (limiteMista/max)*100);
+  const pctValue = Math.max(2, Math.min(100, (value/max)*100));
+  const pctWho = Math.min(100, (whoLimit/max)*100);
+
+  const legalLimit = officialZone ? officialZone.lden : null;
+  const cumpreLegal = legalLimit === null ? null : value <= legalLimit;
+  const cumpreSensivel = value <= limiteSensivel;
+  const whoExceeded = value > whoLimit;
+
+  return `
+    <div class="gauge-wrap">
+      <div class="zone-verdict ${cumpreLegal === null || cumpreLegal ? 'zone-ok' : 'zone-bad'}">
+        <div class="zone-verdict-icon">${cumpreLegal === null || cumpreLegal ? '✓' : '✗'}</div>
+        <div>
+          <div class="zone-verdict-title">${officialZone ? `Zona oficialmente aplicada: ${officialZone.name} (limite ${legalLimit} dB(A) Lden)` : "Classificação acústica do ponto por confirmar"}</div>
+          <div class="zone-verdict-text">${officialZone ? `${value.toFixed(1)} dB(A), ${cumpreLegal ? "dentro do limite legal" : "acima do limite legal"} aplicável.` : "O ponto é uma estimativa fora dos recetores oficiais; esta barra não atribui um limite legal local."}</div>
+        </div>
+      </div>
+
+      <div class="gauge-track">
+        <div class="gauge-zone-sens" style="width:${pctSensivel}%"></div>
+        <div class="gauge-zone-mista" style="left:${pctSensivel}%; width:${pctMista-pctSensivel}%"></div>
+        <div class="gauge-zone-over" style="left:${pctMista}%; width:${100-pctMista}%"></div>
+        <div class="gauge-who-line" style="left:${pctWho}%;"></div>
+        <div class="gauge-marker" style="left:${pctValue}%;" title="${value.toFixed(1)} dB(A)"></div>
+      </div>
+      <div class="gauge-ticks">
+        <span style="left:${pctWho}%;" class="tick-who">OMS<br>45</span>
+        <span style="left:${pctSensivel}%;">sensível*<br>55</span>
+        <span style="left:${pctMista}%;" class="tick-mista">mista<br>65</span>
+      </div>
+
+      <div class="ref-note">*Zona sensível: limite mais apertado. Como comparação, este valor ${cumpreSensivel ? "ficaria dentro" : "ficaria acima"} desse limite de 55 dB(A).</div>
+
+      <div class="who-callout ${whoExceeded ? 'who-exceeded' : 'who-ok'}">
+        <div class="who-callout-icon">${whoExceeded ? '⚠' : '✓'}</div>
+        <div>
+          <div class="who-callout-title">Organização Mundial da Saúde: recomenda-se Lden ≤ 45 dB(A) para ruído eólico</div>
+          <div class="who-callout-text">${whoExceeded
+            ? `Este valor está ${(value-whoLimit).toFixed(1)} dB(A) acima da recomendação da OMS para proteger a saúde das populações expostas a ruído de parques eólicos (não é um limite legal em Portugal, mas sim uma orientação de saúde pública, mais protetora do que a lei em vigor).`
+            : `Este valor está dentro da recomendação da OMS para ruído de parques eólicos.`}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+
+function popupTurbine(name, isExcluded){
+  return `<b>${name}</b><br>
+    <div class="pop-fact"><span class="k">Estado (fase de exploração)</span>
+      <span class="v">${isExcluded ? "Emissão máxima" : "Modo restringido"}</span></div>
+    <div class="pop-fact"><span class="k">Modelo</span><span class="v">Vestas V172</span></div>
+    <div class="pop-fact"><span class="k">Potência / altura torre</span><span class="v">7,2 MW / 135 m</span></div>
+    ${isExcluded ? `<div class="pop-flag">Não consta da lista de aerogeradores sujeitos ao modo mais silencioso no cenário "com medidas de minimização" do EIA.</div>` : ""}`;
+}
+
+/* ---------- SOUND PROPAGATION (simplified, illustrative) ---------- */
+/* Modelo simplificado de propagação esférica em campo livre:
+   SPL_bruto(d) = Lw - 20*log10(d) - 11 - k*d - windAtt
+   Isto NÃO é o modelo CNOSSOS-EU usado no EIA (que integra terreno, solo, meteorologia).
+
+   VALIDAÇÃO E CALIBRAÇÃO (versão 2, por regressão): comparámos a soma energética
+   do modelo bruto (sem calibração) com o "ruído particular" real (só a contribuição
+   dos aerogeradores, sem ruído de fundo) reportado pelo EIA para os 29 recetores
+   RA01 a RA29 (Quadro 8.66, Lden). Uma calibração fixa (mesmo ajuste para qualquer
+   distância) já reduzia o erro para ±1,8 dB em média. Fizemos mais um passo: uma
+   regressão linear do erro em função da distância ao aerogerador mais próximo,
+   já que o erro do modelo bruto não era constante (era maior em recetores mais
+   distantes, sinal de que a nossa curva de atenuação com a distância é demasiado
+   acentuada face ao modelo real). A regressão deu:
+      erro(d) ≈ 8,26 + 0,00699 × d   (d em metros, erro em dB)
+   Aplicada aos 29 recetores previstos pelo CNOSSOS, esta calibração por distância reduz o desvio
+   padrão do erro para cerca de 0,96 dB, e o erro máximo para cerca de 2,25 dB.
+   É uma melhoria real e testada, mas continua a ser um modelo simplificado
+   calibrado com 29 pontos de uma área específica: pode não generalizar da mesma
+   forma para zonas muito diferentes em termos de terreno. Não é o modelo
+   CNOSSOS-EU e não substitui os valores oficiais, disponíveis com precisão total
+   na camada "Recetores oficiais do EIA".
+
+   O simulador de "condições de vento" NÃO altera a potência sonora do aerogerador
+   (o EIA não fornece uma curva LWA por velocidade de vento, só dois modos fixos:
+   105,0 e 106,9 dB(A)). Em vez disso, simula o efeito, bem documentado na acústica
+   ambiental, da direção do vento na propagação: o som viaja mais longe a favor do
+   vento (situação que o EIA assume como pior cenário, com 100% condições favoráveis)
+   e é mais atenuado contra o vento. Os valores de atenuação usados são indicativos,
+   de boas práticas do setor, não específicos deste projeto. */
+const LW_MAX = 106.9;       // dB(A), emissão máxima (Vestas V172 PO7200)
+const LW_RESTRICTED = 105.0; // dB(A), cenário "com medidas de minimização"
+const K_EXCESS = 0.006;      // atenuação excedente ligeira, ilustrativa
+const RING_TARGETS = [55, 50, 45, 40, 35]; // dB(A)
+const WIND_ATT = { favoravel: 0, cruzado: 5, contra: 10 }; // dB(A), indicativo
+const CALIBRATION_A = 9.22;      // dB(A), regressão contra 29 previsões CNOSSOS do EIA
+const CALIBRATION_B = 0.00499;   // dB(A) por metro, regressão contra 29 previsões CNOSSOS do EIA
+let windCondition = "favoravel";
+
+/* ---------- ESPECIFICAÇÕES REAIS DO AEROGERADOR (EIA, Vol. II, Quadro 5.1, p. 82) ---------- */
+/* Vestas V172: início de funcionamento 3 m/s, potência nominal a 13 m/s, paragem de
+   segurança a 25 m/s. Velocidade de rotação do rotor: 4,3 a 12,1 rpm.
+   O EIA não fornece uma curva contínua de emissão sonora por velocidade de vento
+   (só os dois modos fixos, 105,0 e 106,9 dB(A)), por isso a emissão sonora usada
+   é constante enquanto o aerogerador está a operar (entre 3 e 25 m/s) e é zero
+   (parado) fora desse intervalo. A velocidade de rotação (rpm), essa sim, é
+   interpolada de forma linear entre os dois pontos de especificação do quadro. */
+const V_CUTIN = 3, V_RATED = 13, V_CUTOUT = 25;
+const RPM_CUTIN = 4.3, RPM_RATED = 12.1;
+let currentWindSpeed = 8;
+
+function rpmForWind(v){
+  if(v < V_CUTIN || v > V_CUTOUT) return 0;
+  if(v >= V_RATED) return RPM_RATED;
+  const f = (v - V_CUTIN)/(V_RATED - V_CUTIN);
+  return RPM_CUTIN + f*(RPM_RATED - RPM_CUTIN);
+}
+function isOperating(v){ return v >= V_CUTIN && v <= V_CUTOUT; }
+
+/* Valor bruto, sem calibração (usado internamente; a calibração é aplicada uma
+   única vez por ponto, com base na distância ao aerogerador mais próximo, não
+   por cada aerogerador somado, para não sobrestimar a soma de várias fontes). */
+function splRaw(lw, d){
+  if(!isOperating(currentWindSpeed)) return -100;
+  if(d < 1) d = 1;
+  return lw - 20*Math.log10(d) - 11 - K_EXCESS*d - WIND_ATT[windCondition];
+}
+
+/* Usada para uma única fonte (curvas de propagação à volta de um aerogerador
+   selecionado): aqui a distância à fonte é, por definição, a distância ao
+   aerogerador mais próximo, pelo que a calibração por distância se aplica
+   diretamente. */
+function splAtDistance(lw, d){
+  const raw = splRaw(lw, d);
+  if(raw <= -100) return raw;
+  return raw + CALIBRATION_A + CALIBRATION_B*d;
+}
+function distanceForSpl(lw, targetSpl){
+  let lo = 1, hi = 20000;
+  for(let i=0;i<60;i++){
+    const mid = (lo+hi)/2;
+    if(splAtDistance(lw, mid) > targetSpl) lo = mid; else hi = mid;
+  }
+  return (lo+hi)/2;
+}
+
+/* Soma energética (logarítmica) da contribuição de todos os aerogeradores num
+   ponto. A calibração por distância é aplicada uma única vez ao resultado final,
+   com base na distância ao aerogerador mais próximo desse ponto (foi assim que
+   a regressão foi calculada e validada; aplicar a calibração a cada fonte antes
+   de somar sobrestima o resultado). */
+function cumulativeSplAt(point){
+  let energy = 0, nearestDist = Infinity;
+  Object.entries(turbines).forEach(([name, latlng]) => {
+    const d = haversine(point, latlng);
+    if(d < nearestDist) nearestDist = d;
+    const lw = excludedFromMinimisation.has(name) ? LW_MAX : LW_RESTRICTED;
+    energy += Math.pow(10, splRaw(lw, d)/10);
+  });
+  const rawTotal = 10*Math.log10(energy);
+  if(rawTotal <= -100) return rawTotal;
+  return rawTotal + CALIBRATION_A + CALIBRATION_B*nearestDist;
+}
+
+function setWindCondition(value){
+  windCondition = value;
+  if(currentTurbine) drawPropagation(currentTurbine, excludedFromMinimisation.has(currentTurbine));
+  if(lastClickedLatLng) testPoint(lastClickedLatLng, true);
+}
+
+function setWindSpeed(v){
+  currentWindSpeed = v;
+  const rpm = rpmForWind(v);
+  const root = document.documentElement.style;
+  if(rpm <= 0){
+    root.setProperty('--spin-state', 'paused');
+  } else {
+    root.setProperty('--spin-duration', (60/rpm).toFixed(2) + 's');
+    root.setProperty('--spin-state', 'running');
+  }
+
+  let statusHtml, statusClass;
+  if(v < V_CUTIN){ statusHtml = "Parado, vento insuficiente para arrancar"; statusClass = "status-stopped"; }
+  else if(v > V_CUTOUT){ statusHtml = "Parado, paragem de segurança (vento excessivo)"; statusClass = "status-stopped"; }
+  else if(v >= V_RATED){ statusHtml = "A operar, potência e rotação nominais"; statusClass = "status-running"; }
+  else { statusHtml = "A operar, a acelerar até à potência nominal"; statusClass = "status-running"; }
+
+  document.getElementById('windSpeedReadout').innerHTML = `
+    <div><b>${v.toFixed(1)} m/s</b> (${(v*3.6).toFixed(0)} km/h): <span class="${statusClass}">${statusHtml}</span></div>
+    <div style="margin-top:4px;">Rotação do rotor: <b>${rpm > 0 ? rpm.toFixed(1) + " rpm" : "0 rpm (parado)"}</b></div>
+    <div style="margin-top:4px;">Emissão sonora: <b>${rpm > 0 ? "ao nível definido no EIA (105,0 ou 106,9 dB(A))" : "nenhuma (sem operação)"}</b></div>
+  `;
+
+  if(currentTurbine) drawPropagation(currentTurbine, excludedFromMinimisation.has(currentTurbine));
+  if(lastClickedLatLng) testPoint(lastClickedLatLng, true);
+}
+
+let propagationGroup = null;
+let pulseTimer = null;
+let propagationOn = true;
+
+function clearPropagation(){
+  if(propagationGroup){ map.removeLayer(propagationGroup); propagationGroup = null; }
+  if(pulseTimer){ clearInterval(pulseTimer); pulseTimer = null; }
+  document.getElementById('dbLegend').classList.remove('visible');
+  document.getElementById('propToggleWrap').classList.remove('visible');
+  document.getElementById('windSelectWrap').classList.remove('visible');
+}
+
+function drawPropagation(name, isExcluded){
+  clearPropagation();
+  if(!propagationOn) { document.getElementById('propToggleWrap').classList.add('visible'); return; }
+
+  const center = turbines[name];
+  const lw = isExcluded ? LW_MAX : LW_RESTRICTED;
+  propagationGroup = L.layerGroup().addTo(map);
+
+  const lgRows = document.getElementById('lgRows');
+  lgRows.innerHTML = '';
+
+  RING_TARGETS.forEach((target, i) => {
+    const radius = distanceForSpl(lw, target);
+    const opacity = 0.55 - i*0.09;
+    const circle = L.circle(center, {
+      radius, color:"#C4432A", weight:1.3, fillColor:"#C4432A",
+      fillOpacity: Math.max(opacity*0.16, 0.02), opacity: Math.max(opacity,0.18), dashArray:"3,4"
+    });
+    circle.bindTooltip(target + " dB(A) · " + Math.round(radius) + " m", {direction:"top", className:"dist-tip"});
+    circle.addTo(propagationGroup);
+
+    const row = document.createElement('div');
+    row.className = 'lg-row';
+    row.innerHTML = `<span class="lg-swatch" style="opacity:${Math.max(opacity,0.25)}"></span>${target} dB(A) · até ${Math.round(radius)} m`;
+    lgRows.appendChild(row);
+  });
+
+  /* animated pulse ring, purely visual metaphor for propagation, not a physical simulation of wave speed */
+  const maxR = distanceForSpl(lw, RING_TARGETS[RING_TARGETS.length-1]);
+  const pulse = L.circle(center, {radius:10, color:"#C4432A", weight:2, fillOpacity:0, opacity:0.9});
+  pulse.addTo(propagationGroup);
+  let r = 10;
+  pulseTimer = setInterval(() => {
+    r += maxR/40;
+    if(r > maxR){ r = 10; }
+    pulse.setRadius(r);
+    pulse.setStyle({opacity: Math.max(0.9*(1 - r/maxR), 0)});
+  }, 60);
+
+  document.getElementById('dbLegend').classList.add('visible');
+  document.getElementById('propToggleWrap').classList.add('visible');
+  document.getElementById('windSelectWrap').classList.add('visible');
+  document.getElementById('windSelect').value = windCondition;
+}
+
+function setPropagationVisible(on){
+  propagationOn = on;
+  if(currentTurbine) drawPropagation(currentTurbine, excludedFromMinimisation.has(currentTurbine));
+  else clearPropagation();
+}
+
+let currentTurbine = null;
+
+function showTurbineInfo(name, isExcluded){
+  currentTurbine = name;
+  drawPropagation(name, isExcluded);
+  clearMeasure();
+  const lw = isExcluded ? LW_MAX : LW_RESTRICTED;
+  updateDbScale(lw, "no cubo do aerogerador " + name + " (fonte, não no recetor)");
+  setInfo(`
+    <span class="kicker">Aerogerador</span>
+    <h3>${name}</h3>
+    <div class="fact"><span class="k">Coordenadas (WGS84)</span><span class="v">${turbines[name][0].toFixed(5)}, ${turbines[name][1].toFixed(5)}</span></div>
+    <div class="fact"><span class="k">Fase de exploração</span><span class="v">${isExcluded ? "Emissão máxima (106,9 dB(A))" : "Sujeito a restrição (105,0 dB(A))"}</span></div>
+    <div class="fact"><span class="k">Modelo / potência</span><span class="v">Vestas V172 / até 7,2 MW</span></div>
+    <div class="fact"><span class="k">Altura torre / rotor / pá</span><span class="v">135 m / 172 m / 86 m</span></div>
+    ${isExcluded ? `<div class="flag">Este aerogerador não consta da lista de aerogeradores restringidos no cenário "com medidas de minimização" do EIA (cap. 8.11.3), pelo que opera sempre à emissão sonora máxima.</div>` : ""}
+    <div class="flag" style="background:#FBEAE3; border-left-color:#C4432A; color:#6B2415;">As curvas no mapa são um modelo simplificado (esférico, campo livre), apenas ilustrativo do alcance. O EIA usa o modelo CNOSSOS-EU, que considera terreno, solo e meteorologia, e produz valores diferentes.</div>
+  `);
+}
+
+function toggleLayer(key, on){
+  if(on) map.addLayer(layers[key]); else map.removeLayer(layers[key]);
+}
+
+/* ---------- LINE OF SIGHT (terrain screening) ---------- */
+/* Usa a API pública Open-Meteo (dados de elevação SRTM/GMTED, resolução ~90 m).
+   Calcula o perfil de terreno entre a casa e o aerogerador e verifica se o relevo
+   bloqueia a linha reta entre o recetor (a 1,5 m e a 4 m de altura) e o cubo do
+   aerogerador (altura da torre: 135 m, EIA, cap. 5.3.1).
+   Limitação importante: só considera o relevo (dados de eleva\u00e7\u00e3o do solo), não
+   vegetação nem construções, que também podem bloquear ou não a linha de vista. */
+const HUB_HEIGHT = 135; // m, EIA cap. 5.3.1
+const N_SAMPLES = 32;
+
+function haversine(a, b){
+  const R = 6371000;
+  const toRad = x => x*Math.PI/180;
+  const dLat = toRad(b[0]-a[0]), dLon = toRad(b[1]-a[1]);
+  const s = Math.sin(dLat/2)**2 + Math.cos(toRad(a[0]))*Math.cos(toRad(b[0]))*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(s));
+}
+
+async function runLineOfSight(coords, turbineName){
+  const turbineCoords = turbines[turbineName];
+  const resultBox = document.getElementById('losResult');
+  const btn = document.getElementById('losBtn');
+  btn.disabled = true;
+  btn.textContent = "A obter dados de elevação...";
+  resultBox.innerHTML = `<p class="empty" style="margin-top:10px;">A consultar o modelo de elevação de terreno (Open-Meteo, SRTM)...</p>`;
+
+  try{
+    const pts = [];
+    for(let i=0;i<=N_SAMPLES;i++){
+      const f = i/N_SAMPLES;
+      pts.push([coords[0] + f*(turbineCoords[0]-coords[0]), coords[1] + f*(turbineCoords[1]-coords[1])]);
+    }
+    const lats = pts.map(p=>p[0].toFixed(6)).join(',');
+    const lons = pts.map(p=>p[1].toFixed(6)).join(',');
+    const url = `https://api.open-meteo.com/v1/elevation?latitude=${lats}&longitude=${lons}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    const elevations = data.elevation;
+    if(!elevations || elevations.length !== pts.length) throw new Error("resposta inesperada da API");
+
+    const totalDist = haversine(coords, turbineCoords);
+    const groundHouse = elevations[0];
+    const groundTurbine = elevations[elevations.length-1];
+    const targetZ = groundTurbine + HUB_HEIGHT;
+
+    function analyse(receptorHeight){
+      const observerZ = groundHouse + receptorHeight;
+      let blocked = false, worstClearance = Infinity, worstIdx = 0;
+      for(let i=1;i<elevations.length-1;i++){
+        const f = i/N_SAMPLES;
+        const sightZ = observerZ + f*(targetZ - observerZ);
+        const clearance = sightZ - elevations[i];
+        if(clearance < worstClearance){ worstClearance = clearance; worstIdx = i; }
+        if(clearance < 0) blocked = true;
+      }
+      return {blocked, worstClearance, worstIdx};
+    }
+    const r15 = analyse(1.5);
+    const r4 = analyse(4);
+
+    renderLosChart(elevations, totalDist, groundHouse, groundTurbine, targetZ, turbineName);
+
+    resultBox.innerHTML = `
+      <div class="los-row"><span class="los-dot" style="background:#4A6670"></span>
+        Recetor a 1,5 m (altura usada no EIA): <b>${r15.blocked ? "obstruída pelo relevo" : "linha de vista livre"}</b>
+        ${r15.blocked ? ` (défice de ${Math.abs(Math.round(r15.worstClearance))} m a ${Math.round(r15.worstIdx/N_SAMPLES*totalDist)} m do ponto)` : ""}
+      </div>
+      <div class="los-row"><span class="los-dot" style="background:#C4432A"></span>
+        Recetor a 4 m (mínimo recomendado no estudo citado): <b>${r4.blocked ? "obstruída pelo relevo" : "linha de vista livre"}</b>
+        ${r4.blocked ? ` (défice de ${Math.abs(Math.round(r4.worstClearance))} m a ${Math.round(r4.worstIdx/N_SAMPLES*totalDist)} m do ponto)` : ""}
+      </div>
+      <div class="flag" style="margin-top:10px;">Cálculo baseado apenas em relevo (modelo de elevação de ~90 m de resolução), sem vegetação nem construções. Serve para triagem, não substitui um estudo de visibilidade em campo.</div>
+    `;
+  }catch(err){
+    resultBox.innerHTML = `<div class="flag" style="background:#FBEAE3; border-left-color:#C4432A; color:#6B2415; margin-top:10px;">Não foi possível obter os dados de elevação (${escapeHtml(err.message)}). Verifica a ligação à internet e tenta novamente.</div>`;
+  }finally{
+    btn.disabled = false;
+    btn.textContent = "Calcular linha de vista até " + turbineName;
+  }
+}
+
+function renderLosChart(elevations, totalDist, groundHouse, groundTurbine, targetZ, agName){
+  const w = 280, hgt = 130, pad = 6;
+  const minZ = Math.min(...elevations, groundHouse+1.5) - 8;
+  const maxZ = Math.max(targetZ, ...elevations) + 8;
+  const xScale = i => pad + (i/N_SAMPLES) * (w-2*pad);
+  const yScale = z => hgt - pad - ((z-minZ)/(maxZ-minZ)) * (hgt-2*pad);
+
+  const terrainPts = elevations.map((z,i) => `${xScale(i)},${yScale(z)}`).join(' ');
+  const terrainArea = `${xScale(0)},${hgt-pad} ${terrainPts} ${xScale(N_SAMPLES)},${hgt-pad}`;
+
+  const sight15 = `${xScale(0)},${yScale(groundHouse+1.5)} ${xScale(N_SAMPLES)},${yScale(targetZ)}`;
+  const sight4 = `${xScale(0)},${yScale(groundHouse+4)} ${xScale(N_SAMPLES)},${yScale(targetZ)}`;
+
+  const svg = `
+    <svg viewBox="0 0 ${w} ${hgt}" width="100%" style="margin-top:10px; background:#fff; border:1px solid var(--paper-deep); border-radius:2px;">
+      <polygon points="${terrainArea}" fill="#DCD9C8" stroke="#B9B79E" stroke-width="1"/>
+      <polyline points="${sight15}" fill="none" stroke="#4A6670" stroke-width="1.4" stroke-dasharray="4,3"/>
+      <polyline points="${sight4}" fill="none" stroke="#C4432A" stroke-width="1.4" stroke-dasharray="4,3"/>
+      <circle cx="${xScale(0)}" cy="${yScale(groundHouse+1.5)}" r="2.5" fill="#4A6670"/>
+      <circle cx="${xScale(N_SAMPLES)}" cy="${yScale(targetZ)}" r="2.5" fill="#C4432A"/>
+      <text x="${pad}" y="${hgt-1}" font-size="7" fill="#4A5248" font-family="IBM Plex Mono, monospace">ponto</text>
+      <text x="${w-pad-18}" y="${hgt-1}" font-size="7" fill="#4A5248" font-family="IBM Plex Mono, monospace">${agName}</text>
+    </svg>`;
+  document.getElementById('losResult').insertAdjacentHTML('afterbegin', svg);
+}
+
+function focusProject(){
+  map.flyTo([40.815,-7.59], 13, {duration:1.1});
+  if(window.innerWidth <= 860){ document.getElementById('sidebar').classList.remove('open'); }
+}
+
+function enterProject(){
+  document.getElementById('landingView').style.display = 'none';
+  const app = document.getElementById('appView');
+  app.style.display = 'flex';
+  setTimeout(() => {
+    map.invalidateSize();
+    focusProject();
+  }, 50);
+}
+
+function backToLanding(){
+  document.getElementById('appView').style.display = 'none';
+  document.getElementById('landingView').style.display = 'block';
+}
+
+function showAbout(){
+  document.getElementById('landingView').style.display = 'none';
+  document.getElementById('aboutView').style.display = 'block';
+}
+
+function backToLandingFromAbout(){
+  document.getElementById('aboutView').style.display = 'none';
+  document.getElementById('landingView').style.display = 'block';
+}
+
+/* ---------- GRÁFICO DE PRECISÃO (previsto vs. real, 29 pontos de validação) ---------- */
+/* Ruído particular real (Lden, só a contribuição dos aerogeradores, sem ruído de
+   fundo), EIA Quadro 8.66, os mesmos 29 valores usados para calibrar o modelo. */
+const VALIDATION_REAL_PARTICULAR = {
+  RA01:51.7, RA02:50.5, RA03:51.5, RA04:45.9, RA05:45.5,
+  RA06:48.8, RA07:48.3, RA08:48.0, RA09:48.9, RA10:48.9, RA11:48.3, RA12:48.3,
+  RA13:48.2, RA14:50.7, RA15:48.9, RA16:49.0, RA17:49.7, RA18:49.8,
+  RA19:51.3, RA20:51.0, RA21:50.3, RA22:49.9, RA23:49.9, RA24:48.8,
+  RA25:51.2, RA26:50.8, RA27:46.4, RA28:46.3, RA29:46.5,
+};
+
+function buildAccuracyChart(){
+  const points = officialReceptors.map(r => ({
+    id: r.id,
+    real: VALIDATION_REAL_PARTICULAR[r.id],
+    predicted: cumulativeSplAt(r.coords)
+  }));
+
+  const W = 620, H = 420, pad = 46;
+  const allVals = points.flatMap(p => [p.real, p.predicted]);
+  const lo = Math.floor(Math.min(...allVals) - 1.5);
+  const hi = Math.ceil(Math.max(...allVals) + 1.5);
+  const scale = v => pad + ((v - lo)/(hi - lo)) * (W - 2*pad);
+  const scaleY = v => (H - pad) - ((v - lo)/(hi - lo)) * (H - 2*pad);
+
+  const diagonal = `M${scale(lo)},${scaleY(lo)} L${scale(hi)},${scaleY(hi)}`;
+  const gridLines = [];
+  for(let v = Math.ceil(lo/2)*2; v <= hi; v += 2){
+    gridLines.push(`<line x1="${scale(v)}" y1="${pad}" x2="${scale(v)}" y2="${H-pad}" stroke="#EFEDE0" stroke-width="1"/>`);
+    gridLines.push(`<line x1="${pad}" y1="${scaleY(v)}" x2="${W-pad}" y2="${scaleY(v)}" stroke="#EFEDE0" stroke-width="1"/>`);
+    gridLines.push(`<text x="${scale(v)}" y="${H-pad+16}" font-size="9" fill="#8B8B7A" font-family="IBM Plex Mono, monospace" text-anchor="middle">${v}</text>`);
+    gridLines.push(`<text x="${pad-8}" y="${scaleY(v)+3}" font-size="9" fill="#8B8B7A" font-family="IBM Plex Mono, monospace" text-anchor="end">${v}</text>`);
+  }
+
+  const dots = points.map(p => `
+    <circle cx="${scale(p.predicted)}" cy="${scaleY(p.real)}" r="4.5" fill="#2F5233" fill-opacity="0.75" stroke="#fff" stroke-width="1">
+      <title>${p.id}: previsto ${p.predicted.toFixed(1)} dB, real ${p.real.toFixed(1)} dB</title>
+    </circle>`).join('');
+
+  const svg = `
+    <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+      ${gridLines.join('')}
+      <line x1="${pad}" y1="${H-pad}" x2="${W-pad}" y2="${H-pad}" stroke="#8B8B7A" stroke-width="1.3"/>
+      <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${H-pad}" stroke="#8B8B7A" stroke-width="1.3"/>
+      <path d="${diagonal}" stroke="#C4432A" stroke-width="1.4" stroke-dasharray="5,4" fill="none"/>
+      ${dots}
+      <text x="${W/2}" y="${H-8}" font-size="10.5" fill="#4A5248" font-family="IBM Plex Sans, sans-serif" text-anchor="middle">dB(A) previsto pelo modelo (calibrado)</text>
+      <text x="14" y="${H/2}" font-size="10.5" fill="#4A5248" font-family="IBM Plex Sans, sans-serif" text-anchor="middle" transform="rotate(-90, 14, ${H/2})">dB(A) real (EIA)</text>
+      <text x="${scale(hi)-6}" y="${scaleY(hi)-8}" font-size="9.5" fill="#C4432A" font-family="IBM Plex Sans, sans-serif" text-anchor="end">linha perfeita (previsto = real)</text>
+    </svg>`;
+  document.getElementById('accuracyChartHolder').innerHTML = svg;
+}
+
+buildBigDbScale();
+buildAccuracyChart();
+
+/* mobile drawer */
+document.getElementById('dragHandle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+setWindSpeed(currentWindSpeed);
+
+/* ---------- REDIMENSIONAR A BARRA LATERAL (arrastar) ---------- */
+(function(){
+  const sidebar = document.getElementById('sidebar');
+  const handle = document.getElementById('resizeHandle');
+  let dragging = false;
+
+  function syncHandlePosition(){
+    handle.style.left = sidebar.getBoundingClientRect().width + 'px';
+  }
+  syncHandlePosition();
+  window.addEventListener('resize', syncHandlePosition);
+  // A barra lateral pode mudar de largura por outras razões (ex: entrar no mapa
+  // vindo da página inicial); um pequeno intervalo mantém a pega sempre alinhada.
+  setInterval(syncHandlePosition, 400);
+
+  function startDrag(clientX){
+    dragging = true;
+    handle.classList.add('dragging');
+    document.body.classList.add('resizing');
+  }
+  function moveDrag(clientX){
+    if(!dragging) return;
+    const min = 230, max = window.innerWidth * 0.75;
+    const w = Math.min(max, Math.max(min, clientX));
+    sidebar.style.width = w + 'px';
+    syncHandlePosition();
+  }
+  function endDrag(){
+    if(!dragging) return;
+    dragging = false;
+    handle.classList.remove('dragging');
+    document.body.classList.remove('resizing');
+    map.invalidateSize();
+  }
+
+  handle.addEventListener('mousedown', (e) => { startDrag(e.clientX); e.preventDefault(); });
+  window.addEventListener('mousemove', (e) => moveDrag(e.clientX));
+  window.addEventListener('mouseup', endDrag);
+
+  handle.addEventListener('touchstart', (e) => { startDrag(e.touches[0].clientX); }, {passive:true});
+  window.addEventListener('touchmove', (e) => { if(dragging) moveDrag(e.touches[0].clientX); }, {passive:true});
+  window.addEventListener('touchend', endDrag);
+})();
+</script>
+</body>
+</html>
