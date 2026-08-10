@@ -111,7 +111,7 @@ O site é estático e não necessita de servidor aplicacional nem de base de dad
 
 ## Privacidade
 
-A medição de audiência é opcional. Google Analytics e Microsoft Clarity não são carregados antes de o visitante aceitar a analítica. A preferência pode ser alterada posteriormente através do botão **Privacidade e cookies** disponível nas páginas do site.
+A medição de audiência é opcional. Google Analytics e Microsoft Clarity não são carregados antes de o visitante aceitar a analítica. A preferência é definida e pode ser alterada na secção **Privacidade e medição de audiência** da página inicial, sendo depois respeitada em todo o site.
 
 ## Limitações
 

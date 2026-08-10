@@ -107,33 +107,15 @@ function ensureConsentStyles() {
     #cookieBanner .cookie-action{flex:1;min-height:40px;padding:9px 12px;border:1px solid #2f5233;border-radius:3px;background:#fff;color:#2f5233;font:600 12px 'IBM Plex Mono',monospace;cursor:pointer}
     #cookieBanner .cookie-action:hover{background:#e4ebe1}
     #cookieBanner .cookie-action.accept{background:#2f5233;color:#fff}
-    .cookie-settings-global{position:fixed;z-index:2999;left:12px;bottom:12px;padding:7px 10px;border:1px solid rgba(47,82,51,.35);border-radius:3px;background:rgba(255,255,255,.94);color:#2f5233;font:600 10.5px 'IBM Plex Sans',Arial,sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(28,43,34,.12)}
-    .cookie-settings-global:hover{background:#e4ebe1}
-    @media(max-width:600px){#cookieBanner{right:12px;bottom:12px;width:calc(100vw - 24px);padding:16px}.cookie-settings-global{left:8px;bottom:8px}}
+    .cookie-settings{margin-top:8px;padding:0;border:0;border-bottom:1px solid currentColor;background:transparent;color:#2f5233;font:600 11.5px 'IBM Plex Sans',Arial,sans-serif;cursor:pointer}
+    @media(max-width:600px){#cookieBanner{right:12px;bottom:12px;width:calc(100vw - 24px);padding:16px}}
   `;
   document.head.appendChild(styles);
 }
 
 function ensureConsentControls() {
+  if (!document.getElementById('cookieBanner')) return;
   ensureConsentStyles();
-
-  if (!document.getElementById('cookieBanner')) {
-    const banner = document.createElement('section');
-    banner.id = 'cookieBanner';
-    banner.setAttribute('role', 'dialog');
-    banner.setAttribute('aria-modal', 'true');
-    banner.setAttribute('aria-labelledby', 'cookieTitle');
-    banner.setAttribute('aria-describedby', 'cookieText');
-    banner.hidden = true;
-    banner.innerHTML = `
-      <h2 id="cookieTitle">Medição de audiência</h2>
-      <p id="cookieText">Podemos usar Google Analytics e Microsoft Clarity para perceber, de forma agregada, como o site é utilizado. A recusa não altera o acesso a qualquer conteúdo.</p>
-      <div class="cookie-actions">
-        <button id="cookieReject" class="cookie-action" type="button">Recusar</button>
-        <button id="cookieAccept" class="cookie-action accept" type="button">Aceitar analítica</button>
-      </div>`;
-    document.body.appendChild(banner);
-  }
 
   const rejectButton = document.getElementById('cookieReject');
   if (rejectButton && !rejectButton.hasAttribute('onclick')) {
@@ -144,14 +126,6 @@ function ensureConsentControls() {
     acceptButton.addEventListener('click', () => setCookieConsent('accepted'));
   }
 
-  if (!document.querySelector('.cookie-settings, .cookie-settings-global')) {
-    const settingsButton = document.createElement('button');
-    settingsButton.className = 'cookie-settings-global';
-    settingsButton.type = 'button';
-    settingsButton.textContent = 'Privacidade e cookies';
-    settingsButton.addEventListener('click', openCookiePreferences);
-    document.body.appendChild(settingsButton);
-  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -165,5 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (consent === 'accepted') loadAnalytics();
   else if (consent === 'rejected') setCookieConsent('rejected');
-  else document.getElementById('cookieBanner').hidden = false;
+  else {
+    const banner = document.getElementById('cookieBanner');
+    if (banner) banner.hidden = false;
+  }
 });
