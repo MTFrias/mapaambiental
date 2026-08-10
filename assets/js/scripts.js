@@ -107,7 +107,6 @@ function ensureConsentStyles() {
     #cookieBanner .cookie-action{flex:1;min-height:40px;padding:9px 12px;border:1px solid #2f5233;border-radius:3px;background:#fff;color:#2f5233;font:600 12px 'IBM Plex Mono',monospace;cursor:pointer}
     #cookieBanner .cookie-action:hover{background:#e4ebe1}
     #cookieBanner .cookie-action.accept{background:#2f5233;color:#fff}
-    .cookie-settings{margin-top:8px;padding:0;border:0;border-bottom:1px solid currentColor;background:transparent;color:#2f5233;font:600 11.5px 'IBM Plex Sans',Arial,sans-serif;cursor:pointer}
     @media(max-width:600px){#cookieBanner{right:12px;bottom:12px;width:calc(100vw - 24px);padding:16px}}
   `;
   document.head.appendChild(styles);
