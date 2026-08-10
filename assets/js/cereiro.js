@@ -62,6 +62,15 @@ const corridorA = [
 [41.307516,-6.48482]
 ];
 
+/* ---------- ÁREA PROTEGIDA (contexto, não faz parte do projeto) ----------
+   Limite do Parque Natural do Douro Internacional, obtido a partir do
+   serviço oficial do ICNF (sigservices.icnf.pt, camada BDG/RNAP), reprojetado
+   para WGS84 e simplificado (~200m de tolerância) apenas para leveza do
+   ficheiro. Mostrado para contexto: a área de estudo da central solar
+   sobrepõe-se a este parque natural e aos sítios Natura 2000 "Douro
+   Internacional" (ZEC) e "Douro Internacional e Vale do Rio Águeda" (ZPE). */
+const pnDouroInternacional = [[41.6049,-6.289],[41.628,-6.273],[41.6238,-6.2661],[41.633,-6.2545],[41.607,-6.2358],[41.5944,-6.2014],[41.5745,-6.1901],[41.5591,-6.2119],[41.5507,-6.2173],[41.5426,-6.2176],[41.5216,-6.2368],[41.5159,-6.246],[41.5138,-6.258],[41.5001,-6.2511],[41.4972,-6.2556],[41.4984,-6.2656],[41.4946,-6.268],[41.4866,-6.262],[41.4871,-6.2692],[41.4789,-6.2842],[41.4663,-6.2862],[41.4497,-6.3055],[41.4362,-6.2949],[41.4288,-6.3],[41.4192,-6.3104],[41.4154,-6.3186],[41.416,-6.3276],[41.4107,-6.3328],[41.4051,-6.3324],[41.3978,-6.3177],[41.3896,-6.3155],[41.3858,-6.3176],[41.3865,-6.3258],[41.3781,-6.3513],[41.3826,-6.3611],[41.3934,-6.3663],[41.3872,-6.3769],[41.3855,-6.3885],[41.3785,-6.3931],[41.3697,-6.3934],[41.3632,-6.3861],[41.3638,-6.3785],[41.3592,-6.3771],[41.35,-6.3921],[41.3481,-6.4149],[41.3336,-6.4265],[41.3261,-6.4184],[41.3201,-6.434],[41.3109,-6.4396],[41.306,-6.4372],[41.2985,-6.4517],[41.301,-6.4694],[41.2914,-6.4869],[41.2849,-6.4915],[41.2752,-6.4787],[41.2661,-6.4964],[41.2642,-6.511],[41.2733,-6.5163],[41.2757,-6.5222],[41.2673,-6.5299],[41.258,-6.5471],[41.2455,-6.5519],[41.239,-6.5719],[41.2413,-6.5848],[41.252,-6.5865],[41.2551,-6.5913],[41.2437,-6.5995],[41.2495,-6.6075],[41.2427,-6.6298],[41.2475,-6.6486],[41.2352,-6.6533],[41.2336,-6.6612],[41.2096,-6.6916],[41.1998,-6.689],[41.1932,-6.6924],[41.1921,-6.6997],[41.188,-6.6968],[41.1807,-6.7006],[41.1771,-6.7083],[41.1732,-6.7087],[41.1679,-6.7163],[41.162,-6.7302],[41.1486,-6.7409],[41.1312,-6.7707],[41.1236,-6.7705],[41.1032,-6.7552],[41.0878,-6.77],[41.0766,-6.7737],[41.0572,-6.7903],[41.0452,-6.8087],[41.0363,-6.8094],[41.0283,-6.8345],[41.0268,-6.8677],[41.0383,-6.916],[41.0295,-6.9314],[41.0167,-6.9317],[41.011,-6.9247],[41.0024,-6.9214],[40.9988,-6.9086],[40.9897,-6.9034],[40.9811,-6.8905],[40.9608,-6.8756],[40.9578,-6.8674],[40.9497,-6.8593],[40.9362,-6.8526],[40.9312,-6.8534],[40.9243,-6.8477],[40.9026,-6.8491],[40.8856,-6.8305],[40.8848,-6.8223],[40.8811,-6.8202],[40.8825,-6.8092],[40.861,-6.802],[40.8455,-6.802],[40.8419,-6.8122],[40.8434,-6.8257],[40.8405,-6.8265],[40.8369,-6.821],[40.8259,-6.8246],[40.8075,-6.8171],[40.7972,-6.8166],[40.7834,-6.8252],[40.7829,-6.8532],[40.7796,-6.8583],[40.7818,-6.8729],[40.7875,-6.8681],[40.8038,-6.8653],[40.8123,-6.8594],[40.8224,-6.8611],[40.8297,-6.8664],[40.8309,-6.8727],[40.835,-6.8702],[40.8336,-6.8841],[40.8476,-6.8983],[40.855,-6.9006],[40.8647,-6.9093],[40.8651,-6.8915],[40.8707,-6.8884],[40.8809,-6.9014],[40.8799,-6.9069],[40.8844,-6.9136],[40.8896,-6.9125],[40.8942,-6.9198],[40.8963,-6.9172],[40.8974,-6.9203],[40.9144,-6.9257],[40.9243,-6.939],[40.9252,-6.9458],[40.9321,-6.9456],[40.9342,-6.9534],[40.9435,-6.9588],[40.9446,-6.9683],[40.9535,-6.9743],[40.9594,-6.9831],[40.9681,-6.9831],[40.9692,-6.9909],[40.9831,-6.9966],[41.0098,-6.9844],[41.0172,-6.9768],[41.0272,-6.9845],[41.0273,-6.9934],[41.0336,-6.9932],[41.0397,-6.9845],[41.053,-6.9768],[41.0664,-6.954],[41.0688,-6.9418],[41.0665,-6.9414],[41.0673,-6.936],[41.0615,-6.9322],[41.0603,-6.9249],[41.0613,-6.9282],[41.0678,-6.9265],[41.0781,-6.9392],[41.0868,-6.9376],[41.0913,-6.9422],[41.0988,-6.9372],[41.1029,-6.9405],[41.106,-6.9211],[41.1029,-6.9088],[41.1075,-6.9012],[41.1064,-6.8924],[41.1156,-6.8837],[41.1141,-6.8737],[41.1209,-6.8721],[41.1272,-6.8649],[41.1265,-6.8521],[41.1334,-6.8461],[41.1389,-6.832],[41.1424,-6.8308],[41.1419,-6.8143],[41.1539,-6.7972],[41.1635,-6.7993],[41.1697,-6.7921],[41.1756,-6.7906],[41.1798,-6.7994],[41.1803,-6.7903],[41.1836,-6.7924],[41.1914,-6.7882],[41.1915,-6.7843],[41.1995,-6.784],[41.1987,-6.799],[41.2041,-6.7873],[41.2289,-6.7724],[41.2413,-6.7565],[41.2676,-6.7532],[41.2736,-6.7581],[41.2804,-6.7572],[41.2771,-6.7521],[41.2795,-6.7456],[41.2849,-6.743],[41.2941,-6.7245],[41.3008,-6.7187],[41.2963,-6.7082],[41.2975,-6.703],[41.2929,-6.6972],[41.3018,-6.6923],[41.3059,-6.6794],[41.3096,-6.6789],[41.307,-6.6653],[41.3146,-6.6416],[41.3244,-6.6356],[41.3185,-6.6231],[41.3226,-6.6152],[41.3247,-6.6198],[41.3262,-6.6183],[41.3247,-6.5667],[41.3473,-6.5363],[41.3642,-6.5211],[41.3704,-6.4822],[41.3782,-6.4715],[41.3823,-6.4569],[41.3982,-6.441],[41.4256,-6.4262],[41.4295,-6.411],[41.4504,-6.3987],[41.4748,-6.3654],[41.4742,-6.358],[41.4777,-6.3599],[41.4751,-6.3552],[41.4797,-6.3545],[41.4797,-6.3483],[41.4885,-6.3381],[41.5381,-6.3247],[41.5455,-6.3315],[41.5496,-6.3257],[41.564,-6.3178],[41.5699,-6.316],[41.5743,-6.3184],[41.5731,-6.3109],[41.6049,-6.289]];
+
 const corridorB = [
 [41.300513,-6.472674],[41.300521,-6.472972],[41.300556,-6.473266],[41.300619,-6.473552],[41.300708,-6.473826],
 [41.300823,-6.474082],[41.30096,-6.474318],[41.301119,-6.474529],[41.301296,-6.474712],[41.301489,-6.474865],
@@ -113,14 +122,26 @@ function toggleBasemap(){
 
 function setInfo(html){ document.getElementById('infopanel').innerHTML = html; }
 
-const layers = { area: L.layerGroup(), corridorA: L.layerGroup(), corridorB: L.layerGroup() };
+const layers = { area: L.layerGroup(), corridorA: L.layerGroup(), corridorB: L.layerGroup(), areaProtegida: L.layerGroup() };
+layers.areaProtegida.addTo(map);
 layers.corridorB.addTo(map);
 layers.corridorA.addTo(map);
 layers.area.addTo(map);
 
+let projectBounds = null; /* preenchido mais abaixo, depois de conhecidos todos os elementos do projeto */
 function toggleLayer(name, visible){
   if(!layers[name]) return;
   if(visible) layers[name].addTo(map); else map.removeLayer(layers[name]);
+  /* O Parque Natural pode ficar parcialmente fora do enquadramento inicial —
+     ao ligar esta camada, ajusta a vista para mostrar o parque completo; ao
+     desligá-la, volta ao enquadramento habitual do projeto. */
+  if(name === 'areaProtegida'){
+    if(visible){
+      map.fitBounds(L.latLngBounds([...pnDouroInternacional, ...(projectBounds || [])]), {padding:[20,20]});
+    } else if(projectBounds){
+      map.fitBounds(L.latLngBounds(projectBounds), {padding:[20,20]});
+    }
+  }
 }
 
 /* ---------- ÁREA DE ESTUDO DA CENTRAL SOLAR ---------- */
@@ -185,6 +206,33 @@ corridorBLine.bindPopup("<b>Corredor B</b><br>Ligação elétrica em estudo · �
 corridorBLine.on('click', () => setInfo(corridorPanelHtml("Corredor B", 434, "#2FA8C4")));
 corridorBLine.addTo(layers.corridorB);
 
+/* ---------- LIMITE DO PARQUE NATURAL (contexto) ---------- */
+const pnPanelHtml = `
+  <span class="kicker">Território classificado (contexto)</span>
+  <h3>Parque Natural do Douro Internacional</h3>
+  <div class="panel-block">
+    <div class="panel-block-title">Classificação</div>
+    <div class="panel-block-body">
+      <div class="fact"><span class="k">Tipo</span><span class="v">Parque Natural</span></div>
+      <div class="fact"><span class="k">Área total</span><span class="v">≈ 86 835 ha</span></div>
+      <div class="fact"><span class="k">Diploma</span><span class="v">DL n.º 8/98, de 11 de maio</span></div>
+      <div class="fact"><span class="k">Jurisdição</span><span class="v">ICNF</span></div>
+    </div>
+  </div>
+  <div class="flag">Este limite não faz parte do projeto — está aqui apenas para contexto. A área de estudo da
+    Central Solar de Cereiro sobrepõe-se a este parque natural e também aos sítios Natura 2000 "Douro Internacional"
+    (ZEC, PTCON0022) e "Douro Internacional e Vale do Rio Águeda" (ZPE, PTZPE0038). Isto significa que qualquer
+    licenciamento terá de ser avaliado também à luz das regras de conservação da natureza aplicáveis a este território,
+    não apenas do procedimento de AIA.</div>
+  <div class="lg-note" style="margin-top:8px;">Fonte: Instituto da Conservação da Natureza e das Florestas (ICNF),
+    Rede Nacional de Áreas Protegidas (serviço BDG/RNAP), consultado em agosto de 2026. Limite simplificado para
+    visualização; para o limite oficial e exato, consultar o ICNF.</div>
+`;
+const pnDouroPoly = L.polygon(pnDouroInternacional, {color:"#1B5E3A", weight:3, fillColor:"#1B5E3A", fillOpacity:.18, dashArray:"6 4"});
+pnDouroPoly.bindPopup("<b>Parque Natural do Douro Internacional</b><br>Território classificado (ICNF) — não faz parte do projeto", {maxWidth:280});
+pnDouroPoly.on('click', () => setInfo(pnPanelHtml));
+pnDouroPoly.addTo(layers.areaProtegida);
+
 /* Enquadra o mapa com toda a área de estudo e os dois corredores visíveis */
-const allBounds = L.latLngBounds([...studyArea, ...corridorA, ...corridorB]);
-map.fitBounds(allBounds, {padding:[20,20]});
+projectBounds = [...studyArea, ...corridorA, ...corridorB];
+map.fitBounds(L.latLngBounds(projectBounds), {padding:[20,20]});

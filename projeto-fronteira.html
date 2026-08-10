@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Central Eólica da Fronteira | Mapa Ambiental</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body class="project-page">
+
+    <nav class="nav-content" aria-label="Main navigation">
+        <div class="menu-content">
+            <a href="index.html" aria-label="Main page">
+                <h4 class="header-logo">Mapa Ambiental</h4>
+            </a>
+            <ul class="main-menu">
+                <li><a href="about.html" class="menu-link">Sobre Nós</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="layout">
+            <aside id="sidebar">
+                <div id="dragHandle">Ver processos e camadas do mapa</div>
+
+                <div class="sb-section mode-section">
+                    <h6 class="mode-title">Fase do processo</h6>
+                    <div class="mode-note" id="modeNote">Proposta de Definição do Âmbito (PDA), a fase preliminar e
+                        obrigatória do procedimento de Avaliação de Impacte Ambiental (AIA), anterior ao Estudo de
+                        Impacte Ambiental (EIA). A consulta pública em participa.pt só acontece numa fase posterior,
+                        já com o EIA.
+                    </div>
+                    <div class="sidebar-key" aria-label="Como interpretar os dados no mapa">
+                        <div class="sidebar-key-title">Como interpretar:</div>
+                        <div class="sidebar-key-row">
+                            <i class="data-key-dot measured"></i>
+                            <span>Área de estudo: onde os 35 aerogeradores poderão vir a ser instalados (não há,
+                                nesta fase, coordenadas individuais por aerogerador).</span>
+                        </div>
+                        <div class="sidebar-key-row">
+                            <i class="data-key-dot predicted"></i>
+                            <span>Corredores A e B: alternativas mais recentes em estudo para a linha elétrica.
+                                "Corredor alargado": zona de análise preliminar, mais ampla, considerada numa fase
+                                anterior.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sb-section">
+                    <h6 class="dark-title">Ficha técnica (PDA, Quadro 2.1)</h6>
+                    <div class="fact"><span class="k">Promotor</span><span class="v">Eólica de Avelanoso, Unipessoal
+                            Lda.</span></div>
+                    <div class="fact"><span class="k">Entidade licenciadora</span><span class="v">DGEG</span></div>
+                    <div class="fact"><span class="k">Autoridade de AIA</span><span class="v">APA</span></div>
+                    <div class="fact"><span class="k">Concelhos</span><span class="v">Miranda do Douro ·
+                            Vimioso</span></div>
+                    <div class="fact"><span class="k">Freguesias</span><span class="v">Póvoa, São Martinho de
+                            Angueira, Genísio, União de Constantim e Cicouro (Miranda do Douro) · União de Vale de
+                            Frades e Avelanoso (Vimioso)</span></div>
+                    <div class="fact"><span class="k">Área de estudo</span><span class="v">≈ 5 893 ha</span></div>
+                    <div class="fact"><span class="k">N.º de aerogeradores</span><span class="v">35</span></div>
+                    <div class="fact"><span class="k">Potência unitária</span><span class="v">4,5 MW</span></div>
+                    <div class="fact"><span class="k">Potência instalada</span><span class="v">157,5 MW</span></div>
+                    <div class="fact"><span class="k">Produção média anual estimada</span><span class="v">≈ 489
+                            GWh/ano</span></div>
+                    <div class="fact"><span class="k">Diâmetro do rotor</span><span class="v">até 180 m</span></div>
+                    <div class="fact"><span class="k">Altura do cubo</span><span class="v">até 120 m</span></div>
+                    <div class="fact"><span class="k">Vento: arranque / paragem</span><span class="v">3 / 25 m/s</span>
+                    </div>
+                    <div class="fact"><span class="k">Nível sonoro máximo</span><span class="v">106 dB(A) @ hub
+                            height</span></div>
+                    <div class="fact"><span class="k">Subestação</span><span class="v">30/220 kV</span></div>
+                    <div class="fact"><span class="k">Linha elétrica (LMAT)</span><span class="v">220 kV, até ao Posto
+                            de Corte de Picote (REN)</span></div>
+                    <div class="lg-note" style="margin-top:8px;">Fonte: Proposta de Definição do Âmbito do Projeto da
+                        Central Eólica da Fronteira, Eólica de Avelanoso, Unipessoal Lda., julho de 2026
+                        (T09125_01_v3), secções 1.1, 1.3 e 2.2.1, Quadro 2.1. Hibridização com a Central Hidroelétrica
+                        de Picote.</div>
+                </div>
+
+                <div class="sb-section">
+                    <h6 class="dark-title">Camadas do mapa</h6>
+                    <div class="layer-row">
+                        <input type="checkbox" id="ly-area" checked onchange="toggleLayer('area', this.checked)">
+                        <span class="swatch" style="background:#D9A441"></span>
+                        <label for="ly-area">Área de estudo (≈ 5 893 ha)</label>
+                    </div>
+                    <div class="layer-row">
+                        <input type="checkbox" id="ly-corridorA" checked
+                            onchange="toggleLayer('corridorA', this.checked)">
+                        <span class="swatch" style="background:#2F5233"></span>
+                        <label for="ly-corridorA">Corredor A — linha elétrica (220 kV)</label>
+                    </div>
+                    <div class="layer-row">
+                        <input type="checkbox" id="ly-corridorB" checked
+                            onchange="toggleLayer('corridorB', this.checked)">
+                        <span class="swatch" style="background:#2FA8C4"></span>
+                        <label for="ly-corridorB">Corredor B — linha elétrica (220 kV)</label>
+                    </div>
+                    <div class="layer-row">
+                        <input type="checkbox" id="ly-corridorAlargado"
+                            onchange="toggleLayer('corridorAlargado', this.checked)">
+                        <span class="swatch" style="background:#C4432A"></span>
+                        <label for="ly-corridorAlargado">Corredor alargado (análise preliminar, Picote)</label>
+                    </div>
+                    <div class="layer-row">
+                        <input type="checkbox" id="ly-areaProtegida" checked
+                            onchange="toggleLayer('areaProtegida', this.checked)">
+                        <span class="swatch" style="background:#1B5E3A"></span>
+                        <label for="ly-areaProtegida">Parque Natural do Douro Internacional (ICNF)</label>
+                    </div>
+                </div>
+
+                <div class="sb-section" style="flex:1; border-bottom:none;">
+                    <h6 class="dark-title">Elemento selecionado</h6>
+                    <div id="infopanel">
+                        <p class="empty">Seleciona a área de estudo ou um dos corredores da linha elétrica para ver
+                            mais informação sobre esse elemento.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="resizeHandle"></div>
+                <div class="sb-section sidebar-navigation">
+                    <a href="index.html" class="sidebar-link">
+                        ← Voltar aos projetos
+                    </a>
+                    <a href="limitacoes-fronteira.html" class="sidebar-link">
+                        Limitações do projeto
+                    </a>
+                </div>
+            </aside>
+
+            <div id="mapWrap">
+                <div id="map"></div>
+                <div id="modeBadge" title="Fase de Definição de Âmbito (PDA), anterior ao EIA">
+                    <span class="sw" id="modeBadgeDot"></span>
+                    <span id="modeBadgeLabel">Fase: Proposta de Definição do Âmbito (PDA)</span>
+                </div>
+                <div id="basemapToggle" onclick="toggleBasemap()">
+                    <span class="sw" id="basemapDot"></span>
+                    <span id="basemapLabel">Ver mapa base</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+    <script src="assets/js/fronteira.js"></script>
+    <script src="assets/js/scripts.js"></script>
+</body>
+
+</html>

@@ -2,8 +2,63 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://mapaambiental.com/</loc>
-    <lastmod>2026-07-22</lastmod>
+    <lastmod>2026-08-10</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://mapaambiental.com/about.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://mapaambiental.com/projetopaiva.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://mapaambiental.com/projeto-bigbatt.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://mapaambiental.com/projeto-guarda.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://mapaambiental.com/projetosudoeste.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://mapaambiental.com/projetopenedo.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://mapaambiental.com/projeto-cereiro.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://mapaambiental.com/projeto-fronteira.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://mapaambiental.com/projetomonteredondo.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://mapaambiental.com/projeto-montemornovo.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://mapaambiental.com/zaer.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <priority>0.7</priority>
   </url>
 </urlset>

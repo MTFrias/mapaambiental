@@ -27,6 +27,15 @@ const turbines = {
   WTG13: [40.593252, -7.242987], WTG14: [40.589322, -7.239622]
 };
 
+/* ---------- ÁREA PROTEGIDA (contexto, não faz parte do projeto) ----------
+   Limite do Parque Natural da Serra da Estrela, obtido a partir do serviço
+   oficial do ICNF (sigservices.icnf.pt, camada BDG/RNAP), reprojetado para
+   WGS84 e simplificado (~200m de tolerância) apenas para leveza do ficheiro.
+   Os 14 aerogeradores foram verificados individualmente: nenhum cai dentro
+   deste parque nem da ZEC "Serra da Estrela"; os mais próximos (WTG01–WTG08)
+   ficam a poucos km do limite norte do parque. Mostrado para contexto. */
+const pnSerraEstrela = [[40.6258,-7.3408],[40.623,-7.3426],[40.6268,-7.338],[40.6262,-7.3247],[40.6178,-7.3098],[40.6115,-7.3033],[40.6081,-7.3021],[40.6061,-7.3055],[40.6034,-7.3032],[40.6046,-7.2982],[40.5972,-7.2909],[40.5992,-7.2915],[40.5926,-7.2897],[40.5588,-7.3003],[40.5487,-7.3144],[40.5493,-7.3207],[40.5428,-7.3256],[40.5322,-7.3297],[40.5208,-7.3299],[40.5096,-7.3364],[40.4952,-7.3372],[40.4591,-7.3639],[40.4524,-7.3571],[40.4364,-7.3608],[40.4281,-7.3683],[40.4247,-7.3638],[40.4241,-7.372],[40.418,-7.3782],[40.4195,-7.3803],[40.4149,-7.3845],[40.4061,-7.3845],[40.4015,-7.3997],[40.3984,-7.3977],[40.3882,-7.4004],[40.3912,-7.4021],[40.3814,-7.4057],[40.3723,-7.4169],[40.3645,-7.4173],[40.3578,-7.4229],[40.3539,-7.4301],[40.3565,-7.4563],[40.3545,-7.4655],[40.3417,-7.4818],[40.3364,-7.4823],[40.3315,-7.4758],[40.3286,-7.4761],[40.3216,-7.4869],[40.3166,-7.4859],[40.2972,-7.5278],[40.2947,-7.5293],[40.2865,-7.5239],[40.2844,-7.5353],[40.2653,-7.5358],[40.2636,-7.541],[40.2677,-7.545],[40.2608,-7.5437],[40.2609,-7.5375],[40.2557,-7.5359],[40.2464,-7.543],[40.2384,-7.5818],[40.2378,-7.591],[40.2417,-7.5916],[40.2383,-7.5969],[40.2415,-7.6067],[40.2388,-7.6158],[40.2484,-7.6205],[40.2644,-7.6198],[40.266,-7.6246],[40.2532,-7.627],[40.2482,-7.6363],[40.2498,-7.6437],[40.2444,-7.6512],[40.2411,-7.6493],[40.238,-7.6524],[40.2399,-7.6593],[40.2332,-7.6697],[40.2376,-7.676],[40.242,-7.6705],[40.2439,-7.6756],[40.2498,-7.6715],[40.2475,-7.6768],[40.2537,-7.6815],[40.2452,-7.6818],[40.2413,-7.6888],[40.2545,-7.6942],[40.2509,-7.6987],[40.2564,-7.7003],[40.2573,-7.7074],[40.2525,-7.7114],[40.2474,-7.7098],[40.2504,-7.715],[40.2483,-7.7293],[40.2414,-7.7369],[40.2396,-7.7508],[40.2408,-7.7542],[40.2479,-7.7433],[40.2524,-7.7424],[40.2511,-7.7397],[40.2559,-7.7436],[40.2578,-7.7404],[40.2637,-7.7462],[40.2674,-7.7391],[40.2744,-7.738],[40.279,-7.7453],[40.2719,-7.7489],[40.2671,-7.7582],[40.2761,-7.7551],[40.277,-7.7518],[40.2793,-7.7557],[40.2811,-7.7535],[40.2907,-7.7568],[40.2939,-7.7546],[40.2903,-7.7827],[40.2926,-7.7789],[40.2919,-7.7847],[40.295,-7.7807],[40.2965,-7.7836],[40.3019,-7.7818],[40.3044,-7.7843],[40.2984,-7.8001],[40.2992,-7.8075],[40.3088,-7.8021],[40.309,-7.7935],[40.318,-7.7803],[40.3166,-7.7651],[40.3319,-7.7583],[40.3358,-7.7599],[40.3357,-7.7699],[40.3394,-7.7722],[40.3359,-7.7776],[40.3382,-7.7824],[40.3459,-7.7866],[40.3491,-7.804],[40.3572,-7.7872],[40.3566,-7.7774],[40.3572,-7.7796],[40.3614,-7.7778],[40.3649,-7.7655],[40.368,-7.7684],[40.3701,-7.7634],[40.3767,-7.7621],[40.3768,-7.7518],[40.382,-7.7386],[40.3791,-7.7405],[40.3779,-7.7369],[40.3826,-7.7232],[40.3899,-7.7195],[40.3925,-7.7119],[40.4011,-7.709],[40.4086,-7.6968],[40.419,-7.6994],[40.4192,-7.6945],[40.4265,-7.6866],[40.4269,-7.6733],[40.4309,-7.6752],[40.4439,-7.668],[40.4538,-7.6572],[40.4576,-7.6479],[40.4553,-7.6448],[40.4538,-7.6504],[40.4542,-7.6468],[40.4514,-7.647],[40.4534,-7.644],[40.4565,-7.6442],[40.4582,-7.6397],[40.4622,-7.6455],[40.4633,-7.6399],[40.4668,-7.6426],[40.4702,-7.6325],[40.4738,-7.6311],[40.4747,-7.6209],[40.4892,-7.6046],[40.4875,-7.6005],[40.4783,-7.5958],[40.4856,-7.5892],[40.4891,-7.5907],[40.4923,-7.583],[40.4988,-7.5855],[40.507,-7.5691],[40.5111,-7.5639],[40.5156,-7.5637],[40.5209,-7.5489],[40.5192,-7.5379],[40.536,-7.5486],[40.541,-7.536],[40.5462,-7.5337],[40.5515,-7.524],[40.5589,-7.4851],[40.5554,-7.4795],[40.5596,-7.4838],[40.5632,-7.4749],[40.5933,-7.4339],[40.6135,-7.4137],[40.6209,-7.4016],[40.6158,-7.3962],[40.6196,-7.3925],[40.6192,-7.3864],[40.6229,-7.3889],[40.6276,-7.3869],[40.6262,-7.3641],[40.6355,-7.3507],[40.6258,-7.3408]];
+
 /* ---------- MAP SETUP ---------- */
 const map = L.map('map', {zoomControl:false}).setView([40.60,-7.30], 11);
 L.control.zoom({position:'bottomright'}).addTo(map);
@@ -55,11 +64,22 @@ function toggleBasemap(){
 
 function setInfo(html){ document.getElementById('infopanel').innerHTML = html; }
 
-const layers = { area:L.layerGroup(), turbines:L.layerGroup(), sub:L.layerGroup(), estaleiro:L.layerGroup(), tower:L.layerGroup(), corr1:L.layerGroup(), corr2:L.layerGroup() };
+const layers = { area:L.layerGroup(), turbines:L.layerGroup(), sub:L.layerGroup(), estaleiro:L.layerGroup(), tower:L.layerGroup(), corr1:L.layerGroup(), corr2:L.layerGroup(), areaProtegida:L.layerGroup() };
 Object.values(layers).forEach(l => l.addTo(map));
+let projectBounds = null; /* preenchido mais abaixo, depois de conhecidos todos os elementos do projeto */
 function toggleLayer(name, visible){
   if(!layers[name]) return;
   if(visible) layers[name].addTo(map); else map.removeLayer(layers[name]);
+  /* O Parque Natural fica, em grande parte, fora do enquadramento inicial do projeto —
+     ao ligar esta camada, ajusta a vista para mostrar o parque completo; ao desligá-la,
+     volta ao enquadramento habitual do projeto. */
+  if(name === 'areaProtegida'){
+    if(visible){
+      map.fitBounds(L.latLngBounds([...pnSerraEstrela, ...(projectBounds || [])]), {padding:[20,20]});
+    } else if(projectBounds){
+      map.fitBounds(L.latLngBounds(projectBounds), {padding:[20,20]});
+    }
+  }
 }
 
 /* ---------- ÁREA DE ESTUDO ---------- */
@@ -435,6 +455,32 @@ function testPoint(latlng, isRefresh){
 }
 map.on('click', (e) => testPoint(e.latlng, false));
 
+/* ---------- LIMITE DO PARQUE NATURAL (contexto) ---------- */
+const pnPanelHtml = `
+  <span class="kicker">Território classificado (contexto)</span>
+  <h3>Parque Natural da Serra da Estrela</h3>
+  <div class="panel-block">
+    <div class="panel-block-title">Classificação</div>
+    <div class="panel-block-body">
+      <div class="fact"><span class="k">Tipo</span><span class="v">Parque Natural</span></div>
+      <div class="fact"><span class="k">Área total</span><span class="v">≈ 89 132 ha</span></div>
+      <div class="fact"><span class="k">Diploma</span><span class="v">DL n.º 557/76, de 16 de julho</span></div>
+      <div class="fact"><span class="k">Jurisdição</span><span class="v">ICNF</span></div>
+    </div>
+  </div>
+  <div class="flag">Este limite não faz parte do projeto — está aqui apenas para contexto. Verificámos as 14
+    posições reais dos aerogeradores contra este parque e contra a ZEC "Serra da Estrela" (PTCON0014): nenhuma cai
+    dentro de qualquer uma das duas áreas. Os aerogeradores mais a sul (WTG01 a WTG08) ficam a poucos quilómetros do
+    limite norte do parque, mas fora dele. Os corredores da linha elétrica não foram verificados ponto a ponto.</div>
+  <div class="lg-note" style="margin-top:8px;">Fonte: Instituto da Conservação da Natureza e das Florestas (ICNF),
+    Rede Nacional de Áreas Protegidas (serviço BDG/RNAP), consultado em agosto de 2026. Limite simplificado para
+    visualização; para o limite oficial e exato, consultar o ICNF.</div>
+`;
+const pnSerraPoly = L.polygon(pnSerraEstrela, {color:"#1B5E3A", weight:3, fillColor:"#1B5E3A", fillOpacity:.18, dashArray:"6 4"});
+pnSerraPoly.bindPopup("<b>Parque Natural da Serra da Estrela</b><br>Território classificado (ICNF) — não faz parte do projeto", {maxWidth:280});
+pnSerraPoly.on('click', () => setInfo(pnPanelHtml));
+pnSerraPoly.addTo(layers.areaProtegida);
+
 /* Enquadra o mapa com toda a área de estudo, aerogeradores e corredores visíveis */
-const allBounds = L.latLngBounds([...areaEstudo, ...Object.values(turbines), ...corredor1, ...corredor2]);
-map.fitBounds(allBounds, {padding:[20,20]});
+projectBounds = [...areaEstudo, ...Object.values(turbines), ...corredor1, ...corredor2];
+map.fitBounds(L.latLngBounds(projectBounds), {padding:[20,20]});

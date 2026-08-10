@@ -61,6 +61,32 @@ Proposta solar nos concelhos de Miranda do Douro e Mogadouro, em hibridização 
 - Representação da área da central e de dois corredores alternativos para a ligação elétrica.
 - Ligação prevista em 220 kV à subestação da Central Hidroelétrica de Bemposta.
 
+### Central Eólica da Fronteira
+
+Proposta eólica nos concelhos de Miranda do Douro e Vimioso, em hibridização com a Central Hidroelétrica de Picote. Prevê 35 aerogeradores, 157,5 MW de potência instalada e uma produção média anual estimada de 489 GWh.
+
+- Área de estudo com aproximadamente 5 893 hectares.
+- Representação da área onde os aerogeradores poderão ser instalados nesta fase de PDA.
+- Ligação prevista em 220 kV ao Posto de Corte de Picote.
+
+### Concessão Mineira de Monte Redondo
+
+Projeto de ampliação da exploração de areias siliciosas e caulino da concessão mineira C-130, no concelho de Leiria.
+
+- Concessão com 141,17 hectares e ampliação da área explorada em 68,54 hectares.
+- Representação das áreas atuais, zonas de ampliação, áreas a preservar e espaços em recuperação.
+- Informação sobre produção, reservas, tráfego e povoações próximas.
+- Página própria com os principais impactos e medidas previstas no EIA.
+
+### Projeto Híbrido Montemor-o-Novo
+
+Projeto que combina energia solar, eólica e armazenamento em baterias nos concelhos de Montemor-o-Novo, Vendas Novas, Montijo e Palmela.
+
+- Central solar de 65,9 MWp e parque eólico com 10 aerogeradores, totalizando 45 MW.
+- Sistema BESS de 50 MW / 100 MWh.
+- Representação das áreas de implantação, equipamentos e linha elétrica de 60 kV até à Subestação de Pegões.
+- Produção anual estimada de aproximadamente 217 GWh.
+
 ### Zonas de Aceleração de Energias Renováveis
 
 Mapa nacional da proposta de Programa Setorial das ZAER para Portugal Continental.

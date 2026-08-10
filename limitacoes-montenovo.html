@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Ambiental: Limitações projeto Monte Novo</title>
+
+    <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body>
+    <nav class="nav-content" aria-label="Main navigation">
+        <div class="menu-content">
+            <a href="index.html" aria-label="Main page">
+                <h4 class="header-logo">Mapa Ambiental</h4>
+            </a>
+            <ul class="main-menu">
+                <li><a href="about.html" class="menu-link">Sobre Nós</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <section class="why-section">
+            <div class="title-content">
+                <a href="projeto-montemornovo.html" class="return-link return-text">Voltar ao projeto</a>
+                <h3 class="intro-title">Limitações</h3>
+                <span class="description-text">O que este mapa não consegue responder, e porquê</span>
+            </div>
+        </section>
+        <section class="main-section">
+            <article class="about-text">
+                <h3>Este projeto ainda está na fase de Definição de Âmbito, não no EIA</h3>
+                <p>O documento em que este mapa se baseia é a Proposta de Definição do Âmbito (PDA) do Projeto
+                    Híbrido Monte Novo, não o Estudo de Impacte Ambiental (EIA). A PDA é uma fase preliminar e
+                    obrigatória do procedimento de Avaliação de Impacte Ambiental (AIA), que serve para propor à
+                    Autoridade de AIA o âmbito do EIA a desenvolver depois. O próprio documento indica que o projeto
+                    será submetido a AIA apenas em fase de Projeto de Execução, e que a linha elétrica de alta tensão
+                    está, nesta fase, em Estudo Prévio.
+                </p>
+                <div class="featured-callout">
+                    <h5 class="featured-callout-title">Consequência direta</h5>
+                    <p>Não existem, nesta fase, previsões de ruído por ponto, estudos hidrogeológicos, ou
+                        caracterização ecológica detalhada para este projeto — ao contrário do mapa do Monte Redondo
+                        (que já tem EIA), este mapa da Monte Novo não inclui qualquer simulador ou avaliação de
+                        impactos. A altura ao eixo do rotor dos aerogeradores nem está ainda definida.</p>
+                </div>
+
+                <h3>Algumas camadas usam uma projeção geográfica assumida, não confirmada</h3>
+                <p>A maioria dos ficheiros geográficos fornecidos para este projeto (subestação, vedação da central
+                    solar, sistema BESS, edifício de comando, acessos, caminhos e estradas) não incluía ficheiro de
+                    projeção (.prj). Foi assumido que estas camadas estão na mesma projeção ETRS89/PT-TM06
+                    (EPSG:3763) do ficheiro da subestação — que tinha projeção confirmada — com base na
+                    correspondência das coordenadas entre ficheiros. Esta é uma suposição razoável mas não
+                    verificada de forma independente; se estiver incorreta, essas camadas podem aparecer
+                    ligeiramente desalinhadas no mapa.
+                </p>
+
+                <h3>As posições dos aerogeradores vêm de um levantamento em formato KML, não do shapefile principal</h3>
+                <p>As 10 posições de aerogeradores mostradas no mapa foram extraídas de um ficheiro no formato KML
+                    (normalmente associado ao Google Earth), com uma precisão inferior à de um levantamento
+                    topográfico oficial. A PDA aponta explicitamente que a posição final dos aerogeradores só será
+                    otimizada em fases posteriores do procedimento de AIA (Estudo de Impacte Ambiental e Projeto de
+                    Execução), com base em estudos de recurso eólico e de outros fatores.
+                </p>
+
+                <h3>A área da propriedade e a área vedada não são a implantação final de cada componente</h3>
+                <p>A área da propriedade (≈765 ha) e a área vedada da central solar (≈148 ha) representam limites
+                    de referência e de implantação previstos nesta fase de PDA. A área útil de painéis (271 866 m²)
+                    ocupa apenas uma fração da área vedada, que inclui também caminhos internos, valas de cabos e
+                    faixas de proteção. O traçado definitivo da linha elétrica de 60 kV até à Subestação de Pegões
+                    (REN) só será fixado após o Estudo Prévio referido na PDA.
+                </p>
+
+                <h3>A geometria das áreas foi simplificada</h3>
+                <p>Os contornos de todas as áreas mostradas no mapa foram extraídos dos ficheiros geográficos
+                    fornecidos, mas o número de vértices de cada polígono foi reduzido para tornar o mapa mais
+                    leve. A forma geral de cada área mantém-se fiel à original, mas o traçado exato pode ter
+                    pequenas diferenças em relação ao ficheiro de origem. Para o limite oficial e exato de qualquer
+                    área, deve consultar-se o processo de AIA junto da APA/DGEG, não este mapa.
+                </p>
+
+                <h3>Não avaliámos impactos para pessoas ou biodiversidade neste projeto</h3>
+                <p>Ao contrário do mapa do Monte Redondo, onde já existe um EIA completo com conclusões sobre
+                    ruído, água, qualidade do ar e ecologia, a PDA do Monte Novo não contém ainda essas análises
+                    (elas serão desenvolvidas no EIA, que ainda está por fazer). Por isso, este mapa não inclui
+                    nenhuma secção sobre impactos para pessoas ou biodiversidade — apresentá-la nesta fase
+                    implicaria inventar conclusões que o próprio promotor ainda não tem.
+                </p>
+            </article>
+        </section>
+    </main>
+
+    <section class="why-section">
+            <h5>Porque existe</h5>
+            <p>
+                Acreditamos que uma sociedade mais informada participa de forma mais consciente.
+                Por isso, reunimos informação oficial num único espaço, tornando os processos de
+                participação pública mais acessíveis e transparentes.
+            </p>
+    </section>
+
+    <footer class="footer-content">
+        <p class="footer-copy">&copy; - <span id="current-year"></span>Mapa Ambiental</p>
+        <ul class="footer-menu">
+            <li><a href="about.html" class="menu-link">Sobre Nós</a></li>
+        </ul>
+        <a class="back-to-top" href="#"><img src="assets/images/arrow-up.png" alt="back to top" class="arrow-btn"></a>
+    </footer>
+
+    <div class="landing-footer">
+        <p>Protótipo cívico e independente. Dados extraídos da Proposta de Definição do Âmbito (PDA) do Projeto
+            Híbrido Monte Novo. Não substitui os documentos oficiais nem o processo formal de participação pública
+            em <a href="https://participa.pt" target="_blank" rel="noopener">participa.pt</a>.</p>
+    </div>
+
+    <script src="assets/js/scripts.js"></script>
+</body>
+
+</html>

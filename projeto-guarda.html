@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Parque Eólico da Guarda | Mapa Ambiental</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body class="project-page">
+
+    <nav class="nav-content" aria-label="Main navigation">
+        <div class="menu-content">
+            <a href="index.html" aria-label="Main page">
+                <h4 class="header-logo">Mapa Ambiental</h4>
+            </a>
+            <ul class="main-menu">
+                <li><a href="about.html" class="menu-link">Sobre Nós</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="layout">
+            <aside id="sidebar">
+                <div id="dragHandle">Ver processos e camadas do mapa</div>
+
+                <div class="sb-section mode-section">
+                    <h6 class="mode-title">Fase do processo</h6>
+                    <div class="mode-note" id="modeNote">Proposta de Definição do Âmbito (PDA) do EIA, a fase
+                        preliminar e obrigatória do procedimento de Avaliação de Impacte Ambiental (AIA), anterior ao
+                        Estudo de Impacte Ambiental (EIA). Não há ainda campanhas de medição de ruído junto de
+                        recetores sensíveis — estão previstas para uma fase posterior. A consulta pública em
+                        participa.pt só acontece já com o EIA.
+                    </div>
+                    <h6 class="mode-title" style="margin-top:12px;">Simulador · emissão sonora do aerogerador</h6>
+                    <div class="mode-buttons">
+                        <button id="modeBtnMin" class="mode-btn active" type="button"
+                            onclick="setSimulationMode('min')">Emissão mínima (92 dB(A))
+                        </button>
+                        <button id="modeBtnMax" class="mode-btn" type="button"
+                            onclick="setSimulationMode('max')">Emissão máxima (106 dB(A))
+                        </button>
+                    </div>
+                    <div class="mode-note" id="modeNote2">Os aerogeradores previstos podem emitir entre 92 e 106
+                        dB(A) de potência sonora, dependendo da velocidade do vento. Este simulador ilustra os dois
+                        extremos desse intervalo.</div>
+                    <div class="sidebar-key" aria-label="Como interpretar os dados no mapa">
+                        <div class="sidebar-key-title">Como interpretar:</div>
+                        <div class="sidebar-key-row">
+                            <i class="data-key-dot measured"></i>
+                            <span>Aerogeradores: as 14 posições previstas nesta fase (podem ainda ser ajustadas em
+                                fases seguintes).</span>
+                        </div>
+                        <div class="sidebar-key-row">
+                            <i class="data-key-dot predicted"></i>
+                            <span>Qualquer ponto do mapa: estimativa ilustrativa deste site, sem qualquer validação
+                                oficial (ver "Limitações do projeto").</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sb-section">
+                    <h6 class="dark-title">Ficha técnica (PDA)</h6>
+                    <div class="fact"><span class="k">Promotor</span><span class="v">Iberdrola Renewables
+                            Portugal</span></div>
+                    <div class="fact"><span class="k">Entidade licenciadora</span><span class="v">DGEG</span></div>
+                    <div class="fact"><span class="k">Autoridade de AIA</span><span class="v">APA</span></div>
+                    <div class="fact"><span class="k">Concelhos</span><span class="v">Guarda · Celorico da Beira</span>
+                    </div>
+                    <div class="fact"><span class="k">N.º de aerogeradores</span><span class="v">14</span></div>
+                    <div class="fact"><span class="k">Potência unitária</span><span class="v">7,2 MW</span></div>
+                    <div class="fact"><span class="k">Potência instalada</span><span class="v">100,8 MW</span></div>
+                    <div class="fact"><span class="k">Produção média anual estimada</span><span class="v">≈ 262,78
+                            GWh/ano</span></div>
+                    <div class="fact"><span class="k">Altura da torre (veio ao solo)</span><span class="v">≈ 114
+                            m</span></div>
+                    <div class="fact"><span class="k">Diâmetro do rotor</span><span class="v">172 m</span></div>
+                    <div class="fact"><span class="k">Comprimento das pás</span><span class="v">84,4 m</span></div>
+                    <div class="fact"><span class="k">Emissão sonora</span><span class="v">92 – 106 dB(A) (conforme
+                            vento)</span></div>
+                    <div class="fact"><span class="k">Subestação</span><span class="v">30/220 kV</span></div>
+                    <div class="fact"><span class="k">Linha elétrica (LMAT)</span><span class="v">220 kV, ≈18 km, até
+                            à Subestação de Chafariz (REN)</span></div>
+                    <div class="fact"><span class="k">Torre meteorológica</span><span class="v">Em licenciamento
+                            (não incluída no total dos 14 AEGs)</span></div>
+                    <div class="lg-note" style="margin-top:8px;">Fonte: Proposta de Definição do Âmbito do EIA do
+                        Parque Eólico da Guarda e respetiva Ligação à RESP, KEO (EUROKEO, Unipessoal Lda.) para
+                        Iberdrola Renewables Portugal, 24.07.2026 (26-9164-EN00, Rev.00), secções 1.3, 1.4, 2.1.1 e
+                        3.</div>
+                </div>
+
+                <div class="sb-section">
+                    <h6 class="dark-title">Camadas do mapa</h6>
+                    <div class="layer-row">
+                        <input type="checkbox" id="ly-area" checked onchange="toggleLayer('area', this.checked)">
+                        <span class="swatch" style="background:#D9A441"></span>
+                        <label for="ly-area">Área de estudo</label>
+                    </div>
+                    <div class="layer-row">
+                        <input type="checkbox" id="ly-turbines" checked
+                            onchange="toggleLayer('turbines', this.checked)">
+                        <span class="swatch" style="background:#4A6670"></span>
+                        <label for="ly-turbines">Aerogeradores (14)</label>
+                    </div>
+                    <div class="layer-row">
+                        <input type="checkbox" id="ly-sub" checked onchange="toggleLayer('sub', this.checked)">
+                        <span class="swatch" style="background:#C4432A"></span>
+                        <label for="ly-sub">Subestação do parque</label>
+                    </div>
+                    <div class="layer-row">
+                        <input type="checkbox" id="ly-estaleiro" checked
+                            onchange="toggleLayer('estaleiro', this.checked)">
+                        <span class="swatch" style="background:#8A5A1E"></span>
+                        <label for="ly-estaleiro">Área para estaleiro de obra</label>
+                    </div>
+                    <div class="layer-row">
+                        <input type="checkbox" id="ly-tower" checked onchange="toggleLayer('tower', this.checked)">
+                        <span class="swatch" style="background:#2F5233"></span>
+                        <label for="ly-tower">Torre meteorológica</label>
+                    </div>
+                    <div class="layer-row">
+                        <input type="checkbox" id="ly-corr1" checked onchange="toggleLayer('corr1', this.checked)">
+                        <span class="swatch" style="background:#2FA8C4"></span>
+                        <label for="ly-corr1">Corredor 1 — LMAT (220 kV)</label>
+                    </div>
+                    <div class="layer-row">
+                        <input type="checkbox" id="ly-corr2" checked onchange="toggleLayer('corr2', this.checked)">
+                        <span class="swatch" style="background:#7A5FA8"></span>
+                        <label for="ly-corr2">Corredor 2 — LMAT (220 kV)</label>
+                    </div>
+                    <div class="layer-row">
+                        <input type="checkbox" id="ly-areaProtegida" checked
+                            onchange="toggleLayer('areaProtegida', this.checked)">
+                        <span class="swatch" style="background:#1B5E3A"></span>
+                        <label for="ly-areaProtegida">Parque Natural da Serra da Estrela (ICNF)</label>
+                    </div>
+                </div>
+
+                <div class="sb-section" style="flex:1; border-bottom:none;">
+                    <h6 class="dark-title">Elemento selecionado</h6>
+                    <div id="infopanel">
+                        <p class="empty">A seleção de um ponto do mapa apresenta uma estimativa ilustrativa de ruído
+                            nesse local. É também possível selecionar um aerogerador, a subestação, a torre
+                            meteorológica ou um dos corredores da linha elétrica.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sb-section" style="border-bottom:none;">
+                    <h6 class="dark-title">Escala de referência (dB)</h6>
+                    <div id="dbScaleHolder"></div>
+                    <div id="dbScaleReadout" class="db-readout">A seleção de um aerogerador ou de um ponto do mapa
+                        indica aqui o valor correspondente.</div>
+                    <div class="lg-note" style="margin-top:8px;">Valores de referência de conhecimento acústico geral
+                        (não específicos deste projeto), só para dar noção de escala.</div>
+                </div>
+                <div id="resizeHandle"></div>
+                <div class="sb-section sidebar-navigation">
+                    <a href="index.html" class="sidebar-link">
+                        ← Voltar aos projetos
+                    </a>
+                    <a href="limitacoes-guarda.html" class="sidebar-link">
+                        Limitações do projeto
+                    </a>
+                </div>
+            </aside>
+
+            <div id="mapWrap">
+                <div id="map"></div>
+                <div id="modeBadge" title="Fase de Definição de Âmbito (PDA), anterior ao EIA">
+                    <span class="sw" id="modeBadgeDot"></span>
+                    <span id="modeBadgeLabel">Fase: Proposta de Definição do Âmbito (PDA)</span>
+                </div>
+                <div id="basemapToggle" onclick="toggleBasemap()">
+                    <span class="sw" id="basemapDot"></span>
+                    <span id="basemapLabel">Ver mapa base</span>
+                </div>
+                <div id="dbLegend">
+                    <div class="lg-title">Propagação sonora estimada (ilustrativa)</div>
+                    <div id="lgRows"></div>
+                    <div class="lg-note">Modelo simplificado de espalhamento esférico em campo livre, sem terreno,
+                        vegetação ou vento. Ao contrário do mapa do Paiva, não foi possível validar este modelo
+                        contra nenhum recetor oficial, porque este projeto ainda não tem EIA nem previsões de ruído
+                        publicadas — ver "Limitações do projeto".</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+    <script src="assets/js/guarda.js"></script>
+    <script src="assets/js/scripts.js"></script>
+</body>
+
+</html>
