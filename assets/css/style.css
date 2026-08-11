@@ -62,6 +62,22 @@ body {
     flex-direction:column;
 }
 
+.project-page {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+.project-page main {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+.project-page .layout {
+    width: 100%;
+}
+
 h1,
 h2,
 h3,
@@ -1782,8 +1798,59 @@ body.resizing #map {
 }
 
 @media (max-width: 53.75rem) {
+    .project-page .menu-content {
+        padding: 0 1rem;
+    }
+
+    .project-page .header-logo {
+        font-size: 1.25rem;
+    }
+
+    .project-page .main-menu li a {
+        padding: 1rem 0;
+        font-size: 1rem;
+    }
+
+    .project-page #mapWrap {
+        width: 100%;
+        height: 100%;
+    }
+
+    .project-page #sidebar {
+        position: fixed;
+        z-index: 1200;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        height: min(78dvh, 42rem);
+        max-height: calc(100dvh - 3.5rem);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        border: 0;
+        border-top: 1px solid var(--forest);
+        border-radius: 0.875rem 0.875rem 0 0;
+        box-shadow: 0 -0.4rem 1.5rem rgba(28, 43, 34, .22);
+        transform: translateY(calc(100% - 3rem - env(safe-area-inset-bottom, 0px)));
+        transition: transform .25s ease;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .project-page #sidebar.open {
+        transform: translateY(0);
+    }
+
+    .project-page #resizeHandle {
+        display: none;
+    }
+
     #dragHandle {
         display: flex;
+        position: sticky;
+        top: 0;
+        z-index: 2;
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
@@ -1796,6 +1863,24 @@ body.resizing #map {
         text-transform: uppercase;
         color: var(--paper);
         min-height: 3rem;
+        flex: 0 0 3rem;
+        touch-action: manipulation;
+    }
+
+    .project-page #dragHandle::before {
+        content: "⌃";
+        font-size: 1rem;
+        line-height: 1;
+        transition: transform .25s ease;
+    }
+
+    .project-page #sidebar.open #dragHandle::before {
+        transform: rotate(180deg);
+    }
+
+    .project-page #dbLegend {
+        max-height: min(42vh, 19rem);
+        overflow-y: auto;
     }
 }
 

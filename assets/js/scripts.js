@@ -127,11 +127,57 @@ function ensureConsentControls() {
 
 }
 
+function setupProjectSidebar() {
+  if (!document.body.classList.contains('project-page')) return;
+
+  const sidebar = document.getElementById('sidebar');
+  const handle = document.getElementById('dragHandle');
+  if (!sidebar || !handle) return;
+
+  const mobileQuery = window.matchMedia('(max-width: 53.75rem)');
+
+  function setOpen(open) {
+    sidebar.classList.toggle('open', open);
+    handle.setAttribute('aria-expanded', String(open));
+    handle.setAttribute('aria-label', open
+      ? 'Fechar processos e camadas do mapa'
+      : 'Abrir processos e camadas do mapa');
+  }
+
+  function toggleSidebar() {
+    if (!mobileQuery.matches) return;
+    setOpen(!sidebar.classList.contains('open'));
+  }
+
+  handle.setAttribute('role', 'button');
+  handle.setAttribute('tabindex', '0');
+  setOpen(false);
+
+  handle.addEventListener('click', toggleSidebar);
+  handle.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      toggleSidebar();
+    } else if (event.key === 'Escape') {
+      setOpen(false);
+    }
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && mobileQuery.matches) setOpen(false);
+  });
+
+  mobileQuery.addEventListener('change', event => {
+    if (!event.matches) setOpen(false);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const footerCopy = document.querySelector('.footer-copy');
   if (footerCopy) footerCopy.textContent = `© ${new Date().getFullYear()} Mapa Ambiental`;
 
   ensureConsentControls();
+  setupProjectSidebar();
 
   let consent = null;
   try { consent = localStorage.getItem(CONSENT_KEY); } catch (error) {}

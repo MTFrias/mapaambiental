@@ -1269,11 +1269,6 @@ function buildAccuracyChart(){
 if (document.getElementById('dbScaleHolderBig')) buildBigDbScale();
 if (document.getElementById('accuracyChartHolder')) buildAccuracyChart();
 
-/* mobile drawer */
-document.getElementById('dragHandle').addEventListener('click', () => {
-  document.getElementById('sidebar').classList.toggle('open');
-});
-
 setWindSpeed(currentWindSpeed);
 
 /* ---------- REDIMENSIONAR A BARRA LATERAL (arrastar) ---------- */
