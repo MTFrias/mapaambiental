@@ -61,6 +61,19 @@ function loadAnalytics() {
   document.head.appendChild(clarityScript);
 }
 
+function scheduleAnalytics() {
+  if (window.__mapaAmbientalAnalyticsScheduled || window.__mapaAmbientalAnalyticsLoaded) return;
+  window.__mapaAmbientalAnalyticsScheduled = true;
+
+  const start = () => {
+    window.__mapaAmbientalAnalyticsScheduled = false;
+    loadAnalytics();
+  };
+
+  if ('requestIdleCallback' in window) window.requestIdleCallback(start, { timeout: 2500 });
+  else window.setTimeout(start, 1500);
+}
+
 function clearAnalyticsCookies() {
   document.cookie.split(';')
     .map(cookie => cookie.trim().split('=')[0])
@@ -79,7 +92,7 @@ function setCookieConsent(choice) {
   if (banner) banner.hidden = true;
 
   if (granted) {
-    loadAnalytics();
+    scheduleAnalytics();
   } else {
     updateGoogleConsent(false);
     updateClarityConsent(false);
@@ -182,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let consent = null;
   try { consent = localStorage.getItem(CONSENT_KEY); } catch (error) {}
 
-  if (consent === 'accepted') loadAnalytics();
+  if (consent === 'accepted') scheduleAnalytics();
   else if (consent === 'rejected') setCookieConsent('rejected');
   else {
     const banner = document.getElementById('cookieBanner');
